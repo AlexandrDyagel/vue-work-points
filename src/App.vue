@@ -2,7 +2,7 @@
 
 import { useMiniApp, useViewport } from 'vue-tg'
 import { onMounted, ref } from 'vue'
-import BottomMenu from '@/components/BottomMenu.vue'
+import BottomMenu from '@/components/BottomMenuView.vue'
 
 const miniApp = useMiniApp()
 

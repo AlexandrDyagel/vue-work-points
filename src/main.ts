@@ -6,14 +6,18 @@ import { autoAnimatePlugin } from '@formkit/auto-animate/vue'
 
 import { createRouter, createWebHistory } from 'vue-router'
 import { createPinia } from 'pinia'
+import { Routes as Route } from '@/model/Routes.ts'
 
 const app = createApp(App)
 
 const routes = [
   { path: '/', name: 'home', redirect: '/points' },
-  { path: '/points', name: 'points', component: () => import((`@/pages/PointsView.vue`)) },
-  { path: '/points/add', name: 'add_point', component: () => import((`@/pages/AddPointView.vue`)) },
-  { path: '/points/edit', name: 'edit_point', component: () => import((`@/pages/EditPointView.vue`)) },
+  { path: Route.Points, name: 'points', component: () => import((`@/pages/PointsView.vue`)) },
+  { path: Route.AddPoint, name: 'add_point', component: () => import((`@/pages/AddPointView.vue`)) },
+  { path: Route.EditPoint, name: 'edit_point', component: () => import((`@/pages/EditPointView.vue`)) },
+  { path: Route.Tasks, name: 'tasks', component: () => import((`@/pages/TasksView.vue`)) },
+  { path: Route.Map, name: 'map', component: () => import((`@/pages/MapView.vue`)) },
+  { path: Route.Settings, name: 'settings', component: () => import((`@/pages/SettingsView.vue`)) },
 ]
 
 const router = createRouter({
