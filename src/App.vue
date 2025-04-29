@@ -1,19 +1,19 @@
 <script setup lang="ts">
 
-import { useMiniApp, useViewport } from 'vue-tg'
+import { useMiniApp, useTheme, useViewport } from 'vue-tg'
 import { onMounted, ref } from 'vue'
 import BottomMenu from '@/components/BottomMenuView.vue'
 
 const miniApp = useMiniApp()
+const theme = useTheme()
+const viewport = useViewport()
 
 onMounted(() => {
+  theme.headerColor = ref('#242528')
+  viewport.isVerticalSwipesEnabled = ref(false)
+  viewport.expand()
   miniApp.ready()
 })
-
-const viewport = useViewport()
-viewport.isVerticalSwipesEnabled = ref(false)
-viewport.expand()
-
 </script>
 
 <template>

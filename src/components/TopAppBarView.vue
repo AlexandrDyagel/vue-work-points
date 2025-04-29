@@ -21,7 +21,10 @@ const onInput = () => {
   timeoutId = setTimeout(() => emit('filter-changed', queryString.value), 400)
 }
 
-const clearSearchInput = () => queryString.value = ''
+const clearSearchInput = () => {
+  queryString.value = ''
+  emit('filter-changed', queryString.value)
+}
 
 watch(queryString, (newValueQueryString) => isActiveCancelButton.value = newValueQueryString !== '')
 

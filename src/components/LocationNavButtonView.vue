@@ -1,6 +1,6 @@
 <script setup lang="ts">
 
-import { computed, ref, shallowRef } from 'vue'
+import { ref, shallowRef } from 'vue'
 import Svg from '@/components/Svg.vue'
 import { useMiniApp } from 'vue-tg'
 import RouteIcon from '@/components/icons/RouteIcon.vue'

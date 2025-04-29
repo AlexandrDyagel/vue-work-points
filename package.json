@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "run-p type-check \"build-only {@}\" --",
+    "deploy": "firebase deploy",
     "preview": "vite preview",
     "build-only": "vite build",
     "type-check": "vue-tsc --build",

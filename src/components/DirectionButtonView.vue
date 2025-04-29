@@ -1,7 +1,6 @@
 <script setup lang="ts">
 
 import { computed } from 'vue'
-import type { TypeDirectionButton } from '@/model/TypeDirectionButton.ts'
 
 const props = defineProps<{
   name: string,

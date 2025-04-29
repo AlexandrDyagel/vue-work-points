@@ -7,13 +7,14 @@ import { BackButton } from 'vue-tg'
 import { PointRequest } from '@/model/PointRequest.ts'
 import { Location } from '@/model/Location.ts'
 import { GeoPoint } from '@/model/GeoPoint.ts'
+import { TypePoint } from '@/model/TypePoint.ts'
 
 const obtainPointsStore = useObtainPoints()
 
 const progress = ref(false)
 const directRegion = ref('toRegion')
 
-const type = ref('тп')
+const type = ref(TypePoint.TP)
 const name = ref('')
 const direction = ref('')
 const address = ref('')
@@ -64,7 +65,7 @@ function save() {
 }
 
 function clear() {
-  type.value = 'тп'
+  type.value = TypePoint.TP
   name.value = ''
   direction.value = ''
   address.value = ''
@@ -83,9 +84,9 @@ function clear() {
         v-model="type"
         class="w-full bg-black shadow-xl start-4 end-4 bottom-4 border-color-custom rounded-lg bg-[#18695A] border text-sm p-2.5 focus:outline-none"
       >
-        <option value="тп">Тоннель пешеходный</option>
-        <option value="та">Тоннель автодорожный</option>
-        <option value="пп">Путепровод пешеходный. Переход надземный</option>
+        <option :value="TypePoint.TP">Тоннель пешеходный</option>
+        <option :value="TypePoint.TA">Тоннель автодорожный</option>
+        <option :value="TypePoint.PP">Путепровод пешеходный. Переход надземный</option>
       </select>
     </div>
     <div class="ms-4 me-4 mt-4">
