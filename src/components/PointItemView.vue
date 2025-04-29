@@ -9,6 +9,8 @@ import { useRouter } from 'vue-router'
 import { TypeDirectionButton } from '@/model/TypeDirectionButton.ts'
 import { TypeLocationNavButton } from '@/model/TypeLocationNavButton.ts'
 import DirectionButtonView from '@/components/DirectionButtonView.vue'
+import { TypePoint } from '@/model/TypePoint.ts'
+import { c } from 'vite/dist/node/moduleRunnerTransport.d-CXw_Ws6P'
 
 const props = defineProps<{
   dataPoint: PointResponse;
@@ -60,10 +62,17 @@ function editPoint(point: PointResponse | null) {
   router.push(Route.EditPoint)
 }
 
+const changeBgGradient = computed(() => {
+  switch(props.dataPoint.type) {
+    case TypePoint.TP : return "bg-linear-to-t from-[#242528] to-[#5C2507] to-100% from-50%"
+    case TypePoint.TA : return "bg-linear-to-t from-[#242528] from-50% via-[#5C2507] via-90% to-[#242528] to-100%"
+    case TypePoint.PP : return "bg-linear-to-t from-[#242528] to-[#164D28] to-100% from-50%"
+  }
+} )
 </script>
 
 <template>
-  <div :key="dataPoint.uid" class="bg-[#242528] px-4 pt-4 pb-5 border-b-[1px] border-[#3d3e43]">
+  <div :key="dataPoint.uid" class="px-4 pt-4 pb-5 border-b-[1px] border-[#3d3e43]" :class="changeBgGradient">
     <div @click="editPoint(dataPoint)"
          class="pb-1 text-base font-medium overflow-ellipsis overflow-hidden">{{ dataPoint.name }}
     </div>
