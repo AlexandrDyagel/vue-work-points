@@ -10,10 +10,13 @@ import { TypeDirectionButton } from '@/model/TypeDirectionButton.ts'
 import { TypeLocationNavButton } from '@/model/TypeLocationNavButton.ts'
 import DirectionButtonView from '@/components/DirectionButtonView.vue'
 import { TypePoint } from '@/model/TypePoint.ts'
+import { useMiniApp } from 'vue-tg/8.0'
 
 const props = defineProps<{
   dataPoint: PointResponse;
 }>()
+
+const miniApp = useMiniApp()
 
 const router = useRouter()
 
@@ -73,23 +76,26 @@ function editPoint(point: PointResponse | null) {
 })*/
 
 const getColor = (typePoint: TypePoint) => {
-  switch(typePoint) {
+  switch (typePoint) {
     case TypePoint.PP: {
-      return "bg-blue-500"
+      return 'bg-blue-500'
     }
     case TypePoint.TA: {
-      return "bg-[#a3a5a6]"
+      return 'bg-[#a3a5a6]'
     }
     case TypePoint.TP: {
-      return "bg-[#ff5b4d]"
+      return 'bg-[#ff5b4d]'
     }
   }
 }
 
+const showSelect = () => miniApp.switchInlineQuery('')
+
 </script>
 
 <template>
-  <div :key="dataPoint.uid" class="flex flex-row justify-between px-4 pt-4 pb-5 border-b-[1px] border-[#3d3e43]">
+  <div :key="dataPoint.uid"
+       class="flex flex-row justify-between px-4 pt-4 pb-5">
     <div>
       <div @click="editPoint(dataPoint)"
            class="pb-1 text-base font-medium overflow-ellipsis overflow-hidden">{{ dataPoint.name }}
@@ -119,6 +125,22 @@ const getColor = (typePoint: TypePoint) => {
                            :type="TypeLocationNavButton.ROUTE" />
         <LocationNavButton name="На карте" :location="getLocation"
                            :type="TypeLocationNavButton.POINT" />
+
+        <div
+          @click="showSelect"
+          class="flex flex-row cursor-pointer text-[#7a7acc] bg-[#4d4d4d] items-center gap-1 px-3 relative h-[40px] rounded-xl text-center content-center">
+
+          <span class="text-[14px] font-medium">GO</span>
+        </div>
+
+        <div
+          @click="miniApp.switchInlineQuery('')"
+          class="flex flex-row cursor-pointer text-[#7a7acc] bg-[#4d4d4d] items-center gap-1 px-3 relative h-[40px] rounded-xl text-center content-center">
+
+          <span class="text-[14px] font-medium">GO2</span>
+        </div>
+
+
       </div>
     </div>
     <div :class="getColor(dataPoint.type)" class="w-10 h-10 rounded-sm"></div>

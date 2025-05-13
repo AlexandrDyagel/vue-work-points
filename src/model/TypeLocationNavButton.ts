@@ -1,4 +1,5 @@
 export enum TypeLocationNavButton {
   ROUTE = 'route',
-  POINT = 'point'
+  POINT = 'point',
+  ANY = 'any',
 }

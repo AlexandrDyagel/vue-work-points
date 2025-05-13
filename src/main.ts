@@ -8,6 +8,8 @@ import { createRouter, createWebHistory } from 'vue-router'
 import { createPinia } from 'pinia'
 import { Routes as Route } from '@/model/Routes.ts'
 
+export const DEV_VERSION = '2.4'
+
 const app = createApp(App)
 
 const routes = [

@@ -1,32 +1,40 @@
 <script setup lang="ts">
 
-import { useMiniApp, useTheme, useViewport } from 'vue-tg'
-import { onMounted, ref } from 'vue'
+import { onMounted, provide, ref } from 'vue'
 import BottomMenu from '@/components/BottomMenuView.vue'
+import { useMiniApp, useTheme, useViewport } from 'vue-tg/8.0'
+import { useInputFocus } from '../store/TopAppBar.ts'
+import LoadingScreen from '@/components/LoadingScreen.vue'
+
+const loading = ref<boolean>(true)
+provide('isLoadingData', loading)
 
 const miniApp = useMiniApp()
 const theme = useTheme()
 const viewport = useViewport()
 
+const inputTopAppBarStore = useInputFocus()
+
 onMounted(() => {
-  theme.headerColor = ref('#242528')
-  viewport.isVerticalSwipesEnabled = ref(false)
+  theme.headerColor.value = '#242528'
   viewport.expand()
+  viewport.isVerticalSwipesEnabled.value = false
   miniApp.ready()
 })
 </script>
 
 <template>
-<header>
+  <LoadingScreen :is-loading="loading" />
+  <header>
 
-</header>
+  </header>
 
-<main class="mb-20">
-<router-view></router-view>
-</main>
+  <main class="mb-20">
+    <router-view></router-view>
+  </main>
 
-<nav>
-    <BottomMenu />
-</nav>
+  <nav>
+    <BottomMenu v-if="!inputTopAppBarStore.isFocused" />
+  </nav>
 
 </template>

@@ -7,8 +7,6 @@ import { watch } from 'vue'
 
 const route = useRoute()
 
-
-
 watch(route,() => {
   bottomNavItems.value.forEach((item) => {
     item.isActive = item.route === route.path || route.path.includes(item.route)
@@ -23,7 +21,7 @@ watch(route,() => {
     <div
       class="text-xs font-medium text-center shadow flex divide-gray-700 text-gray-400 border-t border-gray-700">
       <RouterLink :key="navItem.route" v-for="navItem in bottomNavItems"
-                  class="w-full transition mx-2 duration-500 my-2 rounded-lg"
+                  class="w-full transition mx-2 duration-500 my-2 rounded-lg cursor-pointer"
                   :class="navItem.isActive ? `text-[#5fb336] scale-110  bg-[#242528]` : `bg-[#242528]`"
                   :to="navItem.route">
         <div class="w-full py-2 focus-within:z-10 flex flex-col items-center justify-center">
