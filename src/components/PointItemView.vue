@@ -89,6 +89,20 @@ const getColor = (typePoint: TypePoint) => {
   }
 }
 
+const getIcon = (typePoint: TypePoint) => {
+  switch (typePoint) {
+    case TypePoint.PP: {
+      return 'src/assets/images/step_up.png'
+    }
+    case TypePoint.TA: {
+      return 'src/assets/images/tunnel.png'
+    }
+    case TypePoint.TP: {
+      return 'src/assets/images/step_down.png'
+    }
+  }
+}
+
 const showSelect = () => miniApp.switchInlineQuery('')
 
 </script>
@@ -133,17 +147,10 @@ const showSelect = () => miniApp.switchInlineQuery('')
           <span class="text-[14px] font-medium">GO</span>
         </div>
 
-        <div
-          @click="miniApp.switchInlineQuery('')"
-          class="flex flex-row cursor-pointer text-[#7a7acc] bg-[#4d4d4d] items-center gap-1 px-3 relative h-[40px] rounded-xl text-center content-center">
-
-          <span class="text-[14px] font-medium">GO2</span>
-        </div>
-
-
       </div>
     </div>
-    <div :class="getColor(dataPoint.type)" class="w-10 h-10 rounded-sm"></div>
+    <div :class="getColor(dataPoint.type)" class="w-10 h-10 rounded-sm">
+      <img :src="getIcon(dataPoint.type)" alt=""/></div>
   </div>
 </template>
 
