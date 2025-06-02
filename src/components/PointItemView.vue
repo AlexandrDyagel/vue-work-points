@@ -11,6 +11,9 @@ import { TypeLocationNavButton } from '@/model/TypeLocationNavButton.ts'
 import DirectionButtonView from '@/components/DirectionButtonView.vue'
 import { TypePoint } from '@/model/TypePoint.ts'
 import { useMiniApp } from 'vue-tg/8.0'
+import TunnelImg from '@/assets/images/tunnel.png'
+import StepUpImg from '@/assets/images/step_up.png'
+import StepDownImg from '@/assets/images/step_down.png'
 
 const props = defineProps<{
   dataPoint: PointResponse;
@@ -92,13 +95,13 @@ const getColor = (typePoint: TypePoint) => {
 const getIcon = (typePoint: TypePoint) => {
   switch (typePoint) {
     case TypePoint.PP: {
-      return 'src/assets/images/step_up.png'
+      return StepUpImg
     }
     case TypePoint.TA: {
-      return 'src/assets/images/tunnel.png'
+      return TunnelImg
     }
     case TypePoint.TP: {
-      return 'src/assets/images/step_down.png'
+      return StepDownImg
     }
   }
 }
