@@ -11,6 +11,9 @@ import { TypeLocationNavButton } from '@/model/TypeLocationNavButton.ts'
 import DirectionButtonView from '@/components/DirectionButtonView.vue'
 import { TypePoint } from '@/model/TypePoint.ts'
 import { useMiniApp } from 'vue-tg/8.0'
+import TunnelImg from '@/assets/images/tunnel.png'
+import StepUpImg from '@/assets/images/step_up.png'
+import StepDownImg from '@/assets/images/step_down.png'
 
 const props = defineProps<{
   dataPoint: PointResponse;
@@ -92,13 +95,13 @@ const getColor = (typePoint: TypePoint) => {
 const getIcon = (typePoint: TypePoint) => {
   switch (typePoint) {
     case TypePoint.PP: {
-      return 'src/assets/images/step_up.png'
+      return StepUpImg
     }
     case TypePoint.TA: {
-      return 'src/assets/images/tunnel.png'
+      return TunnelImg
     }
     case TypePoint.TP: {
-      return 'src/assets/images/step_down.png'
+      return StepDownImg
     }
   }
 }
@@ -149,8 +152,10 @@ const showSelect = () => miniApp.switchInlineQuery('')
 
       </div>
     </div>
-    <div :class="getColor(dataPoint.type)" class="w-10 h-10 rounded-sm">
-      <img :src="getIcon(dataPoint.type)" alt=""/></div>
+<!--    <div :class="getColor(dataPoint.type)" class="w-10 h-10">-->
+    <div class="w-10 h-10">
+      <img :src="getIcon(dataPoint.type)" class="rounded-sm" alt="" />
+    </div>
   </div>
 </template>
 
@@ -164,6 +169,7 @@ color #3d7eff BLUE
 ЖЕЛТЫЙ ЦВЕТ ЗВЕЗД color-yellow-active: #ffdc60;
 ФИОЛЕТОВЫЙ color-purple: #7a7acc;
 КРАСНЫЙ color-red: #ff5b4d;
+КРАСИВЫЙ САЛАТОВЫЙ ЦВЕТ: #88ce02
 */
 
 </style>
