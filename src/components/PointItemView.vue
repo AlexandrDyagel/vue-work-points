@@ -152,8 +152,10 @@ const showSelect = () => miniApp.switchInlineQuery('')
 
       </div>
     </div>
-    <div :class="getColor(dataPoint.type)" class="w-10 h-10 rounded-sm">
-      <img :src="getIcon(dataPoint.type)" alt=""/></div>
+<!--    <div :class="getColor(dataPoint.type)" class="w-10 h-10">-->
+    <div class="w-10 h-10">
+      <img :src="getIcon(dataPoint.type)" class="rounded-sm" alt="" />
+    </div>
   </div>
 </template>
 
@@ -167,6 +169,7 @@ color #3d7eff BLUE
 ЖЕЛТЫЙ ЦВЕТ ЗВЕЗД color-yellow-active: #ffdc60;
 ФИОЛЕТОВЫЙ color-purple: #7a7acc;
 КРАСНЫЙ color-red: #ff5b4d;
+КРАСИВЫЙ САЛАТОВЫЙ ЦВЕТ: #88ce02
 */
 
 </style>
