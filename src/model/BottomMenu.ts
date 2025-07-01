@@ -4,7 +4,7 @@ import HomeIcon from '@/components/icons/HomeIcon.vue'
 import AddIcon from '@/components/icons/AddIcon.vue'
 import HistoryIcon from '@/components/icons/HistoryIcon.vue'
 import ProfileIcon from '@/components/icons/ProfileIcon.vue'
-import { Routes as Route } from './Routes'
+import { Routes as Route } from '@/model/Enums.ts'
 
 const bottomNavItems: Ref<UnwrapRef<BottomNavItem[]>> = ref([
   {

@@ -8,7 +8,7 @@ import ItemTaskView from '@/components/ItemTaskView.vue'
 import { useObtainPoints } from '../../store/Point.ts'
 import { PointResponse } from '@/model/PointResponse.ts'
 import { useUpdatedTaskList } from '../../store/TasksList.ts'
-import { CloudStorageNames } from '@/model/CloudStorageNames.ts'
+import { CloudStorageNames } from '@/model/Enums.ts'
 import { useInputFocus } from '../../store/TopAppBar.ts'
 
 /*const fakeTaskItems = useFakeTaskItems()*/

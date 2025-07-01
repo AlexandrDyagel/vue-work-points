@@ -5,7 +5,7 @@ import Svg from '@/components/Svg.vue'
 import { useMiniApp } from 'vue-tg/8.0'
 import RouteIcon from '@/components/icons/RouteIcon.vue'
 import WorldGlobeIcon from '@/components/icons/WorldGlobeIcon.vue'
-import { TypeLocationNavButton } from '@/model/TypeLocationNavButton.ts'
+import { TypeLocationNavButton } from '@/model/Enums.ts'
 
 const { openLink } = useMiniApp()
 

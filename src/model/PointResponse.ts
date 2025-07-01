@@ -1,5 +1,5 @@
 import { Location } from '@/model/Location.ts'
-import { TypePoint } from '@/model/TypePoint.ts'
+import { TypePoint } from '@/model/Enums.ts'
 
 export class PointResponse {
   readonly uid: string

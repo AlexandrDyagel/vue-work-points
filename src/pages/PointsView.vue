@@ -5,10 +5,25 @@ import { inject, type Ref, ref, watch, watchEffect } from 'vue'
 import { useObtainPoints } from '../../store/Point.ts'
 import { useRouter } from 'vue-router'
 import { PointResponse } from '@/model/PointResponse.ts'
-import { Routes as Route } from '@/model/Routes.ts'
+import { LocalStorageNames, Routes as Route, TypeSearchFilter } from '@/model/Enums.ts'
 import PointItemView from '@/components/PointItemView.vue'
 import TopAppBarView from '@/components/TopAppBarView.vue'
 import { useInputFocus } from '../../store/TopAppBar.ts'
+import BottomSheetView from '@/components/BottomSheetView.vue'
+
+function setItemsLocalStorage(items: PointResponse[]) {
+  if (typeof(Storage) !== 'undefined') {
+    console.log("localStorage поддерживается")
+    localStorage.clear()
+    localStorage.setItem(LocalStorageNames.POINTS, JSON.stringify(items))
+  } else {
+    console.log("localStorage не поддерживается")
+  }
+}
+
+function getItemsLocalStorage(key: LocalStorageNames): PointResponse[] {
+  return JSON.parse(localStorage.getItem(key) || '')
+}
 
 const isLoadingData = inject<Ref<boolean>>('isLoadingData') || ref(true)
 
@@ -22,7 +37,9 @@ function obtainPoints() {
     getPoints()
       .then(result => {
           obtainPointsStore.setPoints(result)
+          setItemsLocalStorage(result)
           isLoadingData.value = false
+          console.log(getItemsLocalStorage(LocalStorageNames.POINTS))
         },
         error => {
           console.log(`Ошибка error: ${error}`)
@@ -43,8 +60,18 @@ const filteredPoints = ref([] as PointResponse[])
 const router = useRouter()
 
 const search = () => {
-  filteredPoints.value = obtainPointsStore.points.filter(point =>
-    point.name.toLowerCase().includes(queryInput.value.toLowerCase().trim()))
+  switch (typeSearchFilter.value) {
+    case TypeSearchFilter.NAME : {
+      filteredPoints.value = obtainPointsStore.points.filter(point =>
+        point.name.toLowerCase().includes(queryInput.value.toLowerCase().trim()))
+      break;
+    }
+    case TypeSearchFilter.ADDRESS : {
+      filteredPoints.value = obtainPointsStore.points.filter(point =>
+        point.address.toLowerCase().includes(queryInput.value.toLowerCase().trim()))
+      break;
+    }
+  }
 }
 
 watchEffect(() => {
@@ -66,11 +93,14 @@ const handleFilterChange = (queryString: string) => {
   queryInput.value = queryString
 }
 
-/*const openMap = () => {
-  const stringPoints = obtainPointsStore.points.map(point => point.location.toRegion.longitude + ',' + point.location.toRegion.latitude).join("~")
-  const link = `https://yandex.ru/maps/?pt=${stringPoints}&z=18&l=map`
-  miniApp.openLink(link)
-}*/
+// Bottom Sheet
+const bottomSheetRef = ref(null)
+
+const openBottomSheet = () => {
+  bottomSheetRef.value.openSheet()
+}
+
+const typeSearchFilter = ref(TypeSearchFilter.NAME)
 
 </script>
 
@@ -86,7 +116,9 @@ const handleFilterChange = (queryString: string) => {
     <TopAppBarView
       :class="inputTopAppBarStore.isFocused ? 'bottom-0 border-t-[1px]' : 'sticky top-0 border-b-[1px]'"
       class="fixed bg-[#242528] start-0 end-0 border-[#3d3e43] z-10"
-                   @filter-changed="handleFilterChange"
+      :type-search-filter="typeSearchFilter"
+      @filter-changed="handleFilterChange"
+      @icon-filter-click="openBottomSheet"
     />
 
     <!--    <div class="me-4 ms-4">
@@ -105,6 +137,28 @@ const handleFilterChange = (queryString: string) => {
       </div>
     </div>
   </div>
+
+<!--   Bottom Sheet  -->
+
+  <BottomSheetView ref="bottomSheetRef">
+    <p class="text-center text-[#ccc] text-2xl"><strong>Фильтры поиска</strong></p>
+    <div class="ms-4 me-4 mt-4">
+      <fieldset>
+        <div>
+          <input v-model="typeSearchFilter" class="me-2" type="radio" :id="TypeSearchFilter.NAME" :name="TypeSearchFilter.NAME"
+                 :value="TypeSearchFilter.NAME" />
+          <label class="me-4 text-[#cccccc]" for="name">По названию точки</label>
+
+          <input v-model="typeSearchFilter" class="me-2" type="radio" :id="TypeSearchFilter.ADDRESS" :name="TypeSearchFilter.ADDRESS"
+                 :value="TypeSearchFilter.ADDRESS" />
+          <label for="address" class="text-[#cccccc]">По адресу точки</label>
+        </div>
+      </fieldset>
+    </div>
+  </BottomSheetView>
+
+  <!--  END Bottom Sheet  -->
+
 </template>
 <style scoped>
 

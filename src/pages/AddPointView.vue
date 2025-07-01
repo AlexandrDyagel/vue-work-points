@@ -7,7 +7,7 @@ import { BackButton } from 'vue-tg'
 import { PointRequest } from '@/model/PointRequest.ts'
 import { Location } from '@/model/Location.ts'
 import { GeoPoint } from '@/model/GeoPoint.ts'
-import { TypePoint } from '@/model/TypePoint.ts'
+import { TypePoint } from '@/model/Enums.ts'
 
 const obtainPointsStore = useObtainPoints()
 

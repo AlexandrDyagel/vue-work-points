@@ -6,9 +6,9 @@ import { autoAnimatePlugin } from '@formkit/auto-animate/vue'
 
 import { createRouter, createWebHistory } from 'vue-router'
 import { createPinia } from 'pinia'
-import { Routes as Route } from '@/model/Routes.ts'
+import { Routes as Route } from '@/model/Enums.ts'
 
-export const DEV_VERSION = '2.10'
+export const DEV_VERSION = '2.11'
 
 const app = createApp(App)
 
