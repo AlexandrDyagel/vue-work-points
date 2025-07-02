@@ -11,8 +11,6 @@ import { useUpdatedTaskList } from '../../store/TasksList.ts'
 import { CloudStorageNames } from '@/model/Enums.ts'
 import { useInputFocus } from '../../store/TopAppBar.ts'
 
-/*const fakeTaskItems = useFakeTaskItems()*/
-
 const router = useRouter()
 
 const tgCloudStorage = useCloudStorage()
@@ -67,7 +65,7 @@ async function saveToCloudStorage(taskItems: PointResponse[]) {
   try {
     await tgCloudStorage.setItem(CloudStorageNames.TASK_ITEMS, JSON.stringify(taskItems))
     updatedTaskListStore.updateList(false)
-    await popup.showAlert('Данные успешно сохранены в облако!')
+    // await popup.showAlert('Данные успешно сохранены в облако!')
   } catch (error) {
     await popup.showAlert(`Не удалось сохранить данные: ${error}`)
   }
@@ -80,27 +78,12 @@ async function loadFromCloudStorage() {
     taskItems.value.push(...result)
 
     updatedTaskListStore.updateList(false)
-    await popup.showAlert('Данные загружены')
+    // await popup.showAlert('Данные загружены')
   } catch (error) {
     await popup.showAlert(`Не удалось загрузить данные: ${error}`)
     taskItems.value = []
   }
 }
-
-/*function deleteFromCloudStorage(): boolean {
-  let response = false
-
-  tgCloudStorage.removeItem(CloudStorageNames.TASK_ITEMS)
-    .then(result => {
-      response = result
-      console.log('Даныне удалены')
-    })
-    .then(error => {
-      console.log(`Ошибка удаления: ${error}`)
-    })
-
-  return response
-}*/
 
 const saveTasks = async () => {
   saveProgress.value = true
@@ -114,29 +97,12 @@ watch(queryString, () => search())
 
 onMounted(async () => {
   await loadFromCloudStorage()
-
-  /*if (fakeTaskItems.items !== '') {
-    const items = obtainTaskItemsFromFakeStore()
-    taskItems.value.push(...items)
-  }*/
 })
 
-/*const save = () => {
-  saveProgress.value = true
-
-  const taskItemsToStringJson = JSON.stringify(taskItems.value)
-
-  fakeTaskItems.addAll(taskItemsToStringJson)
-  updatedTaskListStore.updateList(false)
-
-  saveProgress.value = false
-}
-
-function obtainTaskItemsFromFakeStore(): PointResponse[]  {
-  if (fakeTaskItems.items !== '') {
-    return JSON.parse(fakeTaskItems.items) as PointResponse[]
-  } else return [] as PointResponse[]
-}*/
+const marginBottomLastItemTask = computed(() => {
+  if (isVisibleClearTaskButton.value && isVisibleSaveButton.value) return 'mb-[180px]'
+  return isVisibleSaveButton.value || isVisibleClearTaskButton.value ? 'mb-[130px]' : 'mb-[70px]'
+})
 
 </script>
 
@@ -167,7 +133,7 @@ function obtainTaskItemsFromFakeStore(): PointResponse[]  {
         :index="index + 1"
         :point="point"
         @delete="deleteTaskItem"
-        :class="index === taskItems.length - 1 ? `mb-[70px]` : `border-b-[1px] border-[#3d3e43]`" />
+        :class="index === taskItems.length - 1 ? marginBottomLastItemTask : `border-b-[1px] border-[#3d3e43]`" />
     </div>
 
     <div
