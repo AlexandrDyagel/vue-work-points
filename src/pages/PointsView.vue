@@ -1,89 +1,70 @@
 <script setup lang="ts">
 
-import { getPoints } from '../../firebase/init.ts'
-import { inject, type Ref, ref, watch, watchEffect } from 'vue'
-import { useObtainPoints } from '../../store/Point.ts'
+import { inject, onMounted, type Ref, ref, watch, watchEffect } from 'vue'
 import { useRouter } from 'vue-router'
 import { PointResponse } from '@/model/PointResponse.ts'
-import { LocalStorageNames, Routes as Route, TypeSearchFilter } from '@/model/Enums.ts'
+import { Routes as Route, TypeSearchFilter } from '@/model/Enums.ts'
 import PointItemView from '@/components/PointItemView.vue'
 import TopAppBarView from '@/components/TopAppBarView.vue'
 import { useInputFocus } from '../../store/TopAppBar.ts'
 import BottomSheetView from '@/components/BottomSheetView.vue'
+import { useCache } from '@/composables/useCache.ts'
 
-function setItemsLocalStorage(items: PointResponse[]) {
-  if (typeof(Storage) !== 'undefined') {
-    console.log("localStorage поддерживается")
-    localStorage.clear()
-    localStorage.setItem(LocalStorageNames.POINTS, JSON.stringify(items))
-  } else {
-    console.log("localStorage не поддерживается")
-  }
-}
-
-function getItemsLocalStorage(key: LocalStorageNames): PointResponse[] {
-  return JSON.parse(localStorage.getItem(key) || '')
-}
+const router = useRouter()
 
 const isLoadingData = inject<Ref<boolean>>('isLoadingData') || ref(true)
 
 const inputTopAppBarStore = useInputFocus()
 
-const obtainPointsStore = useObtainPoints()
-
-function obtainPoints() {
-  try {
-    isLoadingData.value = true
-    getPoints()
-      .then(result => {
-          obtainPointsStore.setPoints(result)
-          setItemsLocalStorage(result)
-          isLoadingData.value = false
-          console.log(getItemsLocalStorage(LocalStorageNames.POINTS))
-        },
-        error => {
-          console.log(`Ошибка error: ${error}`)
-          isLoadingData.value = false
-        })
-    obtainPointsStore.updatePoints(false)
-  } catch (e) {
-    isLoadingData.value = false
-    obtainPointsStore.updatePoints(false)
-    console.log(`Ошибка catch: ${e}`)
-  }
-}
-
 const queryInput = ref('')
 
 const filteredPoints = ref([] as PointResponse[])
 
-const router = useRouter()
+const { obtainCachedPoints } = useCache()
+
+const cachedPoints = ref<PointResponse[]>([])
+
+onMounted( async() => {
+  try {
+    isLoadingData.value = true
+
+    obtainCachedPoints()
+      .then(cachedDataPoints => {
+        cachedPoints.value = cachedDataPoints
+      })
+
+    isLoadingData.value = false
+  } catch (e) {
+    isLoadingData.value = false
+    console.log(`Ошибка PointsView.vue в onMounted catch: ${e}`)
+  }
+})
 
 const search = () => {
   switch (typeSearchFilter.value) {
     case TypeSearchFilter.NAME : {
-      filteredPoints.value = obtainPointsStore.points.filter(point =>
+      filteredPoints.value = cachedPoints.value.filter(point =>
         point.name.toLowerCase().includes(queryInput.value.toLowerCase().trim()))
-      break;
+      break
     }
     case TypeSearchFilter.ADDRESS : {
-      filteredPoints.value = obtainPointsStore.points.filter(point =>
+      filteredPoints.value = cachedPoints.value.filter(point =>
         point.address.toLowerCase().includes(queryInput.value.toLowerCase().trim()))
-      break;
+      break
     }
   }
 }
 
 watchEffect(() => {
-  if (obtainPointsStore.updated || obtainPointsStore.points.length === 0) {
-    obtainPoints()
-    console.log('УДАЛЕННЫЙ ЗАПРОС НА СЕРВЕР')
-  } else {
-    isLoadingData.value = false
-  }
+  // if (obtainPointsStore.updated || obtainPointsStore.points.length === 0) {
+  //   obtainPoints()
+  //   console.log('УДАЛЕННЫЙ ЗАПРОС НА СЕРВЕР')
+  // } else {
+  //   isLoadingData.value = false
+  // }
   if (queryInput.value === '' && filteredPoints.value.length === 0) {
-    filteredPoints.value = obtainPointsStore.points
-    console.log('ЗАПРОС НА КЭШ')
+    filteredPoints.value = cachedPoints.value
+    console.log('Заполнение filteredPoints из cachedPoints')
   }
 })
 
@@ -138,18 +119,20 @@ const typeSearchFilter = ref(TypeSearchFilter.NAME)
     </div>
   </div>
 
-<!--   Bottom Sheet  -->
+  <!--   Bottom Sheet  -->
 
   <BottomSheetView ref="bottomSheetRef">
     <p class="text-center text-[#ccc] text-2xl"><strong>Фильтры поиска</strong></p>
     <div class="ms-4 me-4 mt-4">
       <fieldset>
         <div>
-          <input v-model="typeSearchFilter" class="me-2" type="radio" :id="TypeSearchFilter.NAME" :name="TypeSearchFilter.NAME"
+          <input v-model="typeSearchFilter" class="me-2" type="radio" :id="TypeSearchFilter.NAME"
+                 :name="TypeSearchFilter.NAME"
                  :value="TypeSearchFilter.NAME" />
           <label class="me-4 text-[#cccccc]" for="name">По названию точки</label>
 
-          <input v-model="typeSearchFilter" class="me-2" type="radio" :id="TypeSearchFilter.ADDRESS" :name="TypeSearchFilter.ADDRESS"
+          <input v-model="typeSearchFilter" class="me-2" type="radio" :id="TypeSearchFilter.ADDRESS"
+                 :name="TypeSearchFilter.ADDRESS"
                  :value="TypeSearchFilter.ADDRESS" />
           <label for="address" class="text-[#cccccc]">По адресу точки</label>
         </div>

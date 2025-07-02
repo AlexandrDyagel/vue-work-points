@@ -3,13 +3,13 @@
 import { BackButton } from 'vue-tg'
 import { useCloudStorage, usePopup } from 'vue-tg/8.0'
 import { useRouter } from 'vue-router'
-import { computed, onMounted, ref, watch } from 'vue'
+import { computed, inject, onMounted, type Ref, ref, watch } from 'vue'
 import ItemTaskView from '@/components/ItemTaskView.vue'
-import { useObtainPoints } from '../../store/Point.ts'
 import { PointResponse } from '@/model/PointResponse.ts'
 import { useUpdatedTaskList } from '../../store/TasksList.ts'
 import { CloudStorageNames } from '@/model/Enums.ts'
 import { useInputFocus } from '../../store/TopAppBar.ts'
+import { useCache } from '@/composables/useCache.ts'
 
 const router = useRouter()
 
@@ -17,7 +17,6 @@ const tgCloudStorage = useCloudStorage()
 
 const popup = usePopup()
 
-const obtainPointsStore = useObtainPoints()
 const updatedTaskListStore = useUpdatedTaskList()
 const inputFocus = useInputFocus()
 
@@ -33,7 +32,7 @@ const isVisibleSaveButton = computed(() => updatedTaskListStore.isUpdated && !in
 const isVisibleClearTaskButton = computed(() => taskItems.value.length !== 0 && !inputFocus.isFocused)
 
 const search = () => {
-  filteredPoints.value = obtainPointsStore.points.filter(point =>
+  filteredPoints.value = cachedPoints.value.filter(point =>
     point.name.toLowerCase().includes(queryString.value.toLowerCase().trim()))
 
   if (queryString.value === '') filteredPoints.value.splice(0, filteredPoints.value.length)
@@ -97,6 +96,28 @@ watch(queryString, () => search())
 
 onMounted(async () => {
   await loadFromCloudStorage()
+})
+
+const isLoadingData = inject<Ref<boolean>>('isLoadingData') || ref(true)
+
+const { obtainCachedPoints } = useCache()
+
+const cachedPoints = ref<PointResponse[]>([])
+
+onMounted( async() => {
+  try {
+    isLoadingData.value = true
+
+    obtainCachedPoints()
+      .then(cachedDataPoints => {
+        cachedPoints.value = cachedDataPoints
+      })
+
+    isLoadingData.value = false
+  } catch (e) {
+    isLoadingData.value = false
+    console.log(`Ошибка PointsView.vue в onMounted catch: ${e}`)
+  }
 })
 
 const marginBottomLastItemTask = computed(() => {

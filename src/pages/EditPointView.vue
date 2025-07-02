@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router'
-import { useEditPoint, useObtainPoints } from '../../store/Point.ts'
+import { useEditPoint } from '../../store/Point.ts'
 import { ref } from 'vue'
 import { PointRequest } from '@/model/PointRequest.ts'
 import { Location } from '@/model/Location.ts'
@@ -8,10 +8,13 @@ import { GeoPoint } from '@/model/GeoPoint.ts'
 import { BackButton } from 'vue-tg'
 import { deletePoint, updatePoint } from '../../firebase/init.ts'
 import { PointResponse } from '@/model/PointResponse.ts'
+import { useCache } from '@/composables/useCache.ts'
 
 const router = useRouter()
+
+const { clearCachePoints } = useCache()
+
 const editPointStore = useEditPoint()
-const obtainPointsStore = useObtainPoints()
 
 const progressUpdate = ref(false)
 const progressDelete = ref(false)
@@ -53,7 +56,7 @@ function update() {
     updatePoint(point.uid, pointRequest)
       .then(() => {
         console.log('Обнавлено в БД')
-        obtainPointsStore.updatePoints(true)
+        clearCachePoints()
         progressUpdate.value = false
         router.back()
       }, error => {
@@ -72,7 +75,7 @@ function delPoint() {
     deletePoint(point.uid)
       .then(() => {
         console.log('Удалено из БД')
-        obtainPointsStore.updatePoints(true)
+        clearCachePoints()
         progressDelete.value = false
         router.back()
       }, error => {

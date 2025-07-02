@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { useObtainPoints } from '../../store/Point.ts'
 import { useRouter } from 'vue-router'
 import { addPoint } from '../../firebase/init.ts'
 import { BackButton } from 'vue-tg'
@@ -8,8 +7,7 @@ import { PointRequest } from '@/model/PointRequest.ts'
 import { Location } from '@/model/Location.ts'
 import { GeoPoint } from '@/model/GeoPoint.ts'
 import { TypePoint } from '@/model/Enums.ts'
-
-const obtainPointsStore = useObtainPoints()
+import { useCache } from '@/composables/useCache.ts'
 
 const progress = ref(false)
 const directRegion = ref('toRegion')
@@ -21,6 +19,8 @@ const address = ref('')
 const location = ref('')
 
 const router = useRouter()
+
+const { clearCachePoints } = useCache()
 
 function save() {
   progress.value = true
@@ -56,7 +56,7 @@ function save() {
     .then(() => {
       console.log('Сохранено в БД')
       clear()
-      obtainPointsStore.updatePoints(true)
+      clearCachePoints()
     })
     .catch((error) => {
       console.error(`Ошибка error: ${error.message}`)
