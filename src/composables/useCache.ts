@@ -10,7 +10,6 @@ export function useCache() {
 
   const obtainCachedPoints = async (): Promise<PointResponse[]> => {
     // Пытаемся получить данные из localStorage по ключу 'cache_points'
-    // localStorage.removeItem('cache_points')
     const cachedData = localStorage.getItem('cache_points')
 
     // Проверяем, существуют ли данные в кэше

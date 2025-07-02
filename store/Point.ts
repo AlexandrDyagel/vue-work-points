@@ -10,15 +10,3 @@ export const useEditPoint = defineStore('point', {
     }
   }
 })
-
-export const useObtainPoints = defineStore('points', {
-  state: () => ({ points: [] as PointResponse[], updated: false }),
-  actions: {
-    setPoints(points: PointResponse[]) {
-      this.points = points
-    },
-    updatePoints(isUpdate: boolean) {
-      this.updated = isUpdate
-    }
-  }
-})

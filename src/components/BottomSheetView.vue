@@ -151,7 +151,7 @@ defineExpose({
   left: 0;
   right: 0;
   bottom: 0;
-  height: 80vh;
+  height: auto; /* ИЗМЕНИТЬ ДЛЯ ВЫСОТЫ BOTTOM SHEET (80vh) */
   max-height: 100%;
   background-color: #242528;
   border-top-left-radius: 12px;

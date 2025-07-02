@@ -9,6 +9,7 @@ import TopAppBarView from '@/components/TopAppBarView.vue'
 import { useInputFocus } from '../../store/TopAppBar.ts'
 import BottomSheetView from '@/components/BottomSheetView.vue'
 import { useCache } from '@/composables/useCache.ts'
+import { useSearchFilter } from '@/composables/useSearchFilter.ts'
 
 const router = useRouter()
 
@@ -56,12 +57,6 @@ const search = () => {
 }
 
 watchEffect(() => {
-  // if (obtainPointsStore.updated || obtainPointsStore.points.length === 0) {
-  //   obtainPoints()
-  //   console.log('УДАЛЕННЫЙ ЗАПРОС НА СЕРВЕР')
-  // } else {
-  //   isLoadingData.value = false
-  // }
   if (queryInput.value === '' && filteredPoints.value.length === 0) {
     filteredPoints.value = cachedPoints.value
     console.log('Заполнение filteredPoints из cachedPoints')
@@ -75,13 +70,20 @@ const handleFilterChange = (queryString: string) => {
 }
 
 // Bottom Sheet
-const bottomSheetRef = ref(null)
+const bottomSheetRef = ref()
 
 const openBottomSheet = () => {
   bottomSheetRef.value.openSheet()
 }
 
-const typeSearchFilter = ref(TypeSearchFilter.NAME)
+const { userSearchFilter, updateUserSearchFilter } = useSearchFilter()
+const typeSearchFilter = ref()
+
+onMounted(() => typeSearchFilter.value = userSearchFilter())
+
+watch (typeSearchFilter, (newTypeSearchFilter) => {
+  updateUserSearchFilter(newTypeSearchFilter)
+})
 
 </script>
 
@@ -102,13 +104,6 @@ const typeSearchFilter = ref(TypeSearchFilter.NAME)
       @icon-filter-click="openBottomSheet"
     />
 
-    <!--    <div class="me-4 ms-4">
-          <div
-            @click="focus"
-            class="text-center w-full shadow-xl border-[#5fb336] rounded-lg bg-[#5fb336] border text-sm p-2.5 focus:outline-none"
-          >Показать на карте</div>
-        </div>-->
-
     <div class="t-4">
       <div v-auto-animate>
         <PointItemView
@@ -123,7 +118,7 @@ const typeSearchFilter = ref(TypeSearchFilter.NAME)
 
   <BottomSheetView ref="bottomSheetRef">
     <p class="text-center text-[#ccc] text-2xl"><strong>Фильтры поиска</strong></p>
-    <div class="ms-4 me-4 mt-4">
+    <div class="ms-4 me-4 mt-4 mb-4">
       <fieldset>
         <div>
           <input v-model="typeSearchFilter" class="me-2" type="radio" :id="TypeSearchFilter.NAME"

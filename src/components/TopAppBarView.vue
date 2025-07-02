@@ -64,9 +64,6 @@ const handleBlur = () => inputTopAppBarStore.changeFocus(false)
 
 <template>
   <div class="flex flex-col">
-    <div class="fixed w-full text-center text-[11px]">
-      <p>{{ DEV_VERSION }}</p>
-    </div>
     <div class="flex flex-row gap-2 items-center px-4 pt-4 pb-5">
       <Svg>
         <component @mousedown.prevent @click="emit('icon-filter-click')" ref="comp" :is="filterIcon"
