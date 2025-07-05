@@ -4,16 +4,19 @@ import { PointResponse } from '@/model/PointResponse.ts'
 import LocationNavButton from '@/components/LocationNavButtonView.vue'
 import { computed, ref } from 'vue'
 import { useEditPoint } from '../../store/Point.ts'
-import { Routes as Route } from '@/model/Enums.ts'
+import {
+  Routes as Route,
+  TypeDirectionButton,
+  TypeLocationNavButton,
+  TypePoint, UserRole
+} from '@/model/Enums.ts'
 import { useRouter } from 'vue-router'
-import { TypeDirectionButton } from '@/model/Enums.ts'
-import { TypeLocationNavButton } from '@/model/Enums.ts'
 import DirectionButtonView from '@/components/DirectionButtonView.vue'
-import { TypePoint } from '@/model/Enums.ts'
 import { useMiniApp } from 'vue-tg/8.0'
 import TunnelImg from '@/assets/images/tunnel.png'
 import StepUpImg from '@/assets/images/step_up.png'
 import StepDownImg from '@/assets/images/step_down.png'
+import { useUserRole } from '@/composables/useUserRole.ts'
 
 const props = defineProps<{
   dataPoint: PointResponse;
@@ -22,6 +25,9 @@ const props = defineProps<{
 const miniApp = useMiniApp()
 
 const router = useRouter()
+
+const { getUserRole } = useUserRole()
+const userRole = ref(getUserRole())
 
 const isActiveToRegionButton = ref(props.dataPoint.location.toRegion.latitude.length !== 0)
 const isActiveFromRegionButton = ref(props.dataPoint.location.fromRegion.latitude.length !== 0 && props.dataPoint.location.toRegion.latitude.length === 0)
@@ -63,20 +69,11 @@ const getLocation = computed(() => {
 const editPointStore = useEditPoint()
 
 function editPoint(point: PointResponse | null) {
+  if (userRole.value !== UserRole.ADMIN) return
+
   editPointStore.savePoint(point)
   router.push(Route.EditPoint)
 }
-
-/*const changeBgGradient = computed(() => {
-  switch (props.dataPoint.type) {
-    case TypePoint.TP :
-      return 'bg-linear-to-t from-[#242528] to-[#5C2507] to-100% from-50%'
-    case TypePoint.TA :
-      return 'bg-linear-to-t from-[#242528] from-50% via-[#5C2507] via-90% to-[#242528] to-100%'
-    case TypePoint.PP :
-      return 'bg-linear-to-t from-[#242528] to-[#164D28] to-100% from-50%'
-  }
-})*/
 
 const getColor = (typePoint: TypePoint) => {
   switch (typePoint) {
@@ -106,7 +103,7 @@ const getIcon = (typePoint: TypePoint) => {
   }
 }
 
-const showSelect = () => miniApp.switchInlineQuery('')
+// const showSelect = () => miniApp.switchInlineQuery('')
 
 </script>
 
@@ -115,9 +112,11 @@ const showSelect = () => miniApp.switchInlineQuery('')
        class="flex flex-row justify-between px-4 pt-4 pb-5">
     <div>
       <div @click="editPoint(dataPoint)"
-           class="pb-1 text-base font-medium overflow-ellipsis overflow-hidden">{{ dataPoint.name }}
+           class="pb-1 text-base font-medium text-[#F0F0F0] overflow-ellipsis overflow-hidden">
+        {{ dataPoint.name }}
       </div>
-      <div class="text-sm text-[#ff5b4d] whitespace-nowrap overflow-ellipsis overflow-hidden">
+      <div
+        class="text-sm text-[#ff5b4d] font-medium whitespace-nowrap overflow-ellipsis overflow-hidden">
         {{ dataPoint.direction }}
       </div>
       <div class="text-sm text-[#999] pb-5 whitespace-nowrap overflow-ellipsis overflow-hidden">
@@ -128,11 +127,13 @@ const showSelect = () => miniApp.switchInlineQuery('')
         <DirectionButtonView
           v-if="dataPoint.location.toRegion.latitude"
           @click="clickDirectButton(TypeDirectionButton.TO_REGION)"
-          name="В область" :is-active="isActiveToRegionButton" />
+          :name="dataPoint.type === TypePoint.TA ? 'Внешняя' : 'В область'"
+          :is-active="isActiveToRegionButton" />
         <DirectionButtonView
           v-if="dataPoint.location.fromRegion.latitude"
           @click="clickDirectButton(TypeDirectionButton.FROM_REGION)"
-          name="Из области" :is-active="isActiveFromRegionButton" />
+          :name="dataPoint.type === TypePoint.TA ? 'Внутренняя' : 'Из области'"
+          :is-active="isActiveFromRegionButton" />
       </div>
 
       <div
@@ -143,17 +144,17 @@ const showSelect = () => miniApp.switchInlineQuery('')
         <LocationNavButton name="На карте" :location="getLocation"
                            :type="TypeLocationNavButton.POINT" />
 
-        <div
-          @click="showSelect"
-          class="flex flex-row cursor-pointer text-[#7a7acc] bg-[#4d4d4d] items-center gap-1 px-3 relative h-[40px] rounded-xl text-center content-center">
+        <!--        <div
+                  @click="showSelect"
+                  class="flex flex-row cursor-pointer text-[#7a7acc] bg-[#4d4d4d] items-center gap-1 px-3 relative h-[40px] rounded-xl text-center content-center">
 
-          <span class="text-[14px] font-medium">GO</span>
-        </div>
+                  <span class="text-[14px] font-medium">GO</span>
+                </div>-->
 
       </div>
     </div>
-<!--    <div :class="getColor(dataPoint.type)" class="w-10 h-10">-->
-    <div class="w-10 h-10">
+    <!--    <div :class="getColor(dataPoint.type)" class="w-10 h-10">-->
+    <div class="w-16 h-16">
       <img :src="getIcon(dataPoint.type)" class="rounded-sm" alt="" />
     </div>
   </div>

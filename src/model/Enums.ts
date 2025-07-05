@@ -29,11 +29,18 @@ export enum CloudStorageNames {
 }
 
 export enum LocalStorageNames {
-  POINTS = 'point_items'
+  CACHE_POINTS = 'cache_points',
+  SEARCH_FILTER = 'search_filter',
+  USER_ROLE = 'user_role'
 }
 
 export enum TypeSearchFilter {
   NAME = 'name',
   ADDRESS = 'address',
+}
+
+export enum UserRole {
+  ADMIN = 'admin',
+  USER = 'user'
 }
 

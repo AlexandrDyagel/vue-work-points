@@ -65,10 +65,14 @@ const handleBlur = () => inputTopAppBarStore.changeFocus(false)
 <template>
   <div class="flex flex-col">
     <div class="flex flex-row gap-2 items-center px-4 pt-4 pb-5">
-      <Svg>
-        <component @mousedown.prevent @click="emit('icon-filter-click')" ref="comp" :is="filterIcon"
-                   class="text-[#cccccc]"></component>
-      </Svg>
+
+      <div class="py-2 px-3 rounded-xl shadow-xl bg-[#393E46] active:bg-[#5d636b]">
+        <Svg>
+          <component @mousedown.prevent @click="emit('icon-filter-click')" ref="comp" :is="filterIcon"
+                     class="text-[#cccccc]"></component>
+        </Svg>
+      </div>
+
       <input
         @focusin="handleFocus"
         @focusout="handleBlur"
@@ -77,7 +81,7 @@ const handleBlur = () => inputTopAppBarStore.changeFocus(false)
         class="bg-black w-full text-white shadow-xl start-4 end-4 top-4 rounded-xl border border-[#000] text-sm p-2.5 focus:outline-none"
         :placeholder="placeholderString"
       />
-      <Svg @mousedown.prevent @click="clearSearchInput">
+      <Svg @mousedown.prevent @click="clearSearchInput" class="shadow-xl">
         <component ref="comp" :is="cancelIcon"
                    :class="isActiveCancelButton ? 'text-white' : 'text-[#61646b]'"></component>
       </Svg>

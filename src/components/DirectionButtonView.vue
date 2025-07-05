@@ -14,7 +14,7 @@ const isActive = computed(() => props.isActive ? 'text-[#ffffff] bg-[#5fb336]' :
 <template>
   <div
     :class="isActive"
-    class="text-[14px] font-medium px-2 py-0.5 relative rounded-xl text-center content-center cursor-pointer"
+    class="text-[14px] font-medium px-2 py-0.5 relative rounded-lg text-center content-center cursor-pointer"
   > {{ name }}
   </div>
 </template>

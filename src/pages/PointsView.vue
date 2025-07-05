@@ -1,19 +1,23 @@
 <script setup lang="ts">
 
-import { inject, onMounted, type Ref, ref, watch, watchEffect } from 'vue'
+import { computed, inject, onMounted, type Ref, ref, watch, watchEffect } from 'vue'
 import { useRouter } from 'vue-router'
 import { PointResponse } from '@/model/PointResponse.ts'
-import { Routes as Route, TypeSearchFilter } from '@/model/Enums.ts'
-import PointItemView from '@/components/PointItemView.vue'
+import { Routes as Route, TypeSearchFilter, UserRole } from '@/model/Enums.ts'
 import TopAppBarView from '@/components/TopAppBarView.vue'
 import { useInputFocus } from '../../store/TopAppBar.ts'
 import BottomSheetView from '@/components/BottomSheetView.vue'
 import { useCache } from '@/composables/useCache.ts'
 import { useSearchFilter } from '@/composables/useSearchFilter.ts'
+import ItemPointView from '@/components/ItemPointView.vue'
+import { useUserRole } from '@/composables/useUserRole.ts'
 
 const router = useRouter()
 
 const isLoadingData = inject<Ref<boolean>>('isLoadingData') || ref(true)
+
+const { getUserRole } = useUserRole()
+const userRole = ref(getUserRole())
 
 const inputTopAppBarStore = useInputFocus()
 
@@ -25,7 +29,7 @@ const { obtainCachedPoints } = useCache()
 
 const cachedPoints = ref<PointResponse[]>([])
 
-onMounted( async() => {
+onMounted(async () => {
   try {
     isLoadingData.value = true
 
@@ -33,7 +37,6 @@ onMounted( async() => {
       .then(cachedDataPoints => {
         cachedPoints.value = cachedDataPoints
       })
-
     isLoadingData.value = false
   } catch (e) {
     isLoadingData.value = false
@@ -81,24 +84,43 @@ const typeSearchFilter = ref()
 
 onMounted(() => typeSearchFilter.value = userSearchFilter())
 
-watch (typeSearchFilter, (newTypeSearchFilter) => {
+watch(typeSearchFilter, (newTypeSearchFilter) => {
   updateUserSearchFilter(newTypeSearchFilter)
+})
+
+const addNewPoint = () => {
+  if (userRole.value !== UserRole.ADMIN) return
+
+  router.push(Route.AddPoint)
+}
+
+const emptyElements = computed(() => {
+  if (filteredPoints.value.length === 0 && cachedPoints.value.length === 0) {
+    return 'Нет данных'
+  } else if (filteredPoints.value.length === 0 && cachedPoints.value.length !== 0) {
+    return 'Нет результата поиска'
+  } else return ''
 })
 
 </script>
 
 <template>
   <div class="fixed overflow-auto start-0 top-0 end-0 bottom-0 w-full h-full bg-[#242528]">
+
+    <span v-if="filteredPoints.length === 0"
+         class="fixed w-full h-full flex justify-center items-center text-2xl text-[#F0F0F0]">{{ emptyElements }}
+    </span>
+
     <div
       v-if="filteredPoints.length === 0"
-      @click="router.push(Route.AddPoint)"
+      @click="addNewPoint"
       class="fixed z-20 shadow-xl start-4 end-4 bottom-20 rounded-xl bg-black border border-[#000] text-sm p-2.5 focus:outline-none">
       <p>Добавить точку +</p>
     </div>
 
     <TopAppBarView
       :class="inputTopAppBarStore.isFocused ? 'bottom-0 border-t-[1px]' : 'sticky top-0 border-b-[1px]'"
-      class="fixed bg-[#242528] start-0 end-0 border-[#3d3e43] z-10"
+      class="fixed bg-[#242528] start-0 end-0 border-[#3d3e43] z-20"
       :type-search-filter="typeSearchFilter"
       @filter-changed="handleFilterChange"
       @icon-filter-click="openBottomSheet"
@@ -106,7 +128,7 @@ watch (typeSearchFilter, (newTypeSearchFilter) => {
 
     <div class="t-4">
       <div v-auto-animate>
-        <PointItemView
+        <ItemPointView
           v-for="[index, point] of filteredPoints.entries()" :key="point.uid"
           :class="index === filteredPoints.length - 1 ? `mb-[70px]` : `border-b-[1px] border-[#3d3e43]`"
           :dataPoint="point" />
@@ -130,8 +152,10 @@ watch (typeSearchFilter, (newTypeSearchFilter) => {
                  :name="TypeSearchFilter.ADDRESS"
                  :value="TypeSearchFilter.ADDRESS" />
           <label for="address" class="text-[#cccccc]">По адресу точки</label>
+
         </div>
       </fieldset>
+
     </div>
   </BottomSheetView>
 
