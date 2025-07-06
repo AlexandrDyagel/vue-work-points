@@ -3,7 +3,7 @@
 import { onMounted, provide, ref } from 'vue'
 import BottomMenu from '@/components/BottomMenuView.vue'
 import { useMiniApp, useTheme, useViewport } from 'vue-tg/8.0'
-import { useInputFocus } from '../store/TopAppBar.ts'
+import { useInputFocus } from '@/store/TopAppBar.ts'
 import LoadingScreen from '@/components/LoadingScreen.vue'
 import { useUserRole } from '@/composables/useUserRole.ts'
 import { useSearchFilter } from '@/composables/useSearchFilter.ts'

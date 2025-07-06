@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router'
-import { useEditPoint } from '../../store/Point.ts'
+import { useEditPoint } from '@/store/Point.ts'
 import { ref } from 'vue'
 import { PointRequest } from '@/model/PointRequest.ts'
 import { Location } from '@/model/Location.ts'

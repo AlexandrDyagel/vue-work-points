@@ -7,17 +7,15 @@ import {
   computed,
   inject,
   onMounted,
-  onRenderTracked,
   type Ref,
   ref,
-  watch,
-  watchEffect, watchPostEffect
+  watch, watchPostEffect
 } from 'vue'
 import ItemTaskView from '@/components/ItemTaskView.vue'
 import { PointResponse } from '@/model/PointResponse.ts'
-import { useUpdatedTaskList } from '../../store/TasksList.ts'
+import { useUpdatedTaskList } from '@/store/TasksList.ts'
 import { CloudStorageNames } from '@/model/Enums.ts'
-import { useInputFocus } from '../../store/TopAppBar.ts'
+import { useInputFocus } from '@/store/TopAppBar.ts'
 import { useCache } from '@/composables/useCache.ts'
 
 const router = useRouter()

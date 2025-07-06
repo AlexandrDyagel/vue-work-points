@@ -5,7 +5,7 @@ import { useRouter } from 'vue-router'
 import { PointResponse } from '@/model/PointResponse.ts'
 import { Routes as Route, TypeSearchFilter, UserRole } from '@/model/Enums.ts'
 import TopAppBarView from '@/components/TopAppBarView.vue'
-import { useInputFocus } from '../../store/TopAppBar.ts'
+import { useInputFocus } from '@/store/TopAppBar.ts'
 import BottomSheetView from '@/components/BottomSheetView.vue'
 import { useCache } from '@/composables/useCache.ts'
 import { useSearchFilter } from '@/composables/useSearchFilter.ts'
@@ -29,6 +29,13 @@ const { obtainCachedPoints } = useCache()
 
 const cachedPoints = ref<PointResponse[]>([])
 
+const { userSearchFilter, updateUserSearchFilter } = useSearchFilter()
+const typeSearchFilter = ref(userSearchFilter())
+
+const bottomSheetRef = ref()
+
+const topAppBarRef = ref()
+
 onMounted(async () => {
   try {
     isLoadingData.value = true
@@ -51,12 +58,26 @@ const search = () => {
         point.name.toLowerCase().includes(queryInput.value.toLowerCase().trim()))
       break
     }
+    case TypeSearchFilter.DIRECTION : {
+      filteredPoints.value = cachedPoints.value.filter(point =>
+        point.direction.toLowerCase().includes(queryInput.value.toLowerCase().trim()))
+      break
+    }
     case TypeSearchFilter.ADDRESS : {
       filteredPoints.value = cachedPoints.value.filter(point =>
         point.address.toLowerCase().includes(queryInput.value.toLowerCase().trim()))
       break
     }
   }
+}
+
+const highlightMatches = (text: string) => {
+  if (!queryInput.value) return text
+
+  const query = queryInput.value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  const regex = new RegExp(`(${query})`, 'gi')
+
+  return text.replace(regex, '<span class="bg-[#ffdc60] text-black font-bold">$1</span>')
 }
 
 watchEffect(() => {
@@ -72,19 +93,19 @@ const handleFilterChange = (queryString: string) => {
   queryInput.value = queryString
 }
 
-// Bottom Sheet
-const bottomSheetRef = ref()
-
 const openBottomSheet = () => {
   bottomSheetRef.value.openSheet()
 }
 
-const { userSearchFilter, updateUserSearchFilter } = useSearchFilter()
-const typeSearchFilter = ref()
-
-onMounted(() => typeSearchFilter.value = userSearchFilter())
+const closeBottomSheet = () => {
+  bottomSheetRef.value.closeSheet()
+}
 
 watch(typeSearchFilter, (newTypeSearchFilter) => {
+  if (newTypeSearchFilter) {
+    topAppBarRef.value.clearSearchInput()
+    closeBottomSheet()
+  }
   updateUserSearchFilter(newTypeSearchFilter)
 })
 
@@ -108,7 +129,8 @@ const emptyElements = computed(() => {
   <div class="fixed overflow-auto start-0 top-0 end-0 bottom-0 w-full h-full bg-[#242528]">
 
     <span v-if="filteredPoints.length === 0"
-         class="fixed w-full h-full flex justify-center items-center text-2xl text-[#F0F0F0]">{{ emptyElements }}
+          class="fixed w-full h-full flex justify-center items-center text-2xl text-[#F0F0F0]">{{ emptyElements
+      }}
     </span>
 
     <div
@@ -119,6 +141,7 @@ const emptyElements = computed(() => {
     </div>
 
     <TopAppBarView
+      ref="topAppBarRef"
       :class="inputTopAppBarStore.isFocused ? 'bottom-0 border-t-[1px]' : 'sticky top-0 border-b-[1px]'"
       class="fixed bg-[#242528] start-0 end-0 border-[#3d3e43] z-20"
       :type-search-filter="typeSearchFilter"
@@ -131,7 +154,24 @@ const emptyElements = computed(() => {
         <ItemPointView
           v-for="[index, point] of filteredPoints.entries()" :key="point.uid"
           :class="index === filteredPoints.length - 1 ? `mb-[70px]` : `border-b-[1px] border-[#3d3e43]`"
-          :dataPoint="point" />
+          :dataPoint="point">
+
+          <template v-slot:name>
+            <span
+              v-html="typeSearchFilter === TypeSearchFilter.NAME ? highlightMatches(point.name) : point.name"></span>
+          </template>
+
+          <template v-slot:direction>
+            <span
+              v-html="typeSearchFilter === TypeSearchFilter.DIRECTION ? highlightMatches(point.direction) : point.direction"></span>
+          </template>
+
+          <template v-slot:address>
+            <span
+              v-html="typeSearchFilter === TypeSearchFilter.ADDRESS ? highlightMatches(point.address) : point.address"></span>
+          </template>
+
+        </ItemPointView>
       </div>
     </div>
   </div>
@@ -142,17 +182,28 @@ const emptyElements = computed(() => {
     <p class="text-center text-[#ccc] text-2xl"><strong>Фильтры поиска</strong></p>
     <div class="ms-4 me-4 mt-4 mb-4">
       <fieldset>
-        <div>
-          <input v-model="typeSearchFilter" class="me-2" type="radio" :id="TypeSearchFilter.NAME"
-                 :name="TypeSearchFilter.NAME"
-                 :value="TypeSearchFilter.NAME" />
-          <label class="me-4 text-[#cccccc]" for="name">По названию точки</label>
-
-          <input v-model="typeSearchFilter" class="me-2" type="radio" :id="TypeSearchFilter.ADDRESS"
-                 :name="TypeSearchFilter.ADDRESS"
-                 :value="TypeSearchFilter.ADDRESS" />
-          <label for="address" class="text-[#cccccc]">По адресу точки</label>
-
+        <div class="flex flex-col">
+          <div class="mb-2">
+            <input v-model="typeSearchFilter" class="me-2" type="radio"
+                   :id="TypeSearchFilter.NAME"
+                   :name="TypeSearchFilter.NAME"
+                   :value="TypeSearchFilter.NAME" />
+            <label class="me-4 text-[#cccccc]" :for="TypeSearchFilter.NAME">По названию точки</label>
+          </div>
+          <div class="mb-2">
+            <input v-model="typeSearchFilter" class="me-2" type="radio"
+                   :id="TypeSearchFilter.DIRECTION"
+                   :name="TypeSearchFilter.DIRECTION"
+                   :value="TypeSearchFilter.DIRECTION" />
+            <label :for="TypeSearchFilter.DIRECTION" class="text-[#cccccc]">По направлению точки</label>
+          </div>
+          <div>
+            <input v-model="typeSearchFilter" class="me-2" type="radio"
+                   :id="TypeSearchFilter.ADDRESS"
+                   :name="TypeSearchFilter.ADDRESS"
+                   :value="TypeSearchFilter.ADDRESS" />
+            <label :for="TypeSearchFilter.ADDRESS" class="text-[#cccccc]">По адресу точки</label>
+          </div>
         </div>
       </fieldset>
 
@@ -163,5 +214,4 @@ const emptyElements = computed(() => {
 
 </template>
 <style scoped>
-
 </style>

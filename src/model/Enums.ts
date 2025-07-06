@@ -1,7 +1,7 @@
 export enum TypePoint {
   TP = 'тп',
   TA = 'та',
-  PP = 'пп'
+  PP = 'пп',
 }
 
 export enum Routes {
@@ -10,12 +10,12 @@ export enum Routes {
   EditPoint = "/points/edit",
   Tasks = "/tasks",
   Map = "/map",
-  Settings = "/settings"
+  Settings = "/settings",
 }
 
 export enum TypeDirectionButton {
   TO_REGION = 'toRegion',
-  FROM_REGION = 'fromRegion'
+  FROM_REGION = 'fromRegion',
 }
 
 export enum TypeLocationNavButton {
@@ -25,22 +25,23 @@ export enum TypeLocationNavButton {
 }
 
 export enum CloudStorageNames {
-  TASK_ITEMS= 'task_items'
+  TASK_ITEMS= 'task_items',
 }
 
 export enum LocalStorageNames {
   CACHE_POINTS = 'cache_points',
   SEARCH_FILTER = 'search_filter',
-  USER_ROLE = 'user_role'
+  USER_ROLE = 'user_role',
 }
 
 export enum TypeSearchFilter {
   NAME = 'name',
   ADDRESS = 'address',
+  DIRECTION = 'direction',
 }
 
 export enum UserRole {
   ADMIN = 'admin',
-  USER = 'user'
+  USER = 'user',
 }
 

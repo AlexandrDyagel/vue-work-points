@@ -3,12 +3,13 @@
 import { PointResponse } from '@/model/PointResponse.ts'
 import LocationNavButton from '@/components/LocationNavButtonView.vue'
 import { computed, ref } from 'vue'
-import { useEditPoint } from '../../store/Point.ts'
+import { useEditPoint } from '@/store/Point.ts'
 import {
   Routes as Route,
   TypeDirectionButton,
   TypeLocationNavButton,
-  TypePoint, UserRole
+  TypePoint,
+  UserRole
 } from '@/model/Enums.ts'
 import { useRouter } from 'vue-router'
 import DirectionButtonView from '@/components/DirectionButtonView.vue'
@@ -113,14 +114,14 @@ const getIcon = (typePoint: TypePoint) => {
     <div>
       <div @click="editPoint(dataPoint)"
            class="pb-1 text-base font-medium text-[#F0F0F0] overflow-ellipsis overflow-hidden">
-        {{ dataPoint.name }}
+        <slot name="name"></slot>
       </div>
       <div
         class="text-sm text-[#ff5b4d] font-medium whitespace-nowrap overflow-ellipsis overflow-hidden">
-        {{ dataPoint.direction }}
+        <slot name="direction"></slot>
       </div>
       <div class="text-sm text-[#999] pb-5 whitespace-nowrap overflow-ellipsis overflow-hidden">
-        {{ dataPoint.address }}
+        <slot name="address"></slot>
       </div>
 
       <div class="flex flex-row gap-2 items-center pb-5">

@@ -3,7 +3,7 @@ import Svg from '@/components/Svg.vue'
 import { onBeforeUnmount, ref, shallowRef, watch } from 'vue'
 import CancelIcon from '@/components/icons/CancelIcon.vue'
 import { PointResponse } from '@/model/PointResponse.ts'
-import { useInputFocus } from '../../store/TopAppBar.ts'
+import { useInputFocus } from '@/store/TopAppBar.ts'
 
 const props = defineProps<{
   index?: number,

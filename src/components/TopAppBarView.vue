@@ -2,10 +2,15 @@
 
 import Svg from '@/components/Svg.vue'
 import FilterIcon from '@/components/icons/FilterIcon.vue'
-import { onBeforeUnmount, ref, shallowRef, watch, watchEffect } from 'vue'
+import {
+  onBeforeUnmount,
+  ref,
+  shallowRef,
+  watch,
+  watchEffect
+} from 'vue'
 import CancelIcon from '@/components/icons/CancelIcon.vue'
-import { DEV_VERSION } from '../main.ts'
-import { useInputFocus } from '../../store/TopAppBar.ts'
+import { useInputFocus } from '@/store/TopAppBar.ts'
 import { TypeSearchFilter } from '@/model/Enums.ts'
 
 const inputTopAppBarStore = useInputFocus()
@@ -16,7 +21,7 @@ const props = defineProps<{
 
 const placeholderString = ref()
 
-const emit = defineEmits(['filter-changed', 'icon-filter-click'])
+const emit = defineEmits(['filter-changed', 'icon-filter-click', 'clear-search-input'])
 
 const filterIcon = shallowRef(FilterIcon)
 const cancelIcon = shallowRef(CancelIcon)
@@ -49,6 +54,10 @@ watchEffect(() => {
       placeholderString.value = 'Поиск по названию точки...'
       break
     }
+    case TypeSearchFilter.DIRECTION: {
+      placeholderString.value = 'Поиск по направлению точки...'
+      break
+    }
     case TypeSearchFilter.ADDRESS: {
       placeholderString.value = 'Поиск по адресу точки...'
       break
@@ -60,6 +69,9 @@ const handleFocus = () => inputTopAppBarStore.changeFocus(true)
 
 const handleBlur = () => inputTopAppBarStore.changeFocus(false)
 
+defineExpose({
+  clearSearchInput
+})
 </script>
 
 <template>
