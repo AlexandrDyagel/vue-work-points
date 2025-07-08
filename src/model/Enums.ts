@@ -32,6 +32,12 @@ export enum LocalStorageNames {
   CACHE_POINTS = 'cache_points',
   SEARCH_FILTER = 'search_filter',
   USER_ROLE = 'user_role',
+  LAST_UPDATE_TIME = 'last_update_time',
+}
+
+export enum FirestoreCollectionNames {
+  POINTS = 'points',
+  UPDATE = 'timeforupdate'
 }
 
 export enum TypeSearchFilter {
@@ -44,4 +50,3 @@ export enum UserRole {
   ADMIN = 'admin',
   USER = 'user',
 }
-

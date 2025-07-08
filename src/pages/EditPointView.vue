@@ -49,8 +49,10 @@ function update() {
       address.value,
       new Location(
         new GeoPoint(locToRegion[0], locToRegion[1]),
-        new GeoPoint(locFromRegion[0], locFromRegion[1]),
-      )
+        new GeoPoint(locFromRegion[0], locFromRegion[1])
+      ),
+      point.createdAt,
+      Date.now().toString()
     )
 
     updatePoint(point.uid, pointRequest)

@@ -1,24 +1,31 @@
-import { initializeApp } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-app.js";
-import { getFirestore } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-firestore.js"
-import { collection, getDocs, setDoc, doc, updateDoc, deleteDoc , addDoc, Timestamp } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-firestore.js"
-import { query, orderBy, limit, where, onSnapshot } from "https://www.gstatic.com/firebasejs/11.5.0/firebase-firestore.js"
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.5.0/firebase-app.js'
+import {
+  collection,
+  deleteDoc,
+  doc,
+  getDocs,
+  getFirestore,
+  setDoc,
+  updateDoc
+} from 'https://www.gstatic.com/firebasejs/11.5.0/firebase-firestore.js'
 import { PointResponse } from '@/model/PointResponse.ts'
 import type { PointRequest } from '@/model/PointRequest.ts'
 import { GeoPoint } from '@/model/GeoPoint.ts'
 import { Location } from '@/model/Location.ts'
+import { FirestoreCollectionNames } from '@/model/Enums.ts'
 
 const firebaseConfig = {
-  apiKey: "AIzaSyAU1dbTQNeoTvXX-399VjvYXs0DHK-pKuc",
-  projectId: "vue-work-points-firebase",
-  appId: "vue-work-points-firebase"
+  apiKey: 'AIzaSyAU1dbTQNeoTvXX-399VjvYXs0DHK-pKuc',
+  projectId: 'vue-work-points-firebase',
+  appId: 'vue-work-points-firebase'
 }
 
 const app = initializeApp(firebaseConfig)
 const db = getFirestore(app)
 
 async function getPoints() {
-  const pointsCol = collection(db, 'points');
-  const pointSnapshot = await getDocs(pointsCol);
+  const pointsCol = collection(db, FirestoreCollectionNames.POINTS)
+  const pointSnapshot = await getDocs(pointsCol)
 
   return pointSnapshot.docs.map(doc => new PointResponse(
     doc.id,
@@ -35,18 +42,20 @@ async function getPoints() {
         doc.data().location.fromRegion.latitude,
         doc.data().location.fromRegion.longitude
       )
-    )
+    ),
+    doc.data().createdAt,
+    doc.data().updatedAt
   ))
 }
 
 async function addPoint(point: PointRequest | null) {
   if (point === null) return
-  const pointsCol = doc(collection(db, 'points'));
+  const pointsCol = doc(collection(db, FirestoreCollectionNames.POINTS))
   await setDoc(pointsCol, JSON.parse(JSON.stringify(point)))
 }
 
 async function updatePoint(id: string, point: PointRequest) {
-  const pointDocRef = doc(db, 'points', id);
+  const pointDocRef = doc(db, FirestoreCollectionNames.POINTS, id)
   await updateDoc(pointDocRef, JSON.parse(JSON.stringify(point)))
 }
 
@@ -62,7 +71,7 @@ async function updatePoint(id: string, point: PointRequest) {
 }*/
 
 async function deletePoint(id: string) {
-  await deleteDoc(doc(db, "points", id));
+  await deleteDoc(doc(db, 'points', id))
 }
 
 export { getPoints, addPoint, updatePoint, deletePoint }

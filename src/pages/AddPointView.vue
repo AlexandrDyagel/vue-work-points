@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { onMounted, type Ref, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { addPoint } from '../../firebase/init.ts'
 import { BackButton } from 'vue-tg'
@@ -20,7 +20,7 @@ const location = ref('')
 
 const router = useRouter()
 
-const { clearCachePoints } = useCache()
+const { clearCachePoints, obtainLastUpdate } = useCache()
 
 function save() {
   progress.value = true
@@ -37,7 +37,9 @@ function save() {
         name.value,
         direction.value,
         address.value,
-        new Location(new GeoPoint(lat, lon), new GeoPoint())
+        new Location(new GeoPoint(lat, lon), new GeoPoint()),
+        Date.now().toString(),
+        Date.now().toString(),
       )
     }
       break
@@ -47,7 +49,9 @@ function save() {
         name.value,
         direction.value,
         address.value,
-        new Location(new GeoPoint(), new GeoPoint(lat, lon))
+        new Location(new GeoPoint(), new GeoPoint(lat, lon)),
+        Date.now().toString(),
+        Date.now().toString(),
       )
     }
       break
@@ -55,7 +59,7 @@ function save() {
   addPoint(point)
     .then(() => {
       console.log('Сохранено в БД')
-      clear()
+      clearInputs()
       clearCachePoints()
     })
     .catch((error) => {
@@ -64,7 +68,7 @@ function save() {
     })
 }
 
-function clear() {
+function clearInputs() {
   type.value = TypePoint.TP
   name.value = ''
   direction.value = ''

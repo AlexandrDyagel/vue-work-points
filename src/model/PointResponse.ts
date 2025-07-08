@@ -8,13 +8,24 @@ export class PointResponse {
   readonly direction: string
   readonly address: string
   readonly location: Location
+  readonly createdAt: string
+  updatedAt: string
 
-  constructor(uid: string, type: TypePoint, name: string, direction: string, address: string, location: Location) {
+  constructor(uid: string,
+              type: TypePoint,
+              name: string,
+              direction: string,
+              address: string,
+              location: Location,
+              createdAt: string,
+              updatedAt: string) {
     this.uid = uid
     this.type = type
     this.name = name
     this.direction = direction
     this.address = address
     this.location = location
+    this.createdAt = createdAt
+    this.updatedAt = updatedAt
   }
 }

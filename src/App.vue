@@ -7,9 +7,12 @@ import { useInputFocus } from '@/store/TopAppBar.ts'
 import LoadingScreen from '@/components/LoadingScreen.vue'
 import { useUserRole } from '@/composables/useUserRole.ts'
 import { useSearchFilter } from '@/composables/useSearchFilter.ts'
+import { useCache } from '@/composables/useCache.ts'
+import { DEVELOPMENT } from '@/main.ts'
 
 const { clearUserRole } = useUserRole()
 const { removeUserSearchFilter } = useSearchFilter()
+const { clearCachePoints } = useCache()
 
 const loading = ref<boolean>(true)
 provide('isLoadingData', loading)
@@ -21,6 +24,7 @@ const viewport = useViewport()
 const inputTopAppBarStore = useInputFocus()
 
 onMounted(() => {
+  if (!DEVELOPMENT) clearCachePoints()
   clearUserRole()
   removeUserSearchFilter()
   theme.headerColor.value = '#242528'
