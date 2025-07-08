@@ -12,7 +12,13 @@ export default defineConfig({
     host: "localhost"
   },
   plugins: [
-    vue(),
+    vue({
+      template: {
+        compilerOptions: {
+          isCustomElement: (tag) => ['Svg'].includes(tag),
+        }
+      }
+    }),
     vueJsx(),
     vueDevTools(),
     tailwindcss(),

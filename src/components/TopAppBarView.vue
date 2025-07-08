@@ -21,7 +21,7 @@ const props = defineProps<{
 
 const placeholderString = ref()
 
-const emit = defineEmits(['filter-changed', 'icon-filter-click', 'clear-search-input'])
+const emit = defineEmits(['filter-changed', 'icon-filter-click'])
 
 const filterIcon = shallowRef(FilterIcon)
 const cancelIcon = shallowRef(CancelIcon)

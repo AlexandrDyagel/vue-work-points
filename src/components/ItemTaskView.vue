@@ -1,70 +1,59 @@
 <script setup lang="ts">
-import Svg from '@/components/Svg.vue'
-import { onBeforeUnmount, ref, shallowRef, watch } from 'vue'
-import CancelIcon from '@/components/icons/CancelIcon.vue'
+
 import { PointResponse } from '@/model/PointResponse.ts'
-import { useInputFocus } from '@/store/TopAppBar.ts'
+import { ref, shallowRef } from 'vue'
+import CancelIcon from '@/components/icons/CancelIcon.vue'
 
 const props = defineProps<{
-  index?: number,
-  point?: PointResponse
+  index: number,
+  taskItems: PointResponse[]
 }>()
 
-const inputFocusTaskStore = useInputFocus()
+const point = ref(props.taskItems[props.index])
 
 const cancelIcon = shallowRef(CancelIcon)
 
-const inputString = ref('')
-
 const isActiveCancelButton = ref(true)
 
-const isDisabledInput = ref(props.index !== undefined)
-
-let timeoutId: number | null = null
-
-const emit = defineEmits(['filter-changed', 'delete', 'focus-blur'])
-
-// Событие при каждом наборе текста в input
-const onInput = () => {
-  if (timeoutId) clearTimeout(timeoutId)
-  timeoutId = setTimeout(() => emit('filter-changed', inputString.value), 400)
-}
+const emit = defineEmits(['delete'])
 
 // Событие удаления элемента
 const deleteItem = () => {
-  emit('delete', props.index ? props.index - 1 : -1)
+  emit('delete', props.index)
 }
 
-// Фокус на input
-const handleFocus = () => inputFocusTaskStore.changeFocus(true)
-
-// Потеря фокуса input
-const handleBlur = () => {
-  inputString.value = ''
-  inputFocusTaskStore.changeFocus(false)
-  emit('focus-blur')
+const path = (index: number): string => {
+  if (index === 0 && props.taskItems.length !== 1) {
+    return 'absolute left-10 top-0 bottom-0 w-1 bg-blue-500 translate-y-1/2'
+  } else if (index === 0 && props.taskItems.length === 1) {
+    return 'absolute left-10 top-0 bottom-0 w-1'
+  } else if (index === props.taskItems.length - 1) {
+    return 'absolute left-10 top-0 bottom-0 w-1 bg-blue-500 -translate-y-1/2'
+  } else {
+    return 'absolute left-10 top-0 bottom-0 w-1 bg-blue-500'
+  }
 }
-
-watch(inputString, (newValueQueryString) => isActiveCancelButton.value = newValueQueryString !== '')
-
-onBeforeUnmount(() => {
-  if (timeoutId) clearTimeout(timeoutId)
-})
 </script>
 
 <template>
-  <div class="flex flex-row gap-2 items-center px-4 pt-4 pb-5">
-    <div v-if="index">{{ index }}</div>
-    <input
-      :disabled="isDisabledInput"
-      v-model="inputString"
-      @focusin="handleFocus"
-      @blur="handleBlur"
-      @input="onInput"
-      class="bg-black w-full text-white shadow-xl start-4 end-4 top-4 rounded-xl border border-[#000] text-sm p-2.5 focus:outline-none"
-      :placeholder="point ? point.name : 'Введите название точки...'"
-    />
-    <Svg v-if="index" @mousedown.prevent @click="deleteItem">
+  <div class="flex flex-row justify-between items-center relative py-5 px-6">
+    <!-- Дорожка -->
+    <div :class="path(index)"></div>
+
+    <!-- Точка на дорожке -->
+    <div
+      class="absolute left-8 top-1/2 transform -translate-y-1/2 w-5 h-5 rounded-full bg-blue-500 border-4 border-white z-10"
+      :class="{ 'animate-pulse-custom': index === 0 }"
+      style="box-shadow: 0 0 0 2px #3b82f6;"
+    ></div>
+
+    <!-- Информация о точке point -->
+    <div class="ml-10">
+      <div class="font-bold text-[#F0F0F0]">{{ point.name }}</div>
+      <div class="text-sm text-[#999]">{{ point.direction }}</div>
+    </div>
+
+    <Svg @mousedown.prevent @click="deleteItem">
       <component ref="comp" :is="cancelIcon"
                  :class="isActiveCancelButton ? 'text-white' : 'text-[#61646b]'"></component>
     </Svg>
@@ -72,5 +61,19 @@ onBeforeUnmount(() => {
 </template>
 
 <style scoped>
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 20px rgba(59, 130, 246, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
+  }
+}
 
+.animate-pulse-custom {
+  animation: pulse 2s infinite;
+}
 </style>

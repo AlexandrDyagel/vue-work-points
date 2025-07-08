@@ -45,6 +45,7 @@ onMounted(async () => {
         cachedPoints.value = cachedDataPoints
       })
     isLoadingData.value = false
+
   } catch (e) {
     isLoadingData.value = false
     console.log(`Ошибка PointsView.vue в onMounted catch: ${e}`)
@@ -182,27 +183,27 @@ const emptyElements = computed(() => {
     <p class="text-center text-[#ccc] text-2xl"><strong>Фильтры поиска</strong></p>
     <div class="ms-4 me-4 mt-4 mb-4">
       <fieldset>
-        <div class="flex flex-col">
-          <div class="mb-2">
+        <div class="flex flex-wrap gap-4">
+          <div class="flex items-center">
             <input v-model="typeSearchFilter" class="me-2" type="radio"
                    :id="TypeSearchFilter.NAME"
                    :name="TypeSearchFilter.NAME"
                    :value="TypeSearchFilter.NAME" />
-            <label class="me-4 text-[#cccccc]" :for="TypeSearchFilter.NAME">По названию точки</label>
+            <label class="text-[#cccccc] whitespace-nowrap" :for="TypeSearchFilter.NAME">По названию</label>
           </div>
-          <div class="mb-2">
+          <div class="flex items-center">
             <input v-model="typeSearchFilter" class="me-2" type="radio"
                    :id="TypeSearchFilter.DIRECTION"
                    :name="TypeSearchFilter.DIRECTION"
                    :value="TypeSearchFilter.DIRECTION" />
-            <label :for="TypeSearchFilter.DIRECTION" class="text-[#cccccc]">По направлению точки</label>
+            <label :for="TypeSearchFilter.DIRECTION" class="text-[#cccccc] whitespace-nowrap">По направлению</label>
           </div>
-          <div>
+          <div class="flex items-center">
             <input v-model="typeSearchFilter" class="me-2" type="radio"
                    :id="TypeSearchFilter.ADDRESS"
                    :name="TypeSearchFilter.ADDRESS"
                    :value="TypeSearchFilter.ADDRESS" />
-            <label :for="TypeSearchFilter.ADDRESS" class="text-[#cccccc]">По адресу точки</label>
+            <label :for="TypeSearchFilter.ADDRESS" class="text-[#cccccc] whitespace-nowrap">По адресу</label>
           </div>
         </div>
       </fieldset>

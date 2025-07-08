@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router'
 import { useEditPoint } from '@/store/Point.ts'
-import { ref } from 'vue'
+import { onMounted, type Ref, ref } from 'vue'
 import { PointRequest } from '@/model/PointRequest.ts'
 import { Location } from '@/model/Location.ts'
 import { GeoPoint } from '@/model/GeoPoint.ts'
@@ -9,10 +9,12 @@ import { BackButton } from 'vue-tg'
 import { deletePoint, updatePoint } from '../../firebase/init.ts'
 import { PointResponse } from '@/model/PointResponse.ts'
 import { useCache } from '@/composables/useCache.ts'
+import { LastUpdate } from '@/model/LastUpdate.ts'
 
 const router = useRouter()
 
-const { clearCachePoints } = useCache()
+const { clearCachePoints, obtainLastUpdate } = useCache()
+const lastUpdateStorage: Ref<LastUpdate> = ref(new LastUpdate())
 
 const editPointStore = useEditPoint()
 
@@ -27,6 +29,13 @@ const direction = ref(point.direction)
 const address = ref(point.address)
 const locationToRegion = ref(`${point.location.toRegion.latitude}, ${point.location.toRegion.longitude}`)
 const locationFromRegion = ref(`${point.location.fromRegion.latitude}, ${point.location.fromRegion.longitude}`)
+
+onMounted(async () => {
+  await obtainLastUpdate()
+    .then(data => {
+      lastUpdateStorage.value = data
+    })
+})
 
 function formatPoints(locationString: string): string[] {
   const locPoints = locationString.toString().split(',')
@@ -53,7 +62,7 @@ function update() {
       )
     )
 
-    updatePoint(point.uid, pointRequest)
+    updatePoint(point.uid, pointRequest, lastUpdateStorage.value)
       .then(() => {
         console.log('Обнавлено в БД')
         clearCachePoints()
@@ -72,7 +81,7 @@ function update() {
 function delPoint() {
   try {
     progressDelete.value = true
-    deletePoint(point.uid)
+    deletePoint(point.uid, lastUpdateStorage.value)
       .then(() => {
         console.log('Удалено из БД')
         clearCachePoints()

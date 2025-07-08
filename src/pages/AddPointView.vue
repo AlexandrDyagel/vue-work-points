@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { onMounted, type Ref, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { addPoint } from '../../firebase/init.ts'
 import { BackButton } from 'vue-tg'
@@ -8,6 +8,7 @@ import { Location } from '@/model/Location.ts'
 import { GeoPoint } from '@/model/GeoPoint.ts'
 import { TypePoint } from '@/model/Enums.ts'
 import { useCache } from '@/composables/useCache.ts'
+import { LastUpdate } from '@/model/LastUpdate.ts'
 
 const progress = ref(false)
 const directRegion = ref('toRegion')
@@ -20,7 +21,15 @@ const location = ref('')
 
 const router = useRouter()
 
-const { clearCachePoints } = useCache()
+const { clearCachePoints, obtainLastUpdate } = useCache()
+const lastUpdateStorage: Ref<LastUpdate> = ref(new LastUpdate())
+
+onMounted(async () => {
+  await obtainLastUpdate()
+    .then(data => {
+      lastUpdateStorage.value = data
+    })
+})
 
 function save() {
   progress.value = true
@@ -52,10 +61,10 @@ function save() {
     }
       break
   }
-  addPoint(point)
+  addPoint(point, lastUpdateStorage.value)
     .then(() => {
       console.log('Сохранено в БД')
-      clear()
+      clearInputs()
       clearCachePoints()
     })
     .catch((error) => {
@@ -64,7 +73,7 @@ function save() {
     })
 }
 
-function clear() {
+function clearInputs() {
   type.value = TypePoint.TP
   name.value = ''
   direction.value = ''
