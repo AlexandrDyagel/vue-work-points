@@ -4,7 +4,6 @@ import { useRoute } from 'vue-router'
 import Svg from '@/components/Svg.vue'
 import { bottomNavItems } from '@/model/BottomMenu.ts'
 import { provide, ref, watch } from 'vue'
-import { Routes as Route } from '@/model/Enums.ts'
 
 const route = useRoute()
 

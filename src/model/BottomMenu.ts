@@ -4,6 +4,7 @@ import HomeIcon from '@/components/icons/HomeIcon.vue'
 import AddIcon from '@/components/icons/AddIcon.vue'
 import HistoryIcon from '@/components/icons/HistoryIcon.vue'
 import ProfileIcon from '@/components/icons/ProfileIcon.vue'
+import SearchIcon from '@/components/icons/SearchIcon.vue'
 import { Routes as Route } from '@/model/Enums.ts'
 
 const bottomNavItems: Ref<UnwrapRef<BottomNavItem[]>> = ref([
@@ -20,10 +21,10 @@ const bottomNavItems: Ref<UnwrapRef<BottomNavItem[]>> = ref([
     icon: shallowRef(AddIcon)
   },
   {
-    name: 'Карта',
-    route: Route.Map,
+    name: 'Определить',
+    route: Route.Search,
     isActive: false,
-    icon: shallowRef(HistoryIcon)
+    icon: shallowRef(SearchIcon)
   },
   {
     name: 'Настройки',

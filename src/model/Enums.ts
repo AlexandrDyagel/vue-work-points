@@ -9,7 +9,7 @@ export enum Routes {
   AddPoint = "/points/add",
   EditPoint = "/points/edit",
   Tasks = "/tasks",
-  Map = "/map",
+  Search = "/search",
   Settings = "/settings",
 }
 

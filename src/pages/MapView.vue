@@ -1,90 +1,257 @@
 <script setup lang="ts">
-
 import { BackButton } from 'vue-tg'
 import { useRouter } from 'vue-router'
-import { inject, ref, type Ref, watchEffect } from 'vue'
-import { GeoPoint } from '@/model/GeoPoint.ts'
-
-interface IShop {
-  name: string
-  geo: GeoPoint
-}
+import { ref, onUnmounted } from 'vue'
 
 const router = useRouter()
 
-const isLoadingData = inject<Ref<boolean>>('isLoadingData') || ref(true)
-isLoadingData.value = false
+// Реактивные данные
+const position = ref()
+const positions = ref([])
+const error = ref('')
+const loading = ref(false)
+const watching = ref(false)
+const watchId = ref()
 
-const userLocation: Ref<GeoPoint> = ref(new GeoPoint())
-
-// Функция для вычисления расстояния между двумя точками в метрах (формула гаверсинусов)
-function getDistance(userLocation: GeoPoint, pointLocation: GeoPoint) {
-  const R = 6371e3; // Радиус Земли в метрах
-  const φ1 = Number(userLocation.latitude) * Math.PI / 180; // Преобразование широты в радианы
-  const φ2 = Number(pointLocation.latitude) * Math.PI / 180;
-  const Δφ = (Number(pointLocation.latitude) - Number(userLocation.latitude)) * Math.PI / 180;
-  const Δλ = (Number(pointLocation.longitude) - Number(userLocation.longitude)) * Math.PI / 180;
-
-  const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
-    Math.cos(φ1) * Math.cos(φ2) *
-    Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-
-  return R * c; // Расстояние в метрах
+// Опции для геолокации
+const options = {
+  enableHighAccuracy: true, // Высокая точность
+  timeout: 10000,          // Таймаут 10 секунд
+  maximumAge: 60000        // Кэш на 1 минуту
 }
 
-// Координаты человека
-// const userLocation = new GeoPoint('55.7479', '37.6176')
+// Проверка поддержки геолокации
+const isGeolocationSupported = () => {
+  return 'geolocation' in navigator
+}
 
-// Список магазинов с их координатами
-const shops: IShop[] = [
-  { name: "Магазин А", geo: new GeoPoint('55.7600', '37.6200') },
-  { name: "Магазин Б", geo: new GeoPoint('55.7500', '37.6000') },
-  { name: "Магазин В", geo: new GeoPoint('55.7700', '37.6300') },
-  { name: "Магазин Г", geo: new GeoPoint('55.7450', '37.6250') }
-];
-
-// Находим ближайший магазин
-/*let closestShop: IShop = null;
-let minDistance = Infinity;
-
-shops.forEach(shop => {
-  const distance = getDistance(userLocation.value, shop.geo);
-
-  if (distance < minDistance) {
-    minDistance = distance;
-    closestShop = shop;
+// Получение текущей позиции (одноразово)
+const getCurrentPosition = async () => {
+  if (!isGeolocationSupported()) {
+    error.value = 'Геолокация не поддерживается вашим браузером'
+    return
   }
-});
 
-/!*navigator.geolocation.getCurrentPosition(pos => {
-  // userLocation.latitude = pos.coords.latitude;
-  // userLocation.longitude = pos.coords.longitude;
-  console.log(`userPos lat = ${pos.coords.latitude}`)
-  console.log(`userPos lon = ${pos.coords.longitude}`)
-  // Далее вызываем поиск ближайшего магазина
-});*!/
+  loading.value = true
+  error.value = ''
 
-console.log(`Ближайший магазин: ${closestShop.name}`);
-console.log(`Расстояние: ${minDistance.toFixed(0)} метров`);
-console.log(`Координаты: ${closestShop.geo.latitude}, ${closestShop.geo.longitude}`);*/
-watchEffect(async () => {
-  navigator.geolocation.getCurrentPosition(position => {
-    userLocation.value = new GeoPoint(
-      position.coords.latitude.toString(),
-      position.coords.longitude.toString()
-    )
-  })
+  try {
+    const pos = await new Promise((resolve, reject) => {
+      navigator.geolocation.getCurrentPosition(resolve, reject, options)
+    })
+
+    position.value = pos
+    positions.value.push(pos)
+    console.log('Геолокация получена:', pos)
+
+  } catch (err) {
+    handleError(err)
+  } finally {
+    loading.value = false
+  }
+}
+
+// Начало отслеживания позиции
+const watchPosition = () => {
+  if (!isGeolocationSupported()) {
+    error.value = 'Геолокация не поддерживается вашим браузером'
+    return
+  }
+
+  if (watching.value) return
+
+  error.value = ''
+  watching.value = true
+
+  watchId.value = navigator.geolocation.watchPosition(
+    (pos) => {
+      position.value = pos
+      positions.value.push(pos)
+      console.log('Позиция обновлена:', pos)
+    },
+    (err) => {
+      handleError(err)
+      watching.value = false
+    },
+    options
+  )
+}
+
+// Остановка отслеживания позиции
+const stopWatching = () => {
+  if (watchId.value !== null) {
+    navigator.geolocation.clearWatch(watchId.value)
+    watchId.value = null
+    watching.value = false
+  }
+}
+
+// Обработка ошибок
+const handleError = (err) => {
+  switch (err.code) {
+    case err.PERMISSION_DENIED:
+      error.value = 'Доступ к геолокации запрещен пользователем'
+      break
+    case err.POSITION_UNAVAILABLE:
+      error.value = 'Информация о местоположении недоступна'
+      break
+    case err.TIMEOUT:
+      error.value = 'Превышено время ожидания запроса геолокации'
+      break
+    default:
+      error.value = 'Произошла неизвестная ошибка при получении геолокации'
+      break
+  }
+  console.error('Ошибка геолокации:', err)
+}
+
+// Форматирование времени
+const formatTime = (timestamp) => {
+  return new Date(timestamp).toLocaleString('ru-RU')
+}
+-
+// Очистка при размонтировании компонента
+onUnmounted(() => {
+  stopWatching()
 })
 </script>
 
 <template>
   <BackButton @click="router.back" />
 
-    <p>Карта</p>
-  <p>{{userLocation.latitude}}, {{userLocation.longitude}}</p>
+  <div class="geolocation-container">
+    <h2>Геолокация пользователя</h2>
+
+    <div class="controls">
+      <button @click="getCurrentPosition" :disabled="loading">
+        {{ loading ? 'Получение...' : 'Получить геолокацию' }}
+      </button>
+
+      <button @click="watchPosition" :disabled="watching">
+        {{ watching ? 'Отслеживание активно' : 'Отслеживать позицию' }}
+      </button>
+
+      <button @click="stopWatching" :disabled="!watching">
+        Остановить отслеживание
+      </button>
+    </div>
+
+    <div v-if="error" class="error">
+      <strong>Ошибка:</strong> {{ error }}
+    </div>
+
+    <div v-if="position" class="position-info">
+      <h3>Текущая позиция:</h3>
+      <div class="info-grid">
+        <div><strong>Широта:</strong> {{ position.coords.latitude.toFixed(6) }}</div>
+        <div><strong>Долгота:</strong> {{ position.coords.longitude.toFixed(6) }}</div>
+        <div><strong>Точность:</strong> {{ Math.round(position.coords.accuracy) }} м</div>
+        <div v-if="position.coords.altitude">
+          <strong>Высота:</strong> {{ Math.round(position.coords.altitude) }} м
+        </div>
+        <div v-if="position.coords.speed">
+          <strong>Скорость:</strong> {{ Math.round(position.coords.speed * 3.6) }} км/ч
+        </div>
+        <div><strong>Время:</strong> {{ formatTime(position.timestamp) }}</div>
+      </div>
+    </div>
+
+    <div v-if="positions.length > 0" class="position-history">
+      <h3>История позиций ({{ positions.length }}):</h3>
+      <div class="history-list">
+        <div v-for="(pos, index) in positions.slice().reverse()" :key="index" class="history-item">
+          {{ pos.coords.latitude.toFixed(4) }}, {{ pos.coords.longitude.toFixed(4) }}
+          - {{ formatTime(pos.timestamp) }}
+        </div>
+      </div>
+    </div>
+  </div>
 
 </template>
 
 <style scoped>
+.geolocation-container {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 20px;
+  font-family: Arial, sans-serif;
+}
+
+.controls {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+button {
+  padding: 10px 15px;
+  background-color: #007bff;
+  color: black;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+button:hover:not(:disabled) {
+  background-color: #0056b3;
+}
+
+button:disabled {
+  background-color: #6c757d;
+  cursor: not-allowed;
+}
+
+.error {
+  padding: 10px;
+  background-color: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+  border-radius: 4px;
+  margin-bottom: 20px;
+}
+
+.position-info {
+  background-color: black;
+  padding: 15px;
+  border: 1px solid #c3e6cb;
+  border-radius: 4px;
+  margin-bottom: 20px;
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.position-history {
+  background-color: black;
+  padding: 15px;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+}
+
+.history-list {
+  max-height: 200px;
+  overflow-y: auto;
+  margin-top: 10px;
+}
+
+.history-item {
+  padding: 5px;
+  border-bottom: 1px solid #e9ecef;
+  font-size: 0.9em;
+}
+
+.history-item:last-child {
+  border-bottom: none;
+}
+
+h2, h3 {
+  color: #333;
+  margin-top: 0;
+}
 </style>
