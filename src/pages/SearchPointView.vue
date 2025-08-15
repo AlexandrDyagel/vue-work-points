@@ -10,12 +10,13 @@ import Svg from '@/components/Svg.vue'
 import SearchPointIcon from '@/components/icons/SearchPointIcon.vue'
 import { useCache } from '@/composables/useCache.ts'
 import WorldGlobeIcon from '@/components/icons/WorldGlobeIcon.vue'
-import { useMiniApp } from 'vue-tg/8.0'
+import { useMiniApp, useTheme } from 'vue-tg/8.0'
 
 const searchPointIcon = shallowRef(SearchPointIcon)
 const iconButton = shallowRef(WorldGlobeIcon)
 
 const { openLink } = useMiniApp()
+const { headerColor } = useTheme()
 
 const { obtainCachedPoints } = useCache()
 const cachedPoints = ref<PointResponse[]>([])
@@ -26,7 +27,7 @@ const userLocation: Ref<GeoPoint> = ref(new GeoPoint())
 
 const error = ref('')
 const watching = ref(false)
-const watchId = ref()
+const watchId: Ref<number | null> = ref(null)
 const closestPoint: Ref<PointResponse | null> = ref(null)
 const minDistance = ref<number>(Infinity)
 
@@ -36,7 +37,7 @@ const url = computed(() => `https://yandex.ru/maps/?pt=${closestPoint?.value?.lo
 const options = {
   enableHighAccuracy: true, // Высокая точность
   timeout: 10000,          // Таймаут 10 секунд
-  maximumAge: 60000        // Кэш на 1 минуту
+  maximumAge: 0        // Без кэшированных данных
 }
 
 // Проверка поддержки геолокации
@@ -47,6 +48,7 @@ const isGeolocationSupported = () => {
 onMounted(async () => {
   try {
     isLoadingData.value = true
+    headerColor.value = '#16a34a'
 
     obtainCachedPoints()
       .then(cachedDataPoints => {
@@ -67,6 +69,7 @@ const watchPosition = () => {
     return
   }
 
+  if (watchId.value !== null) return
   if (watching.value) return
 
   error.value = ''
@@ -186,6 +189,7 @@ const getTypeName = (typePoint: TypePoint) => {
 // Очистка при размонтировании компонента
 onUnmounted(() => {
   stopWatching()
+  headerColor.value = '#242528'
 })
 </script>
 

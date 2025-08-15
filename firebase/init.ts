@@ -6,7 +6,10 @@ import {
   getDocs,
   getFirestore,
   setDoc,
-  updateDoc
+  updateDoc,
+  query,
+  orderBy,
+  limit,
 } from 'https://www.gstatic.com/firebasejs/11.5.0/firebase-firestore.js'
 import { PointResponse } from '@/model/PointResponse.ts'
 import type { PointRequest } from '@/model/PointRequest.ts'
@@ -59,6 +62,18 @@ async function updatePoint(id: string, point: PointRequest) {
   await updateDoc(pointDocRef, JSON.parse(JSON.stringify(point)))
 }
 
+// Последнее обновление данных
+async function lastUpdatedPoints() {
+  const q = query(
+    collection(db, FirestoreCollectionNames.POINTS),
+    orderBy('updatedAt', 'desc'),
+    limit(1)
+  )
+  const querySnapshot = await getDocs(q)
+
+  return querySnapshot.docs[0].data().updatedAt
+}
+
 /*async function getPoint(id: string) {
   const pointsColRef = collection(db, 'points')
   const q = query(pointsColRef, where('documentId', '==', id))
@@ -74,4 +89,4 @@ async function deletePoint(id: string) {
   await deleteDoc(doc(db, 'points', id))
 }
 
-export { getPoints, addPoint, updatePoint, deletePoint }
+export { getPoints, addPoint, updatePoint, deletePoint, lastUpdatedPoints }

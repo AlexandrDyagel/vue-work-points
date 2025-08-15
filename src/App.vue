@@ -1,6 +1,6 @@
 <script setup lang="ts">
 
-import { onMounted, provide, ref } from 'vue'
+import { inject, onMounted, provide, type Ref, ref } from 'vue'
 import BottomMenu from '@/components/BottomMenuView.vue'
 import { useMiniApp, useTheme, useViewport } from 'vue-tg/8.0'
 import { useInputFocus } from '@/store/TopAppBar.ts'
@@ -12,7 +12,7 @@ import { DEVELOPMENT } from '@/main.ts'
 
 const { clearUserRole } = useUserRole()
 const { removeUserSearchFilter } = useSearchFilter()
-const { clearCachePoints } = useCache()
+const { clearCachePoints, checkForUpdate, removeLastUpdateDataPoints } = useCache()
 
 const loading = ref<boolean>(true)
 provide('isLoadingData', loading)
@@ -24,13 +24,13 @@ const viewport = useViewport()
 const inputTopAppBarStore = useInputFocus()
 
 onMounted(() => {
-  if (!DEVELOPMENT) clearCachePoints()
   clearUserRole()
   removeUserSearchFilter()
   theme.headerColor.value = '#242528'
   viewport.expand()
   viewport.isVerticalSwipesEnabled.value = false
   miniApp.ready()
+  // removeLastUpdateDataPoints()
 })
 </script>
 

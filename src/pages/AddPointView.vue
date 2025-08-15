@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, type Ref, ref } from 'vue'
+import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { addPoint } from '../../firebase/init.ts'
 import { BackButton } from 'vue-tg'
@@ -20,7 +20,7 @@ const location = ref('')
 
 const router = useRouter()
 
-const { clearCachePoints, obtainLastUpdate } = useCache()
+const { clearCachePoints, setLastUpdateDataPoints } = useCache()
 
 function save() {
   progress.value = true
@@ -30,6 +30,8 @@ function save() {
 
   let point: PointRequest | null = null
 
+  const dateNow = Date.now().toString()
+
   switch (directRegion.value) {
     case 'toRegion' : {
       point = new PointRequest(
@@ -38,8 +40,8 @@ function save() {
         direction.value,
         address.value,
         new Location(new GeoPoint(lat, lon), new GeoPoint()),
-        Date.now().toString(),
-        Date.now().toString(),
+        dateNow,
+        dateNow
       )
     }
       break
@@ -50,8 +52,8 @@ function save() {
         direction.value,
         address.value,
         new Location(new GeoPoint(), new GeoPoint(lat, lon)),
-        Date.now().toString(),
-        Date.now().toString(),
+        dateNow,
+        dateNow
       )
     }
       break
@@ -59,6 +61,7 @@ function save() {
   addPoint(point)
     .then(() => {
       console.log('Сохранено в БД')
+      setLastUpdateDataPoints(dateNow)
       clearInputs()
       clearCachePoints()
     })
