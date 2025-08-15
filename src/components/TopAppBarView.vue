@@ -2,13 +2,7 @@
 
 import Svg from '@/components/Svg.vue'
 import FilterIcon from '@/components/icons/FilterIcon.vue'
-import {
-  onBeforeUnmount,
-  ref,
-  shallowRef,
-  watch,
-  watchEffect
-} from 'vue'
+import { onBeforeUnmount, ref, shallowRef, watch, watchEffect } from 'vue'
 import CancelIcon from '@/components/icons/CancelIcon.vue'
 import { useInputFocus } from '@/store/TopAppBar.ts'
 import { TypeSearchFilter } from '@/model/Enums.ts'
@@ -80,7 +74,8 @@ defineExpose({
 
       <div class="py-2 px-3 rounded-xl shadow-xl bg-[#393E46] active:bg-[#5d636b]">
         <Svg>
-          <component @mousedown.prevent @click="emit('icon-filter-click')" ref="comp" :is="filterIcon"
+          <component @mousedown.prevent @click="emit('icon-filter-click')" ref="comp"
+                     :is="filterIcon"
                      class="text-[#cccccc]"></component>
         </Svg>
       </div>

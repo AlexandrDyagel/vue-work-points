@@ -8,7 +8,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import { createPinia } from 'pinia'
 import { Routes as Route } from '@/model/Enums.ts'
 
-export const DEV_VERSION = '2.23'
+export const DEV_VERSION = '2.26'
 export const DEVELOPMENT = false
 // export const DEVELOPMENT = true
 

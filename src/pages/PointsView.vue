@@ -12,35 +12,32 @@ import { useSearchFilter } from '@/composables/useSearchFilter.ts'
 import ItemPointView from '@/components/ItemPointView.vue'
 import { useUserRole } from '@/composables/useUserRole.ts'
 
-const router = useRouter()
-
 const isLoadingData = inject<Ref<boolean>>('isLoadingData') || ref(true)
 
+const queryInput = ref('')
+const filteredPoints = ref([] as PointResponse[])
+const cachedPoints = ref<PointResponse[]>([])
+const bottomSheetRef = ref()
+const topAppBarRef = ref()
+const isLastUpdateTime = ref(false)
+
+const router = useRouter()
+const { obtainCachedPoints, checkForUpdate, clearCachePoints } = useCache()
+const { userSearchFilter, updateUserSearchFilter } = useSearchFilter()
+const typeSearchFilter = ref(userSearchFilter())
+const inputTopAppBarStore = useInputFocus()
 const { getUserRole } = useUserRole()
 const userRole = ref(getUserRole())
 
-const inputTopAppBarStore = useInputFocus()
-
-const queryInput = ref('')
-
-const filteredPoints = ref([] as PointResponse[])
-
-const { obtainCachedPoints } = useCache()
-
-const cachedPoints = ref<PointResponse[]>([])
-
-const { userSearchFilter, updateUserSearchFilter } = useSearchFilter()
-const typeSearchFilter = ref(userSearchFilter())
-
-const bottomSheetRef = ref()
-
-const topAppBarRef = ref()
-
 onMounted(async () => {
   try {
+    await checkForUpdate()
+      .then(isLastUpdate => isLastUpdateTime.value = isLastUpdate)
+      .catch(error => console.log('Ошибка checkForUpdate() в App.vue: ', error))
+
     isLoadingData.value = true
 
-    obtainCachedPoints()
+    await obtainCachedPoints()
       .then(cachedDataPoints => {
         cachedPoints.value = cachedDataPoints
       })
@@ -51,6 +48,10 @@ onMounted(async () => {
     console.log(`Ошибка PointsView.vue в onMounted catch: ${e}`)
   }
 })
+
+watch(isLastUpdateTime, () => {
+
+}, { once: true })
 
 const search = () => {
   switch (typeSearchFilter.value) {
@@ -124,18 +125,33 @@ const emptyElements = computed(() => {
   } else return ''
 })
 
+const updateDataPoints = () => {
+  try {
+    clearCachePoints()
+    isLoadingData.value = true
+
+    obtainCachedPoints()
+      .then(cachedDataPoints => {
+        cachedPoints.value = cachedDataPoints
+      })
+    isLoadingData.value = false
+  } catch (e) {
+    isLoadingData.value = false
+    console.log(`Ошибка PointsView.vue в onMounted catch: ${e}`)
+  }
+}
+
 </script>
 
 <template>
   <div class="fixed overflow-auto start-0 top-0 end-0 bottom-0 w-full h-full bg-[#242528]">
-
     <span v-if="filteredPoints.length === 0"
           class="fixed w-full h-full flex justify-center items-center text-2xl text-[#F0F0F0]">{{ emptyElements
       }}
     </span>
 
     <div
-      v-if="filteredPoints.length === 0"
+      v-if="filteredPoints.length === 0 && userRole === UserRole.ADMIN"
       @click="addNewPoint"
       class="fixed z-20 shadow-xl start-4 end-4 bottom-20 rounded-xl bg-black border border-[#000] text-sm p-2.5 focus:outline-none">
       <p>Добавить точку +</p>
@@ -189,21 +205,24 @@ const emptyElements = computed(() => {
                    :id="TypeSearchFilter.NAME"
                    :name="TypeSearchFilter.NAME"
                    :value="TypeSearchFilter.NAME" />
-            <label class="text-[#cccccc] whitespace-nowrap" :for="TypeSearchFilter.NAME">По названию</label>
+            <label class="text-[#cccccc] whitespace-nowrap" :for="TypeSearchFilter.NAME">По
+              названию</label>
           </div>
           <div class="flex items-center">
             <input v-model="typeSearchFilter" class="me-2" type="radio"
                    :id="TypeSearchFilter.DIRECTION"
                    :name="TypeSearchFilter.DIRECTION"
                    :value="TypeSearchFilter.DIRECTION" />
-            <label :for="TypeSearchFilter.DIRECTION" class="text-[#cccccc] whitespace-nowrap">По направлению</label>
+            <label :for="TypeSearchFilter.DIRECTION" class="text-[#cccccc] whitespace-nowrap">По
+              направлению</label>
           </div>
           <div class="flex items-center">
             <input v-model="typeSearchFilter" class="me-2" type="radio"
                    :id="TypeSearchFilter.ADDRESS"
                    :name="TypeSearchFilter.ADDRESS"
                    :value="TypeSearchFilter.ADDRESS" />
-            <label :for="TypeSearchFilter.ADDRESS" class="text-[#cccccc] whitespace-nowrap">По адресу</label>
+            <label :for="TypeSearchFilter.ADDRESS" class="text-[#cccccc] whitespace-nowrap">По
+              адресу</label>
           </div>
         </div>
       </fieldset>
@@ -212,6 +231,14 @@ const emptyElements = computed(() => {
   </BottomSheetView>
 
   <!--  END Bottom Sheet  -->
+
+  <div
+    v-if="isLastUpdateTime"
+    @click="updateDataPoints"
+    class="fixed start-0 end-0 bottom-0 mb-[80px] z-10 bg-[#5fb336] mx-4 px-3 h-[40px] rounded-xl text-center content-center cursor-pointer"
+  >
+    <span class="text-sm font-medium">Обновить данные</span>
+  </div>
 
 </template>
 <style scoped>

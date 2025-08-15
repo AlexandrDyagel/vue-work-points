@@ -12,7 +12,7 @@ import { useCache } from '@/composables/useCache.ts'
 
 const router = useRouter()
 
-const { clearCachePoints } = useCache()
+const { clearCachePoints, setLastUpdateDataPoints, removeLastUpdateDataPoints } = useCache()
 
 const editPointStore = useEditPoint()
 
@@ -42,6 +42,8 @@ function update() {
     const locToRegion = formatPoints(locationToRegion.value)
     const locFromRegion = formatPoints(locationFromRegion.value)
 
+    const dateNow = Date.now().toString()
+
     const pointRequest = new PointRequest(
       type.value,
       name.value,
@@ -52,12 +54,13 @@ function update() {
         new GeoPoint(locFromRegion[0], locFromRegion[1])
       ),
       point.createdAt,
-      Date.now().toString()
+      dateNow
     )
 
     updatePoint(point.uid, pointRequest)
       .then(() => {
         console.log('Обнавлено в БД')
+        setLastUpdateDataPoints(dateNow)
         clearCachePoints()
         progressUpdate.value = false
         router.back()

@@ -5,17 +5,18 @@ import TunnelImg from '@/assets/images/tunnel.png'
 import { PointResponse } from '@/model/PointResponse.ts'
 import { GeoPoint } from '@/model/GeoPoint.ts'
 import { TypePoint } from '@/model/Enums.ts'
-import { computed, inject, onMounted, onUnmounted, type Ref, ref, shallowRef } from 'vue'
+import { computed, inject, onMounted, onUnmounted, type Ref, ref, shallowRef, watch } from 'vue'
 import Svg from '@/components/Svg.vue'
 import SearchPointIcon from '@/components/icons/SearchPointIcon.vue'
 import { useCache } from '@/composables/useCache.ts'
 import WorldGlobeIcon from '@/components/icons/WorldGlobeIcon.vue'
-import { useMiniApp } from 'vue-tg/8.0'
+import { useMiniApp, useTheme } from 'vue-tg/8.0'
 
 const searchPointIcon = shallowRef(SearchPointIcon)
 const iconButton = shallowRef(WorldGlobeIcon)
 
 const { openLink } = useMiniApp()
+const { headerColor } = useTheme()
 
 const { obtainCachedPoints } = useCache()
 const cachedPoints = ref<PointResponse[]>([])
@@ -26,7 +27,7 @@ const userLocation: Ref<GeoPoint> = ref(new GeoPoint())
 
 const error = ref('')
 const watching = ref(false)
-const watchId = ref()
+const watchId: Ref<number | null> = ref(null)
 const closestPoint: Ref<PointResponse | null> = ref(null)
 const minDistance = ref<number>(Infinity)
 
@@ -36,7 +37,7 @@ const url = computed(() => `https://yandex.ru/maps/?pt=${closestPoint?.value?.lo
 const options = {
   enableHighAccuracy: true, // Высокая точность
   timeout: 10000,          // Таймаут 10 секунд
-  maximumAge: 60000        // Кэш на 1 минуту
+  maximumAge: 0        // Без кэшированных данных
 }
 
 // Проверка поддержки геолокации
@@ -67,6 +68,7 @@ const watchPosition = () => {
     return
   }
 
+  if (watchId.value !== null) return
   if (watching.value) return
 
   error.value = ''
@@ -81,6 +83,7 @@ const watchPosition = () => {
 
       findClosestPoint()
 
+      console.log('formatTime: ', formatTime(pos.timestamp))
       console.log('Позиция обновлена:', pos)
     },
     (err) => {
@@ -120,7 +123,7 @@ const handleError = (err: GeolocationPositionError) => {
 }
 
 // Форматирование времени
-const formatTime = (timestamp) => {
+const formatTime = (timestamp: number) => {
   return new Date(timestamp).toLocaleString('ru-RU')
 }
 
@@ -177,22 +180,29 @@ const getIcon = (typePoint: TypePoint) => {
 
 const getTypeName = (typePoint: TypePoint) => {
   switch (typePoint) {
-    case TypePoint.PP: return 'Переход надземный'
-    case TypePoint.TA: return 'Тоннель автодорожный'
-    case TypePoint.TP: return 'Тоннель пешеходный'
+    case TypePoint.PP:
+      return 'Переход надземный'
+    case TypePoint.TA:
+      return 'Тоннель автодорожный'
+    case TypePoint.TP:
+      return 'Тоннель пешеходный'
   }
 }
 
 // Очистка при размонтировании компонента
 onUnmounted(() => {
   stopWatching()
+  headerColor.value = '#242528'
 })
+
+watch(closestPoint, () => headerColor.value = '#16a34a')
 </script>
 
 <template>
   <div v-if="!closestPoint"
        class="fixed overflow-auto start-0 top-0 end-0 bottom-0 flex items-center justify-center bg-[#242528]">
-    <button class="search-button search-btn" :class="watching ? 'search-btn-animation' : ''" @click="searchPoint">
+    <button class="search-button search-btn" :class="watching ? 'search-btn-animation' : ''"
+            @click="searchPoint">
       <Svg>
         <component ref="comp" :is="searchPointIcon"></component>
       </Svg>

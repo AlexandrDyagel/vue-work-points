@@ -1,6 +1,7 @@
 import { PointResponse } from '@/model/PointResponse.ts'
-import { getPoints } from '../../firebase/init.ts'
+import { getPoints, lastUpdatedPoints } from '../../firebase/init.ts'
 import { LocalStorageNames } from '@/model/Enums.ts'
+import { ref, type Ref } from 'vue'
 
 export function useCache() {
   if (typeof (Storage) !== 'undefined') {
@@ -30,16 +31,64 @@ export function useCache() {
           })
       const cachedData = localStorage.getItem(LocalStorageNames.CACHE_POINTS)!
       console.log('obtainCachedPoints: Данные из интернета и потом из localStorage')
-      return JSON.parse(cachedData) as PointResponse[]
+      const points = JSON.parse(cachedData) as PointResponse[]
+
+      // Обновление последнего обновления
+      // const lastUpdatedAt = points.sort((a, b) =>
+      //   Number(b.createdAt) - Number(a.createdAt))[0].updatedAt
+      //
+      // localStorage.setItem(LocalStorageNames.LAST_UPDATE_TIME, lastUpdatedAt)
+
+      return points
     }
   }
 
   const clearCachePoints = () => localStorage.removeItem(LocalStorageNames.CACHE_POINTS)
 
+  const checkForUpdate = async () => {
+    const lastUpdateTime: Ref<string | null> = ref(null)
+
+    await lastUpdatedPoints()
+      .then(lastUpdTime => {
+        lastUpdateTime.value = lastUpdTime
+      })
+      .catch(error => console.log('Ошибка получения последнего обновления: ', error))
+
+    console.log('Последнее обновление: ', lastUpdateTime.value)
+
+    const cachedLastUpdateTime = localStorage.getItem(LocalStorageNames.LAST_UPDATE_TIME)
+
+    // Проверяем, существуют ли данные в кэше
+    if (cachedLastUpdateTime) {
+      console.log('checkForUpdate: Данные из LocalStorage')
+
+      return lastUpdateTime.value !== cachedLastUpdateTime
+    } else {
+      obtainCachedPoints()
+        .then(cachedDataPoints => {
+          const lastUpdatedAt = cachedDataPoints.sort((a, b) =>
+          Number(b.createdAt) - Number(a.createdAt))[0].updatedAt
+
+          localStorage.setItem(LocalStorageNames.LAST_UPDATE_TIME, lastUpdatedAt)
+        })
+
+      return lastUpdateTime.value !== localStorage.getItem(LocalStorageNames.LAST_UPDATE_TIME)
+    }
+  }
+
+  function setLastUpdateDataPoints(dateUpdate: string) {
+    localStorage.setItem(LocalStorageNames.LAST_UPDATE_TIME, dateUpdate)
+  }
+
+  function removeLastUpdateDataPoints() {
+    localStorage.removeItem(LocalStorageNames.LAST_UPDATE_TIME)
+  }
+
   /*const checkForUpdate = async () => {
     const isNewUpdate = ref(false)
     const lastUpdate: Ref<LastUpdate> = ref(new LastUpdate())
-    const cachedLastUpdateTime = localStorage.getItem(LocalStorageNames.LAST_UPDATE_TIME)
+    const cachedL
+    astUpdateTime = localStorage.getItem(LocalStorageNames.LAST_UPDATE_TIME)
 
     if (typeof cachedLastUpdateTime !== 'undefined' && cachedLastUpdateTime) {
       const lastUpdateTimeStorage = JSON.parse(cachedLastUpdateTime) as LastUpdate
@@ -116,6 +165,9 @@ export function useCache() {
 
   return {
     obtainCachedPoints,
-    clearCachePoints
+    clearCachePoints,
+    checkForUpdate,
+    setLastUpdateDataPoints,
+    removeLastUpdateDataPoints,
   }
 }
