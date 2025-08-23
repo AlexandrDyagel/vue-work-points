@@ -20,8 +20,7 @@ const { headerColor } = useTheme()
 
 const { obtainCachedPoints } = useCache()
 const cachedPoints = ref<PointResponse[]>([])
-const isLoadingData = inject<Ref<boolean>>('isLoadingData') || ref(true)
-isLoadingData.value = false
+const isLoadingData = inject<Ref<boolean>>('isLoadingData', ref(true))
 
 const userLocation: Ref<GeoPoint> = ref(new GeoPoint())
 
@@ -49,15 +48,14 @@ onMounted(async () => {
   try {
     isLoadingData.value = true
 
-    obtainCachedPoints()
+    await obtainCachedPoints()
       .then(cachedDataPoints => {
         cachedPoints.value = cachedDataPoints
       })
-    isLoadingData.value = false
-
   } catch (e) {
+    console.error(`Ошибка SettingsView.vue в onMounted catch: ${e}`)
+  } finally {
     isLoadingData.value = false
-    console.log(`Ошибка SettingsView.vue в onMounted catch: ${e}`)
   }
 })
 
@@ -89,6 +87,7 @@ const watchPosition = () => {
     (err) => {
       handleError(err)
       watching.value = false
+      stopWatching()
     },
     options
   )
@@ -127,7 +126,12 @@ const formatTime = (timestamp: number) => {
   return new Date(timestamp).toLocaleString('ru-RU')
 }
 
-// Функция для вычисления расстояния между двумя точками в метрах (формула гаверсинусов)
+/**
+ * Вычисляет расстояние между двумя точками на сфере по формуле гаверсинусов
+ * @param userLocation - Текущее местоположение пользователя
+ * @param pointLocation - Местоположение точки
+ * @returns Расстояние в метрах
+ */
 function getDistance(userLocation: GeoPoint, pointLocation: GeoPoint) {
   const R = 6371e3 // Радиус Земли в метрах
   const φ1 = Number(userLocation.latitude) * Math.PI / 180 // Преобразование широты в радианы
@@ -144,7 +148,13 @@ function getDistance(userLocation: GeoPoint, pointLocation: GeoPoint) {
 }
 
 // Поиск в кэше ближайшей точки от позиции геолокации юзера
-const findClosestPoint = () => {
+const findClosestPoint = (): void => {
+  minDistance.value = Infinity
+
+  if (cachedPoints.value.length === 0) {
+    console.log('Нет доступных точек для поиска')
+    return
+  }
 
   cachedPoints.value.forEach(point => {
     const distance = getDistance(userLocation.value, point.location.toRegion)
@@ -199,18 +209,24 @@ watch(closestPoint, () => headerColor.value = '#16a34a')
 </script>
 
 <template>
-  <div v-if="!closestPoint"
-       class="fixed overflow-auto start-0 top-0 end-0 bottom-0 flex items-center justify-center bg-[#242528]">
-    <button class="search-button search-btn" :class="watching ? 'search-btn-animation' : ''"
-            @click="searchPoint">
+  <div
+    v-if="!closestPoint"
+    class="fixed overflow-auto start-0 top-0 end-0 bottom-0 flex items-center justify-center bg-[#242528]"
+  >
+    <button
+      class="search-button search-btn" :class="watching ? 'search-btn-animation' : ''"
+      @click="searchPoint" aria-label="Начать поиск ближайшей точки"
+    >
       <Svg>
         <component ref="comp" :is="searchPointIcon"></component>
       </Svg>
     </button>
   </div>
 
-  <div v-if="closestPoint"
-       class="fixed overflow-auto bg start-0 top-0 end-0 bottom-0 w-full h-full text-center p-5">
+  <div
+    v-if="closestPoint"
+    class="fixed overflow-auto bg start-0 top-0 end-0 bottom-0 w-full h-full text-center p-5"
+  >
     <div class="call-header">
       <div class="call-status">Скорее всего это</div>
       <div class="phone-number">~ {{ minDistance.toFixed(0) }} м</div>
@@ -224,7 +240,7 @@ watch(closestPoint, () => headerColor.value = '#16a34a')
     <div class="point-info">
       <div class="type-point">{{ getTypeName(closestPoint.type) }}</div>
       <div class="point-name">
-        «{{ closestPoint.name }}»
+        «{{ closestPoint.name.trim() }}»
       </div>
       <div class="direction-badge">{{ closestPoint.direction }}</div>
       <div class="address">{{ closestPoint.address }}</div>

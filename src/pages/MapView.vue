@@ -109,7 +109,7 @@ const handleError = (err) => {
 const formatTime = (timestamp) => {
   return new Date(timestamp).toLocaleString('ru-RU')
 }
--
+
 // Очистка при размонтировании компонента
 onUnmounted(() => {
   stopWatching()

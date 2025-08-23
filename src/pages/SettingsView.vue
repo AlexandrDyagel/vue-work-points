@@ -2,109 +2,35 @@
 
 import { BackButton } from 'vue-tg'
 import { useRouter } from 'vue-router'
-import { inject, onMounted, ref, type Ref } from 'vue'
+import { customRef, inject, nextTick, onMounted, ref, type Ref } from 'vue'
 import { DEV_VERSION } from '@/main.ts'
-import LocationNavButtonView from '@/components/LocationNavButtonView.vue'
-import { TypeLocationNavButton } from '@/model/Enums.ts'
-import { GeoPoint } from '@/model/GeoPoint.ts'
 import { useCache } from '@/composables/useCache.ts'
 import { PointResponse } from '@/model/PointResponse.ts'
 
 const router = useRouter()
-
 const { obtainCachedPoints } = useCache()
 
 const isLoadingData = inject<Ref<boolean>>('isLoadingData') || ref(true)
 isLoadingData.value = false
 
-const cachedPoints = ref<PointResponse[]>([])
-
-const closestPoint = ref<PointResponse>(null)
-const minDistance = ref<number>(Infinity)
-
-const userLocation: Ref<GeoPoint> = ref(new GeoPoint())
-const loading = ref(false)
-const error = ref()
-
-const requestGeolocation = () => {
-  loading.value = true
-  error.value = null
-  userLocation.value = new GeoPoint()
-
-  if (!navigator.geolocation) {
-    error.value = 'Геолокация не поддерживается вашим браузером'
-    loading.value = false
-    return
-  }
-
-  navigator.geolocation.getCurrentPosition(
-    async (position) => {
-      userLocation.value = new GeoPoint(
-        position.coords.latitude.toString(),
-        position.coords.longitude.toString()
-    )
-      loading.value = false
-    },
-    (err) => {
-      loading.value = false
-      switch (err.code) {
-        case err.PERMISSION_DENIED:
-          error.value = 'Вы отказали в запросе геолокации'
-          break
-        case err.POSITION_UNAVAILABLE:
-          error.value = 'Информация о местоположении недоступна'
-          break
-        case err.TIMEOUT:
-          error.value = 'Время запроса геолокации истекло'
-          break
-        default:
-          error.value = 'Произошла неизвестная ошибка'
-      }
-    },
-    {
-      enableHighAccuracy: true, // Высокая точность (если доступно)
-      timeout: 10000, // Максимальное время ожидания (10 сек)
-      maximumAge: 0 // Не использовать кешированные данные
-    }
-  )
-}
-
-// Функция для вычисления расстояния между двумя точками в метрах (формула гаверсинусов)
-function getDistance(userLocation: GeoPoint, pointLocation: GeoPoint) {
-  const R = 6371e3; // Радиус Земли в метрах
-  const φ1 = Number(userLocation.latitude) * Math.PI / 180; // Преобразование широты в радианы
-  const φ2 = Number(pointLocation.latitude) * Math.PI / 180;
-  const Δφ = (Number(pointLocation.latitude) - Number(userLocation.latitude)) * Math.PI / 180;
-  const Δλ = (Number(pointLocation.longitude) - Number(userLocation.longitude)) * Math.PI / 180;
-
-  const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
-    Math.cos(φ1) * Math.cos(φ2) *
-    Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-
-  return R * c; // Расстояние в метрах
-}
-
-const findClosestPoint = () => {
-
-  cachedPoints.value.forEach(point => {
-    const distance = getDistance(userLocation.value, point.location.toRegion);
-
-    if (distance < minDistance.value) {
-      minDistance.value = distance;
-      closestPoint.value = point;
-    }
-  });
-}
+const cachedPoints: Ref<PointResponse[]> = ref([])
+const map: Ref<L.Map | null> = ref(null);
+const selectedPoint: Ref<PointResponse | null> = ref(null);
+const isModalOpen = ref(false);
 
 onMounted(async () => {
   try {
     isLoadingData.value = true
 
-    obtainCachedPoints()
+    await obtainCachedPoints()
       .then(cachedDataPoints => {
         cachedPoints.value = cachedDataPoints
       })
+
+    await nextTick(async () => {
+      initMap();
+    });
+
     isLoadingData.value = false
 
   } catch (e) {
@@ -112,36 +38,150 @@ onMounted(async () => {
     console.log(`Ошибка SettingsView.vue в onMounted catch: ${e}`)
   }
 })
+
+const initMap = () => {
+  // Создаем карту с центром в Москве
+  const leafletMap = L.map('map').setView([55.7558, 37.6176], 6);
+
+  // Добавляем слой карты OpenStreetMap
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap contributors',
+    maxZoom: 18
+  }).addTo(leafletMap);
+
+  map.value = leafletMap;
+
+  // Добавляем маркеры для всех точек
+  addMarkersToMap();
+
+  // Подгоняем карту под все маркеры
+  fitMapToMarkers();
+};
+
+const addMarkersToMap = () => {
+  if (!map.value) return;
+  cachedPoints.value.forEach(point => {
+    // Создаем кастомный маркер
+    const marker = L.marker([Number(point.location.toRegion.latitude), Number(point.location.toRegion.longitude)], {
+      title: point.name
+    }).addTo(map.value);
+
+    // Создаем popup с информацией о точке
+    const popupContent = `
+                            <div class="p-2">
+                                <h3 class="font-bold text-lg text-blue-600 mb-1">${point.name}</h3>
+                                <p class="text-gray-600 text-sm mb-2">${point.address}</p>
+                                <div class="text-xs text-gray-500">
+                                    <div>Координаты: ${point.location.toRegion.latitude}, ${point.location.toRegion.longitude}</div>
+                                    <div>ID: ${point.uid}</div>
+                                </div>
+                            </div>
+                        `;
+
+    marker.bindPopup(popupContent);
+
+    // Обработчик клика на маркер
+    marker.on('click', () => {
+      selectedPoint.value = point;
+      isModalOpen.value = true;
+    });
+  });
+};
+
+const fitMapToMarkers = () => {
+  if (!map.value || cachedPoints.value.length === 0) return;
+
+  const group = L.featureGroup();
+  cachedPoints.value.forEach(point => {
+    L.marker([Number(point.location.toRegion.latitude), Number(point.location.toRegion.longitude)]).addTo(group);
+  });
+
+  map.value.fitBounds(group.getBounds().pad(0.1));
+};
+
+const closeModal = () => {
+  isModalOpen.value = false;
+  selectedPoint.value = null;
+};
+
+// Показать точку на карте
+const zoomToPoint = (point: PointResponse) => {
+  if (!map.value) return;
+  map.value.setView([Number(point.location.toRegion.latitude), Number(point.location.toRegion.longitude)], 15);
+  closeModal();
+};
+
 </script>
 
 <template>
   <BackButton @click="router.back" />
 
-  <p>Настройки</p>
-  <div class=" w-full text-center text-lg">
-    <p>Версия: {{ DEV_VERSION }}</p>
-  </div>
   <div>
-    <div>
-      <button class="border border-[#88ce02] px-2 py-1 rounded-lg" @click="requestGeolocation">Получить моё местоположение</button>
-      <div v-if="loading">Загружаем данные...</div>
-      <div v-if="error" class="error">{{ error }}</div>
-      <div v-if="userLocation">
-        <p>Широта: {{ userLocation.latitude }}</p>
-        <p>Долгота: {{ userLocation.longitude }}</p>
-        <LocationNavButtonView
-          :location="{
-        latitude: userLocation.latitude,
-        longitude: userLocation.longitude
-        }"
-          :type="TypeLocationNavButton.POINT"
-          name="На карте"
-        />
-        <button @click="findClosestPoint" class="border border-[#88ce02] px-2 py-1 rounded-lg">Найти ближайшую точку</button>
-        <div v-if="closestPoint">
-          <p>Ближайшая точка: {{ closestPoint.name }}</p>
-          <p>Расстояние: {{ minDistance.toFixed(0) }} метров</p>
-          <p></p>
+    <div class="fixed overflow-auto start-0 top-0 end-0 bottom-0 w-full bg-[#242528]">
+        <!-- Карта -->
+          <div class="fixed top-0 z-10 start-0 end-0 text-black text-lg text-center">
+            <p>Версия: {{ DEV_VERSION }}</p>
+            <h2>
+              Карта ({{ cachedPoints.length }} точек)
+            </h2>
+          </div>
+          <div class="pt-4">
+            <div id="map" class="fixed overflow-auto start-0 top-0 end-0 bottom-0 w-full h-full"></div>
+          </div>
+
+      <!-- Модальное окно с информацией о точке -->
+      <div
+        v-if="isModalOpen && selectedPoint"
+        class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
+        @click="closeModal"
+      >
+        <div
+          class="bg-white rounded-lg shadow-xl max-w-md w-full p-6"
+          @click.stop
+        >
+          <div class="flex justify-between items-start mb-4">
+            <h3 class="text-xl font-bold text-gray-900">
+              {{ selectedPoint.name }}
+            </h3>
+            <button
+              @click="closeModal"
+              class="text-gray-400 hover:text-gray-600 text-2xl font-bold"
+            >
+              ×
+            </button>
+          </div>
+
+          <div class="space-y-3 mb-6">
+            <div>
+              <span class="text-sm font-medium text-gray-500">Адрес:</span>
+              <p class="text-gray-900">{{ selectedPoint.address }}</p>
+            </div>
+
+            <div>
+              <span class="text-sm font-medium text-gray-500">Координаты:</span>
+              <p class="text-gray-900">{{ selectedPoint.location.toRegion.latitude }}, {{ selectedPoint.location.toRegion.longitude }}</p>
+            </div>
+
+            <div>
+              <span class="text-sm font-medium text-gray-500">ID:</span>
+              <p class="text-gray-900">{{ selectedPoint.uid }}</p>
+            </div>
+          </div>
+
+          <div class="flex gap-3">
+            <button
+              @click="zoomToPoint(selectedPoint)"
+              class="flex-1 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors font-medium"
+            >
+              Показать на карте
+            </button>
+            <button
+              @click="closeModal"
+              class="flex-1 bg-gray-200 text-gray-800 px-4 py-2 rounded-md hover:bg-gray-300 transition-colors font-medium"
+            >
+              Закрыть
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -149,7 +189,21 @@ onMounted(async () => {
 </template>
 
 <style scoped>
-.error {
-  color: red;
+.map-container {
+  height: 500px;
+  border-radius: 0.5rem;
+}
+
+.leaflet-popup-content-wrapper {
+  border-radius: 0.5rem;
+}
+
+.custom-marker {
+  background-color: #3cd916;
+  border: 2px solid #ffffff;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
 </style>

@@ -36,7 +36,7 @@ onMounted(async () => {
       .catch(error => console.log('Ошибка checkForUpdate() в App.vue: ', error))
 
     isLoadingData.value = true
-
+    console.log('isLastUpdateTime.value ', isLastUpdateTime.value)
     await obtainCachedPoints()
       .then(cachedDataPoints => {
         cachedPoints.value = cachedDataPoints

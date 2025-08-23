@@ -1,4 +1,4 @@
-import type { GeoPoint } from '@/model/GeoPoint.ts'
+import { GeoPoint } from '@/model/GeoPoint.ts'
 
 export class Location {
   readonly toRegion: GeoPoint
