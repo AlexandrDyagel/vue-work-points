@@ -1,6 +1,6 @@
 <script setup lang="ts">
 
-import { computed, inject, onMounted, type Ref, ref, watch, watchEffect } from 'vue'
+import { computed, onMounted, ref, watch, watchEffect } from 'vue'
 import { useRouter } from 'vue-router'
 import { PointResponse } from '@/model/PointResponse.ts'
 import { Routes as Route, TypeSearchFilter, UserRole } from '@/model/Enums.ts'
@@ -11,9 +11,9 @@ import { useCache } from '@/composables/useCache.ts'
 import { useSearchFilter } from '@/composables/useSearchFilter.ts'
 import ItemPointView from '@/components/ItemPointView.vue'
 import { useUserRole } from '@/composables/useUserRole.ts'
+import LoadingScreen from '@/components/LoadingScreen.vue'
 
-const isLoadingData = inject<Ref<boolean>>('isLoadingData') || ref(true)
-
+const isLoadingData = ref(false)
 const queryInput = ref('')
 const filteredPoints = ref([] as PointResponse[])
 const cachedPoints = ref<PointResponse[]>([])
@@ -31,21 +31,21 @@ const userRole = ref(getUserRole())
 
 onMounted(async () => {
   try {
+    isLoadingData.value = true
+
     await checkForUpdate()
       .then(isLastUpdate => isLastUpdateTime.value = isLastUpdate)
       .catch(error => console.log('Ошибка checkForUpdate() в App.vue: ', error))
 
-    isLoadingData.value = true
     console.log('isLastUpdateTime.value ', isLastUpdateTime.value)
     await obtainCachedPoints()
       .then(cachedDataPoints => {
         cachedPoints.value = cachedDataPoints
       })
-    isLoadingData.value = false
-
   } catch (e) {
+    console.error(`Ошибка PointsView.vue в onMounted catch: ${e}`)
+  } finally {
     isLoadingData.value = false
-    console.log(`Ошибка PointsView.vue в onMounted catch: ${e}`)
   }
 })
 
@@ -125,25 +125,38 @@ const emptyElements = computed(() => {
   } else return ''
 })
 
+// TODO логику нужно изменить!
 const updateDataPoints = () => {
   try {
-    clearCachePoints()
     isLoadingData.value = true
+    clearCachePoints()
 
     obtainCachedPoints()
       .then(cachedDataPoints => {
         cachedPoints.value = cachedDataPoints
       })
-    isLoadingData.value = false
   } catch (e) {
+    console.error(`Ошибка PointsView.vue в onMounted catch: ${e}`)
+  } finally {
     isLoadingData.value = false
-    console.log(`Ошибка PointsView.vue в onMounted catch: ${e}`)
+    isLastUpdateTime.value = false // TODO логику нужно изменить!
   }
 }
 
 </script>
 
 <template>
+  <LoadingScreen :is-loading="isLoadingData" />
+
+  <TopAppBarView
+    ref="topAppBarRef"
+    :class="inputTopAppBarStore.isFocused ? 'bottom-0 border-t-[1px]' : 'sticky top-0 border-b-[1px]'"
+    class="fixed bg-[#242528] start-0 end-0 border-[#3d3e43] z-20"
+    :type-search-filter="typeSearchFilter"
+    @filter-changed="handleFilterChange"
+    @icon-filter-click="openBottomSheet"
+  />
+
   <div class="fixed overflow-auto start-0 top-0 end-0 bottom-0 w-full h-full bg-[#242528]">
     <span v-if="filteredPoints.length === 0"
           class="fixed w-full h-full flex justify-center items-center text-2xl text-[#F0F0F0]">{{ emptyElements
@@ -156,15 +169,6 @@ const updateDataPoints = () => {
       class="fixed z-20 shadow-xl start-4 end-4 bottom-20 rounded-xl bg-black border border-[#000] text-sm p-2.5 focus:outline-none">
       <p>Добавить точку +</p>
     </div>
-
-    <TopAppBarView
-      ref="topAppBarRef"
-      :class="inputTopAppBarStore.isFocused ? 'bottom-0 border-t-[1px]' : 'sticky top-0 border-b-[1px]'"
-      class="fixed bg-[#242528] start-0 end-0 border-[#3d3e43] z-20"
-      :type-search-filter="typeSearchFilter"
-      @filter-changed="handleFilterChange"
-      @icon-filter-click="openBottomSheet"
-    />
 
     <div class="t-4">
       <div v-auto-animate>

@@ -113,14 +113,14 @@ const getIcon = (typePoint: TypePoint) => {
        class="flex flex-row justify-between px-4 pt-4 pb-5">
     <div>
       <div @click="editPoint(dataPoint)"
-           class="pb-1 text-base font-medium text-[#F0F0F0] overflow-ellipsis overflow-hidden">
+           class="pb-1 text-base font-medium text-[#F0F0F0] max-w-xs">
         <slot name="name"></slot>
       </div>
       <div
-        class="text-sm text-[#ff5b4d] font-medium whitespace-nowrap overflow-ellipsis overflow-hidden">
+        class="text-sm text-[#ff5b4d] font-medium max-w-xs">
         <slot name="direction"></slot>
       </div>
-      <div class="text-sm text-[#999] pb-5 whitespace-nowrap overflow-ellipsis overflow-hidden">
+      <div class="text-sm text-[#999] pb-5 max-w-xs">
         <slot name="address"></slot>
       </div>
 

@@ -8,7 +8,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import { createPinia } from 'pinia'
 import { Routes as Route } from '@/model/Enums.ts'
 
-export const DEV_VERSION = '2.27'
+export const DEV_VERSION = '2.35'
 export const DEVELOPMENT = false
 // export const DEVELOPMENT = true
 
@@ -20,6 +20,7 @@ const routes = [
   { path: Route.AddPoint, name: 'add_point', component: () => import((`@/pages/AddPointView.vue`)) },
   { path: Route.EditPoint, name: 'edit_point', component: () => import((`@/pages/EditPointView.vue`)) },
   { path: Route.Tasks, name: 'tasks', component: () => import((`@/pages/TasksView.vue`)) },
+  { path: Route.TaskMap, name: 'tasks_map', component: () => import((`@/pages/TaskMapView.vue`)) },
   { path: Route.Search, name: 'search_point', component: () => import((`@/pages/SearchPointView.vue`)) },
   { path: Route.Settings, name: 'settings', component: () => import((`@/pages/SettingsView.vue`)) },
 ]

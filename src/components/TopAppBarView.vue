@@ -69,7 +69,7 @@ defineExpose({
 </script>
 
 <template>
-  <div class="flex flex-col">
+  <div class="flex flex-col z-20">
     <div class="flex flex-row gap-2 items-center px-4 pt-4 pb-5">
 
       <div class="py-2 px-3 rounded-xl shadow-xl bg-[#393E46] active:bg-[#5d636b]">

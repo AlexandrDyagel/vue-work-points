@@ -1,18 +1,14 @@
 <script setup lang="ts">
 
-import { inject, onMounted, provide, type Ref, ref } from 'vue'
+import { onMounted, provide, ref } from 'vue'
 import BottomMenu from '@/components/BottomMenuView.vue'
 import { useMiniApp, useTheme, useViewport } from 'vue-tg/8.0'
 import { useInputFocus } from '@/store/TopAppBar.ts'
-import LoadingScreen from '@/components/LoadingScreen.vue'
 import { useUserRole } from '@/composables/useUserRole.ts'
 import { useSearchFilter } from '@/composables/useSearchFilter.ts'
-import { useCache } from '@/composables/useCache.ts'
-import { DEVELOPMENT } from '@/main.ts'
 
 const { clearUserRole } = useUserRole()
 const { removeUserSearchFilter } = useSearchFilter()
-const { clearCachePoints, checkForUpdate, removeLastUpdateDataPoints } = useCache()
 
 const loading = ref<boolean>(true)
 provide('isLoadingData', loading)
@@ -35,7 +31,6 @@ onMounted(() => {
 </script>
 
 <template>
-  <LoadingScreen :is-loading="loading" />
   <header>
 
   </header>

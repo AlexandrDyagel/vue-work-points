@@ -9,6 +9,7 @@ export enum Routes {
   AddPoint = "/points/add",
   EditPoint = "/points/edit",
   Tasks = "/tasks",
+  TaskMap = "/tasks/map",
   Search = "/search",
   Settings = "/settings",
 }
@@ -33,6 +34,7 @@ export enum LocalStorageNames {
   SEARCH_FILTER = 'search_filter',
   USER_ROLE = 'user_role',
   LAST_UPDATE_TIME = 'last_update_time',
+  CACHE_TASKS = 'cache_tasks',
 }
 
 export enum FirestoreCollectionNames {

@@ -2,10 +2,10 @@
 
 import { BackButton } from 'vue-tg'
 import { useRouter } from 'vue-router'
-import { customRef, inject, nextTick, onMounted, ref, type Ref } from 'vue'
-import { DEV_VERSION } from '@/main.ts'
+import { inject, nextTick, onMounted, ref, type Ref } from 'vue'
 import { useCache } from '@/composables/useCache.ts'
 import { PointResponse } from '@/model/PointResponse.ts'
+import { useRealRouteMap } from '@/composables/useRealRouteMap.ts'
 
 const router = useRouter()
 const { obtainCachedPoints } = useCache()
@@ -14,102 +14,29 @@ const isLoadingData = inject<Ref<boolean>>('isLoadingData') || ref(true)
 isLoadingData.value = false
 
 const cachedPoints: Ref<PointResponse[]> = ref([])
-const map: Ref<L.Map | null> = ref(null);
-const selectedPoint: Ref<PointResponse | null> = ref(null);
-const isModalOpen = ref(false);
+const map: Ref<L.Map | null> = ref(null)
+const selectedPoint: Ref<PointResponse | null> = ref(null)
+
+
+const {
+  mapContainer,
+  points,
+  routes,
+  isLoading,
+  roadNetwork,
+  loadingProgress,
+  buildRealRoutes,
+  reloadRoadNetwork,
+  addPoint,
+  removeLastPoint,
+  initMap
+} = useRealRouteMap()
 
 onMounted(async () => {
-  try {
-    isLoadingData.value = true
-
-    await obtainCachedPoints()
-      .then(cachedDataPoints => {
-        cachedPoints.value = cachedDataPoints
-      })
-
-    await nextTick(async () => {
-      initMap();
-    });
-
-    isLoadingData.value = false
-
-  } catch (e) {
-    isLoadingData.value = false
-    console.log(`Ошибка SettingsView.vue в onMounted catch: ${e}`)
-  }
+  await nextTick()
+  initMap()
 })
 
-const initMap = () => {
-  // Создаем карту с центром в Москве
-  const leafletMap = L.map('map').setView([55.7558, 37.6176], 6);
-
-  // Добавляем слой карты OpenStreetMap
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '© OpenStreetMap contributors',
-    maxZoom: 18
-  }).addTo(leafletMap);
-
-  map.value = leafletMap;
-
-  // Добавляем маркеры для всех точек
-  addMarkersToMap();
-
-  // Подгоняем карту под все маркеры
-  fitMapToMarkers();
-};
-
-const addMarkersToMap = () => {
-  if (!map.value) return;
-  cachedPoints.value.forEach(point => {
-    // Создаем кастомный маркер
-    const marker = L.marker([Number(point.location.toRegion.latitude), Number(point.location.toRegion.longitude)], {
-      title: point.name
-    }).addTo(map.value);
-
-    // Создаем popup с информацией о точке
-    const popupContent = `
-                            <div class="p-2">
-                                <h3 class="font-bold text-lg text-blue-600 mb-1">${point.name}</h3>
-                                <p class="text-gray-600 text-sm mb-2">${point.address}</p>
-                                <div class="text-xs text-gray-500">
-                                    <div>Координаты: ${point.location.toRegion.latitude}, ${point.location.toRegion.longitude}</div>
-                                    <div>ID: ${point.uid}</div>
-                                </div>
-                            </div>
-                        `;
-
-    marker.bindPopup(popupContent);
-
-    // Обработчик клика на маркер
-    marker.on('click', () => {
-      selectedPoint.value = point;
-      isModalOpen.value = true;
-    });
-  });
-};
-
-const fitMapToMarkers = () => {
-  if (!map.value || cachedPoints.value.length === 0) return;
-
-  const group = L.featureGroup();
-  cachedPoints.value.forEach(point => {
-    L.marker([Number(point.location.toRegion.latitude), Number(point.location.toRegion.longitude)]).addTo(group);
-  });
-
-  map.value.fitBounds(group.getBounds().pad(0.1));
-};
-
-const closeModal = () => {
-  isModalOpen.value = false;
-  selectedPoint.value = null;
-};
-
-// Показать точку на карте
-const zoomToPoint = (point: PointResponse) => {
-  if (!map.value) return;
-  map.value.setView([Number(point.location.toRegion.latitude), Number(point.location.toRegion.longitude)], 15);
-  closeModal();
-};
 
 </script>
 
@@ -117,93 +44,140 @@ const zoomToPoint = (point: PointResponse) => {
   <BackButton @click="router.back" />
 
   <div>
-    <div class="fixed overflow-auto start-0 top-0 end-0 bottom-0 w-full bg-[#242528]">
-        <!-- Карта -->
-          <div class="fixed top-0 z-10 start-0 end-0 text-black text-lg text-center">
-            <p>Версия: {{ DEV_VERSION }}</p>
-            <h2>
-              Карта ({{ cachedPoints.length }} точек)
-            </h2>
-          </div>
-          <div class="pt-4">
-            <div id="map" class="fixed overflow-auto start-0 top-0 end-0 bottom-0 w-full h-full"></div>
-          </div>
+    <!--    <div class="fixed overflow-auto start-0 top-0 end-0 bottom-0 w-full bg-[#242528]">-->
+    <!-- Карта -->
+    <!--          <div class="fixed top-0 z-10 start-0 end-0 text-black text-lg text-center">-->
+    <!--            <p>Версия: {{ DEV_VERSION }}</p>-->
+    <!--            <h2>-->
+    <!--              Карта ({{ cachedPoints.length }} точек)-->
+    <!--            </h2>-->
+    <!--          </div>-->
+    <!--          <div class="pt-4">-->
+    <!--            <div id="map" class="fixed overflow-auto start-0 top-0 end-0 bottom-0 w-full h-full"></div>-->
+    <!--          </div>-->
+    <!--    </div>-->
 
-      <!-- Модальное окно с информацией о точке -->
-      <div
-        v-if="isModalOpen && selectedPoint"
-        class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
-        @click="closeModal"
-      >
-        <div
-          class="bg-white rounded-lg shadow-xl max-w-md w-full p-6"
-          @click.stop
-        >
-          <div class="flex justify-between items-start mb-4">
-            <h3 class="text-xl font-bold text-gray-900">
-              {{ selectedPoint.name }}
-            </h3>
-            <button
-              @click="closeModal"
-              class="text-gray-400 hover:text-gray-600 text-2xl font-bold"
-            >
-              ×
-            </button>
-          </div>
 
-          <div class="space-y-3 mb-6">
-            <div>
-              <span class="text-sm font-medium text-gray-500">Адрес:</span>
-              <p class="text-gray-900">{{ selectedPoint.address }}</p>
+    <div class="h-screen w-full flex flex-col bg-gray-100">
+      <!-- Заголовок и панель управления -->
+      <div class="bg-white shadow-md p-4">
+        <h1 class="text-2xl font-bold text-gray-800 mb-4">
+          🛣️ Реальная маршрутизация по дорогам (Vue 3 + TypeScript)
+        </h1>
+
+        <div class="flex flex-wrap gap-2 mb-4">
+          <button
+            @click="buildRealRoutes"
+            :disabled="isLoading || roadNetwork.nodesSize === 0"
+            class="bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white px-4 py-2 rounded-md transition-colors"
+          >
+            {{ isLoading ? 'Строим маршруты...' : '🗺️ Построить реальные маршруты' }}
+          </button>
+
+          <button
+            @click="reloadRoadNetwork"
+            class="bg-purple-500 hover:bg-purple-600 text-white px-4 py-2 rounded-md transition-colors"
+          >
+            🔄 Обновить дорожную сеть
+          </button>
+
+          <button
+            @click="addPoint"
+            class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-md transition-colors"
+          >
+            ➕ Добавить точку
+          </button>
+
+          <button
+            @click="removeLastPoint"
+            class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md transition-colors"
+          >
+            ➖ Удалить точку
+          </button>
+        </div>
+
+        <!-- Статус загрузки -->
+        <div v-if="loadingProgress" class="mb-4 p-3 bg-blue-50 border-l-4 border-blue-400 rounded">
+          <div class="flex items-center">
+            <div v-if="isLoading"
+                 class="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500 mr-2"></div>
+            <span class="text-blue-800">{{ loadingProgress }}</span>
+          </div>
+        </div>
+
+        <!-- Список точек -->
+        <div class="mb-2">
+          <h3 class="font-semibold text-gray-700 mb-2">Точки маршрута ({{ points.length }}):</h3>
+          <div class="flex flex-wrap gap-2">
+                <span
+                  v-for="(point, index) in points"
+                  :key="index"
+                  class="bg-gray-200 px-3 py-1 rounded-full text-sm"
+                >
+                  {{ index + 1 }}. {{ point.name }}
+                </span>
+          </div>
+        </div>
+
+        <!-- Статистика дорожной сети -->
+        <div v-if="roadNetwork.nodesSize > 0" class="mb-2">
+          <h3 class="font-semibold text-gray-700 mb-2">Дорожная сеть:</h3>
+          <div class="grid grid-cols-2 gap-4 text-sm">
+            <div class="bg-green-50 p-2 rounded">
+              <strong>Узлов:</strong> {{ roadNetwork.nodesSize }}
             </div>
-
-            <div>
-              <span class="text-sm font-medium text-gray-500">Координаты:</span>
-              <p class="text-gray-900">{{ selectedPoint.location.toRegion.latitude }}, {{ selectedPoint.location.toRegion.longitude }}</p>
-            </div>
-
-            <div>
-              <span class="text-sm font-medium text-gray-500">ID:</span>
-              <p class="text-gray-900">{{ selectedPoint.uid }}</p>
+            <div class="bg-blue-50 p-2 rounded">
+              <strong>Дорог:</strong> {{ roadNetwork.waysSize }}
             </div>
           </div>
+        </div>
 
-          <div class="flex gap-3">
-            <button
-              @click="zoomToPoint(selectedPoint)"
-              class="flex-1 bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700 transition-colors font-medium"
+        <!-- Легенда маршрутов -->
+        <div v-if="routes.length > 0">
+          <h3 class="font-semibold text-gray-700 mb-2">Реальные маршруты:</h3>
+          <div class="flex flex-wrap gap-2">
+            <div
+              v-for="(route, index) in routes"
+              :key="index"
+              class="flex items-center gap-2 bg-gray-50 px-2 py-1 rounded"
             >
-              Показать на карте
-            </button>
-            <button
-              @click="closeModal"
-              class="flex-1 bg-gray-200 text-gray-800 px-4 py-2 rounded-md hover:bg-gray-300 transition-colors font-medium"
-            >
-              Закрыть
-            </button>
+              <div
+                class="w-4 h-1 rounded"
+                :style="{ backgroundColor: route.color }"
+              ></div>
+              <span class="text-xs">
+                    {{ route.from }} → {{ route.to }} ({{ route.points }} точек)
+                  </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Информация -->
+        <div class="mt-4 p-3 bg-yellow-50 rounded-lg border-l-4 border-yellow-400">
+          <h4 class="font-medium text-yellow-800 mb-2">ℹ️ Как это работает:</h4>
+          <div class="text-sm text-yellow-700 space-y-1">
+            <div>• Загружаем реальные дороги из OpenStreetMap через Overpass API</div>
+            <div>• Строим граф дорожной сети с узлами и соединениями</div>
+            <div>• Используем алгоритм A* для поиска кратчайшего пути</div>
+            <div>• Маршруты следуют по настоящим улицам и дорогам</div>
+            <div>• <strong>TypeScript обеспечивает безопасность типов!</strong></div>
           </div>
         </div>
       </div>
+
+      <!-- Карта -->
+      <div class="flex-1 relative">
+        <div
+          ref="mapContainer"
+          class="w-full h-full"
+        ></div>
+      </div>
     </div>
+
   </div>
+
 </template>
 
 <style scoped>
-.map-container {
-  height: 500px;
-  border-radius: 0.5rem;
-}
 
-.leaflet-popup-content-wrapper {
-  border-radius: 0.5rem;
-}
-
-.custom-marker {
-  background-color: #3cd916;
-  border: 2px solid #ffffff;
-  border-radius: 50%;
-  width: 20px;
-  height: 20px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-}
 </style>

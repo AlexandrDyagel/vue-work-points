@@ -6,37 +6,29 @@ import { computed, inject, onMounted, ref, type Ref, watch, watchPostEffect } fr
 import { PointResponse } from '@/model/PointResponse.ts'
 import { useCache } from '@/composables/useCache.ts'
 import SearchInputView from '@/components/SearchInputView.vue'
-import { useCloudStorage } from 'vue-tg/8.0'
 import { useUpdatedTaskList } from '@/store/TasksList.ts'
 import { useInputFocus } from '@/store/TopAppBar.ts'
-import { CloudStorageNames } from '@/model/Enums.ts'
+import { Routes as Route } from '@/model/Enums.ts'
 import ItemTaskView from '@/components/ItemTaskView.vue'
+import { useTasksLocalStorage } from '@/composables/useTasksLocalStorage.ts'
+import LoadingScreen from '@/components/LoadingScreen.vue'
 
 const router = useRouter()
-
-const tgCloudStorage = useCloudStorage()
-
+const tasksLocalStorage = useTasksLocalStorage()
 const updatedTaskListStore = useUpdatedTaskList()
 const inputFocus = useInputFocus()
-
-const lastItemRef = ref()
-
-const saveProgress = ref(false)
-
-const taskItems = ref([] as PointResponse[])
-
-const queryString = ref('')
-
-const filteredPoints = ref([] as PointResponse[])
-
-const isLoadingData = inject<Ref<boolean>>('isLoadingData') || ref(true)
-
 const { obtainCachedPoints } = useCache()
 
+const isLoadingData = ref(false)
+const lastItemRef = ref()
+const saveProgress = ref(false)
+const taskItems = ref([] as PointResponse[])
+const queryString = ref('')
+const filteredPoints = ref([] as PointResponse[])
 const cachedPoints = ref<PointResponse[]>([])
 
 const isVisibleSaveButton = computed(() => updatedTaskListStore.isUpdated && !inputFocus.isFocused)
-const isVisibleClearTaskButton = computed(() => taskItems.value.length !== 0 && !inputFocus.isFocused)
+const isVisibleTaskMapButton = computed(() => taskItems.value.length !== 0 && !inputFocus.isFocused)
 
 const search = () => {
   filteredPoints.value = cachedPoints.value.filter(point =>
@@ -67,63 +59,39 @@ const clickFilteredItem = (point: PointResponse) => {
 // Потеря фокуса input
 const handleInputFocusBlur = () => filteredPoints.value.splice(0, filteredPoints.value.length)
 
-async function saveToCloudStorage(taskItems: PointResponse[]) {
-  try {
-    await tgCloudStorage.setItem(CloudStorageNames.TASK_ITEMS, JSON.stringify(taskItems))
-    updatedTaskListStore.updateList(false)
-    console.log('Данные успешно сохранены в облако!')
-  } catch (error) {
-    console.log(`Не удалось сохранить данные: ${error}`)
-  }
+function loadTasksFromLocalStorage(): void {
+  taskItems.value = tasksLocalStorage.getItems()
+  updatedTaskListStore.updateList(false)
 }
 
-async function loadFromCloudStorage() {
-  try {
-    const data = await tgCloudStorage.getItem(CloudStorageNames.TASK_ITEMS)
-    const result: PointResponse[] = data ? JSON.parse(data) : []
-    taskItems.value.push(...result)
-
-    updatedTaskListStore.updateList(false)
-    console.log('Данные загружены')
-  } catch (error) {
-    console.log(`Не удалось загрузить данные: ${error}`)
-    taskItems.value = []
-  }
-}
-
-const saveTasks = async () => {
+const saveTasks = (): void => {
   saveProgress.value = true
-  await saveToCloudStorage(taskItems.value)
+  tasksLocalStorage.setItems(taskItems.value)
+  updatedTaskListStore.updateList(false)
   saveProgress.value = false
 }
-
-const clearTasks = () => taskItems.value.splice(0, taskItems.value.length)
 
 watch(queryString, () => search())
 
 onMounted(async () => {
-  await loadFromCloudStorage()
-})
-
-onMounted(async () => {
   try {
     isLoadingData.value = true
+    loadTasksFromLocalStorage()
 
     obtainCachedPoints()
       .then(cachedDataPoints => {
         cachedPoints.value = cachedDataPoints
       })
-
-    isLoadingData.value = false
   } catch (e) {
+    console.error(`Ошибка PointsView.vue в onMounted catch: ${e}`)
+  } finally {
     isLoadingData.value = false
-    console.log(`Ошибка PointsView.vue в onMounted catch: ${e}`)
   }
 })
 
 const marginBottomLastItemTask = computed(() => {
-  if (isVisibleClearTaskButton.value && isVisibleSaveButton.value) return 'mb-[180px]'
-  return isVisibleSaveButton.value || isVisibleClearTaskButton.value ? 'mb-[130px]' : 'mb-[70px]'
+  if (isVisibleTaskMapButton.value && isVisibleSaveButton.value) return 'mb-[180px]'
+  return isVisibleSaveButton.value || isVisibleTaskMapButton.value ? 'mb-[130px]' : 'mb-[70px]'
 })
 
 const emptyElements = computed(() => taskItems.value.length === 0 ? 'Нет заданий' : '')
@@ -131,7 +99,7 @@ const emptyElements = computed(() => taskItems.value.length === 0 ? 'Нет за
 watchPostEffect(() => {
   console.log(marginBottomLastItemTask.value)
   if (lastItemRef.value) {
-     lastItemRef.value.$el.scrollIntoView({ behavior: 'smooth' })
+    lastItemRef.value.$el.scrollIntoView({ behavior: 'smooth' })
   }
 })
 
@@ -139,6 +107,7 @@ watchPostEffect(() => {
 
 <template>
   <BackButton @click="router.back" />
+  <LoadingScreen :is-loading="isLoadingData" />
 
   <div
     class="fixed overflow-auto start-0 top-0 end-0 bottom-0 w-full bg-[#242528]">
@@ -187,18 +156,18 @@ watchPostEffect(() => {
       v-if="isVisibleSaveButton"
       @click="saveTasks"
       class="fixed start-0 end-0 bottom-0 z-10 mb-[80px] bg-[#5fb336] mx-4 px-3 h-[40px] rounded-xl text-center content-center cursor-pointer"
-      :class="isVisibleClearTaskButton ? 'mb-[130px]' : 'mb-[80px]'"
+      :class="isVisibleTaskMapButton ? 'mb-[130px]' : 'mb-[80px]'"
     >
       <span class="text-sm font-medium">{{ saveProgress ? 'Идет сохранение...' : 'Сохранить'
         }}</span>
     </div>
 
     <div
-      v-if="isVisibleClearTaskButton"
-      @click="clearTasks"
-      class="fixed start-0 end-0 bottom-0 mb-[80px] z-10 bg-[#ff5b4d] mx-4 px-3 h-[40px] rounded-xl text-center content-center cursor-pointer"
+      v-if="isVisibleTaskMapButton"
+      @click="router.push(Route.TaskMap)"
+      class="fixed start-0 end-0 bottom-0 mb-[80px] z-10 bg-[#3d7eff] mx-4 px-3 h-[40px] rounded-xl text-center content-center cursor-pointer"
     >
-      <span class="text-sm font-medium">Удалить все задания</span>
+      <span class="text-sm font-medium">На карте</span>
     </div>
   </div>
 
