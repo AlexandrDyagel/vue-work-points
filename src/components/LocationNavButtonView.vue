@@ -1,36 +1,25 @@
 <script setup lang="ts">
 
-import { ref, shallowRef } from 'vue'
+import { shallowRef } from 'vue'
 import Svg from '@/components/Svg.vue'
-import { useMiniApp } from 'vue-tg/8.0'
 import RouteIcon from '@/components/icons/RouteIcon.vue'
 import WorldGlobeIcon from '@/components/icons/WorldGlobeIcon.vue'
 import { TypeLocationNavButton } from '@/model/Enums.ts'
 
-const { openLink } = useMiniApp()
-
 const props = defineProps<{
   type: TypeLocationNavButton,
   name?: string,
-  location: {
-    latitude: string,
-    longitude: string
-  }
 }>()
-
-const url = ref('')
 
 const icon = shallowRef()
 
 switch (props.type) {
   case TypeLocationNavButton.POINT : {
     icon.value = WorldGlobeIcon
-    url.value = `https://yandex.ru/maps/?pt=${props.location.longitude},${props.location.latitude}&z=18&l=map`
     break
   }
   case TypeLocationNavButton.ROUTE : {
     icon.value = RouteIcon
-    url.value = `https://yandex.ru/maps/?rtext=~${props.location.latitude},${props.location.longitude}&rtt=auto`
     break
   }
   case TypeLocationNavButton.ANY : {
@@ -43,7 +32,6 @@ switch (props.type) {
 
 <template>
   <div
-    @click="openLink(url)"
     :class="type === 'route' ? 'text-[#ffffff] bg-[#3d7eff]' : 'text-[#7a7acc] bg-[#4d4d4d]'"
     class="flex flex-row items-center gap-1 px-3 relative h-[40px] rounded-xl text-center content-center cursor-pointer">
     <span v-if="icon">

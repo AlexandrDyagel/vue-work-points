@@ -22,7 +22,7 @@ const topAppBarRef = ref()
 const isLastUpdateTime = ref(false)
 
 const router = useRouter()
-const { obtainCachedPoints, checkForUpdate, clearCachePoints } = useCache()
+const { obtainCachedPoints, checkForUpdate, clearCachePoints, setLastUpdateDataPoints } = useCache()
 const { userSearchFilter, updateUserSearchFilter } = useSearchFilter()
 const typeSearchFilter = ref(userSearchFilter())
 const inputTopAppBarStore = useInputFocus()
@@ -35,9 +35,12 @@ onMounted(async () => {
 
     await checkForUpdate()
       .then(isLastUpdate => isLastUpdateTime.value = isLastUpdate)
-      .catch(error => console.log('Ошибка checkForUpdate() в App.vue: ', error))
+      .catch(error => console.error('Ошибка checkForUpdate() в App.vue: ', error))
 
-    console.log('isLastUpdateTime.value ', isLastUpdateTime.value)
+    if (isLastUpdateTime.value)
+      console.log('Есть новые обновления')
+    else
+      console.log('Нет новых обновлений')
     await obtainCachedPoints()
       .then(cachedDataPoints => {
         cachedPoints.value = cachedDataPoints
@@ -125,7 +128,6 @@ const emptyElements = computed(() => {
   } else return ''
 })
 
-// TODO логику нужно изменить!
 const updateDataPoints = () => {
   try {
     isLoadingData.value = true
@@ -133,13 +135,18 @@ const updateDataPoints = () => {
 
     obtainCachedPoints()
       .then(cachedDataPoints => {
-        cachedPoints.value = cachedDataPoints
+        filteredPoints.value = cachedDataPoints
+
+        const lastUpdatedAt = cachedDataPoints.sort((a, b) =>
+          Number(b.updatedAt) - Number(a.updatedAt))[0].updatedAt
+
+        setLastUpdateDataPoints(lastUpdatedAt)
       })
   } catch (e) {
     console.error(`Ошибка PointsView.vue в onMounted catch: ${e}`)
   } finally {
     isLoadingData.value = false
-    isLastUpdateTime.value = false // TODO логику нужно изменить!
+    isLastUpdateTime.value = false
   }
 }
 
@@ -157,7 +164,10 @@ const updateDataPoints = () => {
     @icon-filter-click="openBottomSheet"
   />
 
-  <div class="fixed overflow-auto start-0 top-0 end-0 bottom-0 w-full h-full bg-[#242528]">
+  <div
+    class="fixed overflow-auto start-0 end-0  w-full h-full bg-[#242528]"
+    :class="inputTopAppBarStore.isFocused ? 'top-0 bottom-0' : 'top-[80px] pb-[80px]'"
+  >
     <span v-if="filteredPoints.length === 0"
           class="fixed w-full h-full flex justify-center items-center text-2xl text-[#F0F0F0]">{{ emptyElements
       }}

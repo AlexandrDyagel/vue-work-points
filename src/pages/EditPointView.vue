@@ -9,10 +9,12 @@ import { BackButton } from 'vue-tg'
 import { deletePoint, updatePoint } from '../../firebase/init.ts'
 import { PointResponse } from '@/model/PointResponse.ts'
 import { useCache } from '@/composables/useCache.ts'
+import { useInputFocus } from '@/store/TopAppBar.ts'
 
 const router = useRouter()
 
 const { clearCachePoints, setLastUpdateDataPoints, removeLastUpdateDataPoints } = useCache()
+const inputTopAppBarStore = useInputFocus()
 
 const editPointStore = useEditPoint()
 
@@ -93,12 +95,15 @@ function delPoint() {
   }
 }
 
+const handleFocus = () => inputTopAppBarStore.changeFocus(true)
+
+const handleBlur = () => inputTopAppBarStore.changeFocus(false)
 </script>
 
 <template>
 
   <BackButton @click="router.back" />
-  <div class="fixed overflow-auto start-0 top-0 end-0 bottom-0 w-full h-full bg-[#242528]">
+  <div class="fixed overflow-scroll start-0 top-0 end-0 bottom-0 w-full h-full bg-[#242528] pb-[80px]">
     <p class="text-[#ccc] text-center text-2xl mt-4"><strong>Обновление точки</strong></p>
     <div class="ms-4 me-4 mt-4">
       <select
@@ -112,6 +117,8 @@ function delPoint() {
     </div>
     <div class="ms-4 me-4 mt-4">
       <input
+        @focusin="handleFocus"
+        @focusout="handleBlur"
         v-model="name"
         class="w-full shadow-xl start-4 end-4 bottom-4 rounded-lg bg-black border border-[#000] text-sm p-2.5 focus:outline-none"
         placeholder="Name"
@@ -119,6 +126,8 @@ function delPoint() {
     </div>
     <div class="ms-4 me-4 mt-4">
       <input
+        @focusin="handleFocus"
+        @focusout="handleBlur"
         v-model="direction"
         class="w-full shadow-xl start-4 end-4 bottom-4 rounded-lg bg-black border border-[#000] text-sm p-2.5 focus:outline-none"
         placeholder="Direction"
@@ -126,6 +135,8 @@ function delPoint() {
     </div>
     <div class="ms-4 me-4 mt-4">
       <input
+        @focusin="handleFocus"
+        @focusout="handleBlur"
         v-model="address"
         class="w-full shadow-xl start-4 end-4 bottom-4 rounded-lg bg-black border border-[#000] text-sm p-2.5 focus:outline-none"
         placeholder="Address"

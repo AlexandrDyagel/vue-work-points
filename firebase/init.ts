@@ -63,7 +63,7 @@ async function updatePoint(id: string, point: PointRequest) {
 }
 
 // Последнее обновление данных
-async function lastUpdatedPoints() {
+async function lastUpdatedPoints(): Promise<string> {
   const q = query(
     collection(db, FirestoreCollectionNames.POINTS),
     orderBy('updatedAt', 'desc'),

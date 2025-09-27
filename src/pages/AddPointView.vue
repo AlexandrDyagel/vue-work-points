@@ -8,6 +8,7 @@ import { Location } from '@/model/Location.ts'
 import { GeoPoint } from '@/model/GeoPoint.ts'
 import { TypePoint } from '@/model/Enums.ts'
 import { useCache } from '@/composables/useCache.ts'
+import { useInputFocus } from '@/store/TopAppBar.ts'
 
 const progress = ref(false)
 const directRegion = ref('toRegion')
@@ -21,6 +22,7 @@ const location = ref('')
 const router = useRouter()
 
 const { clearCachePoints, setLastUpdateDataPoints } = useCache()
+const inputTopAppBarStore = useInputFocus()
 
 function save() {
   progress.value = true
@@ -79,12 +81,16 @@ function clearInputs() {
   location.value = ''
   progress.value = false
 }
+
+const handleFocus = () => inputTopAppBarStore.changeFocus(true)
+
+const handleBlur = () => inputTopAppBarStore.changeFocus(false)
 </script>
 
 <template>
 
   <BackButton @click="router.back" />
-  <div class="fixed overflow-auto start-0 top-0 end-0 bottom-0 w-full h-full body">
+  <div class="fixed overflow-scroll start-0 top-0 end-0 bottom-0 w-full h-full body pb-[80px]">
     <p class="text-center text-[#ccc] text-2xl mt-4"><strong>Добавление точки</strong></p>
     <div class="ms-4 me-4 mt-4">
       <select
@@ -98,6 +104,8 @@ function clearInputs() {
     </div>
     <div class="ms-4 me-4 mt-4">
       <input
+        @focusin="handleFocus"
+        @focusout="handleBlur"
         v-model="name"
         class="w-full bg-black  shadow-xl start-4 end-4 bottom-4 border-color-custom rounded-lg bg-[#18695A] border text-sm p-2.5 focus:outline-none"
         placeholder="Name"
@@ -105,6 +113,8 @@ function clearInputs() {
     </div>
     <div class="ms-4 me-4 mt-4">
       <input
+        @focusin="handleFocus"
+        @focusout="handleBlur"
         v-model="direction"
         class="w-full bg-black shadow-xl start-4 end-4 bottom-4 border-color-custom rounded-lg bg-[#18695A] border text-sm p-2.5 focus:outline-none"
         placeholder="Direction"
@@ -112,6 +122,8 @@ function clearInputs() {
     </div>
     <div class="ms-4 me-4 mt-4">
       <input
+        @focusin="handleFocus"
+        @focusout="handleBlur"
         v-model="address"
         class="w-full bg-black shadow-xl start-4 end-4 bottom-4 border-color-custom rounded-lg bg-[#18695A] border text-sm p-2.5 focus:outline-none"
         placeholder="Address"
@@ -134,6 +146,8 @@ function clearInputs() {
     </div>
     <div class="ms-4 me-4 mt-4">
       <input
+        @focusin="handleFocus"
+        @focusout="handleBlur"
         v-model="location"
         class="w-full bg-black shadow-xl start-4 end-4 bottom-4 border-color-custom rounded-lg bg-[#18695A] border text-sm p-2.5 focus:outline-none"
         placeholder="Location"

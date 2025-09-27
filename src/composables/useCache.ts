@@ -10,66 +10,69 @@ export function useCache() {
     console.log('localStorage не поддерживается')
   }
 
+  /**
+   * Получаем данные из localStorage, если они есть.
+   * Если данных нет, то получаем их из интернета, сохраняем в localStorage и получаем из localStorage.
+   */
   const obtainCachedPoints = async (): Promise<PointResponse[]> => {
     // Пытаемся получить данные из localStorage по ключу 'cache_points' => LocalStorageNames.CACHE_POINTS
     const cachedData = localStorage.getItem(LocalStorageNames.CACHE_POINTS)
 
     // Проверяем, существуют ли данные в кэше
     if (cachedData) {
-      console.log('obtainCachedPoints: Данные из LocalStorage')
+      console.log('Данные точек из LocalStorage')
       // Если данные существуют, преобразуем их из строки в объект или массив и обрабатываем
       return JSON.parse(cachedData) as PointResponse[]
     } else {
       // Если данных в кэше нет, делаем запрос к серверу за данными
       await getPoints()
         .then((data: PointResponse[]) => {
-            // После получения данных сохраним их в localStorage для дальнейшего использования
-            localStorage.setItem(LocalStorageNames.CACHE_POINTS, JSON.stringify(data))
-          },
-          error => {
-            console.log(`Ошибка error getPoints(): ${error}`)
-          })
-      const cachedData = localStorage.getItem(LocalStorageNames.CACHE_POINTS)!
-      console.log('obtainCachedPoints: Данные из интернета и потом из localStorage')
-      const points = JSON.parse(cachedData) as PointResponse[]
+          localStorage.setItem(LocalStorageNames.CACHE_POINTS, JSON.stringify(data))
+          console.log('Данные из интернета и потом из localStorage')
+        })
+        .catch(error => {
+          console.error(`Ошибка error getPoints(): ${error}`)
+        })
 
-      // Обновление последнего обновления
-      // const lastUpdatedAt = points.sort((a, b) =>
-      //   Number(b.createdAt) - Number(a.createdAt))[0].updatedAt
-      //
-      // localStorage.setItem(LocalStorageNames.LAST_UPDATE_TIME, lastUpdatedAt)
-
-      return points
+      return JSON.parse(localStorage.getItem(LocalStorageNames.CACHE_POINTS)!) as PointResponse[]
     }
   }
 
   const clearCachePoints = () => localStorage.removeItem(LocalStorageNames.CACHE_POINTS)
 
+  /**
+   * Проверка последнего обновления данных
+   * @returns true (есть обновления)
+   */
   const checkForUpdate = async () => {
     const lastUpdateTime: Ref<string | null> = ref(null)
 
     await lastUpdatedPoints()
-      .then(lastUpdTime => {
-        lastUpdateTime.value = lastUpdTime
+      .then(lastUpdateFromDb => {
+        lastUpdateTime.value = lastUpdateFromDb
       })
-      .catch(error => console.log('Ошибка получения последнего обновления: ', error))
+      .catch(error => console.error('Ошибка получения времени последнего обновления: ', error))
 
-    console.log('Последнее обновление: ', lastUpdateTime.value)
+    console.log('Время последнего обновления в БД: ', lastUpdateTime.value)
 
     const cachedLastUpdateTime = localStorage.getItem(LocalStorageNames.LAST_UPDATE_TIME)
 
     // Проверяем, существуют ли данные в кэше
     if (cachedLastUpdateTime) {
-      console.log('checkForUpdate: Данные из LocalStorage')
+      console.log('В localStorage существует запись времени последнего обновления данных')
+      console.log('Время последнего обновления в приложении: ', cachedLastUpdateTime)
 
       return lastUpdateTime.value !== cachedLastUpdateTime
     } else {
+      console.log('В localStorage не существует записи о времени последнего обновления данных')
+
       obtainCachedPoints()
         .then(cachedDataPoints => {
           const lastUpdatedAt = cachedDataPoints.sort((a, b) =>
-          Number(b.createdAt) - Number(a.createdAt))[0].updatedAt
+            Number(b.updatedAt) - Number(a.updatedAt))[0].updatedAt
 
           localStorage.setItem(LocalStorageNames.LAST_UPDATE_TIME, lastUpdatedAt)
+          console.log('В localStorage добавлена запись о времени последнего обновления данных')
         })
 
       return lastUpdateTime.value !== localStorage.getItem(LocalStorageNames.LAST_UPDATE_TIME)
@@ -168,6 +171,6 @@ export function useCache() {
     clearCachePoints,
     checkForUpdate,
     setLastUpdateDataPoints,
-    removeLastUpdateDataPoints,
+    removeLastUpdateDataPoints
   }
 }
