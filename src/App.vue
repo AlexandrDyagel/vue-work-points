@@ -26,7 +26,6 @@ onMounted(() => {
   viewport.expand()
   viewport.isVerticalSwipesEnabled.value = false
   miniApp.ready()
-  // removeLastUpdateDataPoints()
 })
 </script>
 

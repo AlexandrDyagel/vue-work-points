@@ -1,7 +1,7 @@
 import type { BottomNavItem } from '@/model/BottomNavItem.ts'
 import { type Ref, ref, shallowRef, type UnwrapRef } from 'vue'
 import HomeIcon from '@/components/icons/HomeIcon.vue'
-import AddIcon from '@/components/icons/AddIcon.vue'
+import AddIcon from '@/components/icons/AddCircleIcon.vue'
 import ProfileIcon from '@/components/icons/ProfileIcon.vue'
 import WhatsIsLocationIcon from '@/components/icons/WhatsIsLocationIcon.vue'
 import { Routes as Route } from '@/model/Enums.ts'

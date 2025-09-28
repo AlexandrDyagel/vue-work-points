@@ -44,6 +44,7 @@ onMounted(async () => {
     await obtainCachedPoints()
       .then(cachedDataPoints => {
         cachedPoints.value = cachedDataPoints
+        console.warn(`Количество точек: ${cachedDataPoints.length}`)
       })
   } catch (e) {
     console.error(`Ошибка PointsView.vue в onMounted catch: ${e}`)

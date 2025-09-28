@@ -2,7 +2,7 @@
 
 import { BackButton } from 'vue-tg'
 import { useRouter } from 'vue-router'
-import { computed, inject, onMounted, ref, type Ref, watch, watchPostEffect } from 'vue'
+import { computed, onMounted, ref, watch, watchPostEffect } from 'vue'
 import { PointResponse } from '@/model/PointResponse.ts'
 import { useCache } from '@/composables/useCache.ts'
 import SearchInputView from '@/components/SearchInputView.vue'
@@ -12,6 +12,7 @@ import { Routes as Route } from '@/model/Enums.ts'
 import ItemTaskView from '@/components/ItemTaskView.vue'
 import { useTasksLocalStorage } from '@/composables/useTasksLocalStorage.ts'
 import LoadingScreen from '@/components/LoadingScreen.vue'
+import ItemDropDown from '@/components/ItemDropDown.vue'
 
 const router = useRouter()
 const tasksLocalStorage = useTasksLocalStorage()
@@ -97,11 +98,14 @@ const marginBottomLastItemTask = computed(() => {
 const emptyElements = computed(() => taskItems.value.length === 0 ? 'Нет заданий' : '')
 
 watchPostEffect(() => {
-  console.log(marginBottomLastItemTask.value)
   if (lastItemRef.value) {
     lastItemRef.value.$el.scrollIntoView({ behavior: 'smooth' })
   }
 })
+
+function isAddedTaskList(item: PointResponse): boolean {
+  return taskItems.value.map(item => item.name).includes(item.name)
+}
 
 </script>
 
@@ -126,16 +130,16 @@ watchPostEffect(() => {
 
         <!-- выпадающий список поиска -->
         <div v-auto-animate v-if="filteredPoints.length !== 0"
-             class="absolute bg-[#17212B] overflow-auto mt-[-16px] mx-6 shadow-xl z-50">
-          <div
+             class="absolute max-h-[270px] bg-[#17212B] overflow-y-auto mt-[-16px] mx-6 shadow-xl z-50">
+          <ItemDropDown
             v-for="[index, point] of filteredPoints.entries()"
             :key="point.uid"
-            class="px-4 pt-4 pb-4 text-sm"
+            :name-point="point.name"
+            :is-added-task-list="isAddedTaskList(point)"
             :class="index === filteredPoints.length - 1 ? `` : `border-b-[1px] border-[#3d3e43]`"
-            @mousedown="clickFilteredItem(point)"
+            @on-click="clickFilteredItem(point)"
           >
-            {{ point.name }}
-          </div>
+          </ItemDropDown>
         </div>
       </div>
     </div>

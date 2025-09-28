@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useRouter } from 'vue-router'
 import { useEditPoint } from '@/store/Point.ts'
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import { PointRequest } from '@/model/PointRequest.ts'
 import { Location } from '@/model/Location.ts'
 import { GeoPoint } from '@/model/GeoPoint.ts'
@@ -13,7 +13,7 @@ import { useInputFocus } from '@/store/TopAppBar.ts'
 
 const router = useRouter()
 
-const { clearCachePoints, setLastUpdateDataPoints, removeLastUpdateDataPoints } = useCache()
+const { clearCachePoints, setLastUpdateDataPoints, obtainCachedPoints } = useCache()
 const inputTopAppBarStore = useInputFocus()
 
 const editPointStore = useEditPoint()
@@ -23,6 +23,8 @@ const progressDelete = ref(false)
 
 const point: PointResponse = editPointStore.editPoint
 
+const isLoadingData = ref(false)
+const directions = ref(new Set<string>())
 const type = ref(point.type)
 const name = ref(point.name)
 const direction = ref(point.direction)
@@ -37,6 +39,25 @@ function formatPoints(locationString: string): string[] {
 
   return [lat, lon]
 }
+
+onMounted(async () => {
+  try {
+    isLoadingData.value = true
+
+    await obtainCachedPoints()
+      .then(cachedDataPoints => {
+        cachedDataPoints
+          .map(point => point.direction)
+          .forEach(directionName => {
+            directions.value.add(directionName)
+          })
+      })
+  } catch (e) {
+    console.error(`Ошибка AddPointView.vue в onMounted catch: ${e}`)
+  } finally {
+    isLoadingData.value = false
+  }
+})
 
 function update() {
   try {
@@ -121,17 +142,16 @@ const handleBlur = () => inputTopAppBarStore.changeFocus(false)
         @focusout="handleBlur"
         v-model="name"
         class="w-full shadow-xl start-4 end-4 bottom-4 rounded-lg bg-black border border-[#000] text-sm p-2.5 focus:outline-none"
-        placeholder="Name"
+        placeholder="Название"
       />
     </div>
     <div class="ms-4 me-4 mt-4">
-      <input
-        @focusin="handleFocus"
-        @focusout="handleBlur"
+      <select
         v-model="direction"
-        class="w-full shadow-xl start-4 end-4 bottom-4 rounded-lg bg-black border border-[#000] text-sm p-2.5 focus:outline-none"
-        placeholder="Direction"
-      />
+        class="w-full bg-black shadow-xl start-4 end-4 bottom-4 border-color-custom rounded-lg bg-[#18695A] border text-sm p-2.5 focus:outline-none"
+      >
+        <option v-for="[index, dirName] of directions.entries()" :key="index" :value="dirName">{{ dirName }}</option>
+      </select>
     </div>
     <div class="ms-4 me-4 mt-4">
       <input
@@ -139,25 +159,29 @@ const handleBlur = () => inputTopAppBarStore.changeFocus(false)
         @focusout="handleBlur"
         v-model="address"
         class="w-full shadow-xl start-4 end-4 bottom-4 rounded-lg bg-black border border-[#000] text-sm p-2.5 focus:outline-none"
-        placeholder="Address"
+        placeholder="Адрес"
       />
     </div>
     <div class="ms-4 me-4 mt-4">
-      <label class="text-[#ccc]" for="toRegion">В область</label>
+      <label class="text-[#ccc]" for="toRegion">В область (Внешняя)</label>
       <input
+        @focusin="handleFocus"
+        @focusout="handleBlur"
         id="toRegion"
         v-model="locationToRegion"
         class="w-full shadow-xl start-4 end-4 bottom-4 rounded-lg bg-black border border-[#000] text-sm p-2.5 focus:outline-none"
-        placeholder="Location to region"
+        placeholder="Координаты в регион"
       />
     </div>
     <div class="ms-4 me-4 mt-4">
-      <label class="text-[#ccc]" for="fromRegion">Из области</label>
+      <label class="text-[#ccc]" for="fromRegion">Из области (Внутренняя)</label>
       <input
+        @focusin="handleFocus"
+        @focusout="handleBlur"
         id="fromRegion"
         v-model="locationFromRegion"
         class="w-full shadow-xl start-4 end-4 bottom-4 rounded-lg bg-black border border-[#000] text-sm p-2.5 focus:outline-none"
-        placeholder="Location from region"
+        placeholder="Координаты из региона"
       />
     </div>
     <div class="ms-4 me-4 mt-4">
