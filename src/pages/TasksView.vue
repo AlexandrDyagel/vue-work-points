@@ -2,7 +2,7 @@
 
 import { BackButton } from 'vue-tg'
 import { useRouter } from 'vue-router'
-import { computed, onMounted, ref, watch, watchPostEffect } from 'vue'
+import { computed, onMounted, ref, watch, watchEffect, watchPostEffect } from 'vue'
 import { PointResponse } from '@/model/PointResponse.ts'
 import { useCache } from '@/composables/useCache.ts'
 import SearchInputView from '@/components/SearchInputView.vue'
@@ -13,6 +13,9 @@ import ItemTaskView from '@/components/ItemTaskView.vue'
 import { useTasksLocalStorage } from '@/composables/useTasksLocalStorage.ts'
 import LoadingScreen from '@/components/LoadingScreen.vue'
 import ItemDropDown from '@/components/ItemDropDown.vue'
+import { useVerticalScroll } from '@/composables/useVerticalScroll.ts'
+import ArrowDropDownIcon from '@/components/icons/ArrowDropDownIcon.vue'
+import Svg from '@/components/Svg.vue'
 
 const router = useRouter()
 const tasksLocalStorage = useTasksLocalStorage()
@@ -27,9 +30,21 @@ const taskItems = ref([] as PointResponse[])
 const queryString = ref('')
 const filteredPoints = ref([] as PointResponse[])
 const cachedPoints = ref<PointResponse[]>([])
+const scrollDropDownContainerRef = ref<HTMLElement | null>(null)
+
+const {
+  isAtBottom,
+  canScrollDown,
+  checkScrollState,
+} = useVerticalScroll(scrollDropDownContainerRef)
 
 const isVisibleSaveButton = computed(() => updatedTaskListStore.isUpdated && !inputFocus.isFocused)
 const isVisibleTaskMapButton = computed(() => taskItems.value.length !== 0 && !inputFocus.isFocused)
+const isVisibleArrowDropDownIcon = computed(() => {
+  if (canScrollDown.value) return true
+  if (isAtBottom.value) return false
+  return filteredPoints.value.length > 6
+})
 
 const search = () => {
   filteredPoints.value = cachedPoints.value.filter(point =>
@@ -107,42 +122,59 @@ function isAddedTaskList(item: PointResponse): boolean {
   return taskItems.value.map(item => item.name).includes(item.name)
 }
 
+const scrollDropDownContainerWidth = ref('')
+
+watchEffect(() => {
+  if (canScrollDown) {
+    scrollDropDownContainerWidth.value = `w-[${scrollDropDownContainerRef.value?.clientWidth}px]`
+  }
+})
 </script>
 
 <template>
   <BackButton @click="router.back" />
   <LoadingScreen :is-loading="isLoadingData" />
 
-  <div
-    class="fixed overflow-auto start-0 top-0 end-0 bottom-0 w-full bg-[#242528]">
-
-     <span v-if="taskItems.length === 0"
-           class="absolute w-screen h-screen flex justify-center items-center text-2xl text-[#F0F0F0]">{{ emptyElements
-       }}
-    </span>
-
+  <div class="fixed top-0 start-0 end-0 z-50 bg-[#242528] border-b-[1px] border-[#3d3e43]">
     <p class="text-center text-[#ccc] text-2xl mt-4"><strong>Мои задания</strong></p>
-    <div class="sticky bg-[#242528] top-0 start-0 end-0 border-b-[1px] border-[#3d3e43] z-50">
+    <!-- строка поиска -->
+    <SearchInputView @focus-blur="handleInputFocusBlur" @filter-changed="handleFilterChange" />
 
-      <div>
-        <!-- строка поиска -->
-        <SearchInputView @focus-blur="handleInputFocusBlur" @filter-changed="handleFilterChange" />
-
-        <!-- выпадающий список поиска -->
-        <div v-auto-animate v-if="filteredPoints.length !== 0"
-             class="absolute max-h-[270px] bg-[#17212B] overflow-y-auto mt-[-16px] mx-6 shadow-xl z-50">
-          <ItemDropDown
-            v-for="[index, point] of filteredPoints.entries()"
-            :key="point.uid"
-            :name-point="point.name"
-            :is-added-task-list="isAddedTaskList(point)"
-            :class="index === filteredPoints.length - 1 ? `` : `border-b-[1px] border-[#3d3e43]`"
-            @on-click="clickFilteredItem(point)"
-          >
-          </ItemDropDown>
-        </div>
+    <div>
+      <!-- выпадающий список поиска -->
+      <div
+        v-auto-animate
+        ref="scrollDropDownContainerRef"
+        @scroll="checkScrollState"
+        v-if="filteredPoints.length !== 0"
+        class="absolute max-h-[280px] bg-[#17212B] overflow-y-auto mt-[-16px] mx-6 shadow-xl z-50"
+      >
+        <ItemDropDown
+          v-for="[index, point] of filteredPoints.entries()"
+          :key="point.uid"
+          :name-point="point.name"
+          :is-added-task-list="isAddedTaskList(point)"
+          :class="{'border-b-[1px] border-[#3d3e43]': index !== filteredPoints.length - 1}"
+          @on-click="clickFilteredItem(point)"
+        >
+        </ItemDropDown>
+        <Svg
+          v-if="isVisibleArrowDropDownIcon"
+          class="fixed inline-flex items-center justify-center text-[#88ce02] text-[10px] h-[10px] top-[380px] w-[calc(100vw-6.25rem)]">
+          <component ref="comp" :is="ArrowDropDownIcon"></component>
+        </Svg>
       </div>
     </div>
+  </div>
+  <div
+    class="fixed overflow-auto start-0 top-[128px] end-0 bottom-0 w-full bg-[#242528]"
+  >
+     <span
+       v-if="taskItems.length === 0"
+       class="absolute w-screen h-screen flex justify-center items-center text-2xl text-[#F0F0F0]"
+     >{{ emptyElements
+       }}
+    </span>
 
     <!-- добавленные элементы в список -->
     <div v-auto-animate>
@@ -153,7 +185,8 @@ function isAddedTaskList(item: PointResponse): boolean {
         :task-items="taskItems"
         @delete="deleteTaskItem"
         :class="index === taskItems.length - 1 ? marginBottomLastItemTask : ``"
-        :ref="(el) => { if (index === taskItems.length - 1) lastItemRef = el }" />
+        :ref="(el) => { if (index === taskItems.length - 1) lastItemRef = el }"
+      />
     </div>
 
     <div
@@ -174,38 +207,6 @@ function isAddedTaskList(item: PointResponse): boolean {
       <span class="text-sm font-medium">На карте</span>
     </div>
   </div>
-
-
-  <!--  <p>Карта</p>
-
-    <div class="bg-[#242528] min-h-screen py-8">
-      <div class="max-w-md mx-auto rounded-lg overflow-hidden">
-        <ul>
-          <li
-            v-for="(point, index) in cachedPoints"
-            :key="index"
-            class="relative py-5 px-6"
-            @click="indexClicked = index"
-          >
-            &lt;!&ndash; Дорожка &ndash;&gt;
-            <div :class="path(index)"></div>
-
-            &lt;!&ndash; Точка на дорожке &ndash;&gt;
-            <div
-              class="absolute left-8 top-1/2 transform -translate-y-1/2 w-5 h-5 rounded-full bg-blue-500 border-4 border-white z-10"
-              :class="{ 'animate-pulse-custom': index === indexClicked }"
-              style="box-shadow: 0 0 0 2px #3b82f6;"
-            ></div>
-
-            &lt;!&ndash; Информация о точке point &ndash;&gt;
-            <div class="ml-10">
-              <div class="font-bold text-[#F0F0F0]">{{ point.name }}</div>
-              <div class="text-sm text-[#999]">{{ point.direction }}</div>
-            </div>
-          </li>
-        </ul>
-      </div>
-    </div>-->
 </template>
 
 <style scoped>

@@ -7,6 +7,7 @@ import { PointResponse } from '@/model/PointResponse.ts'
 import { useTasksLocalStorage } from '@/composables/useTasksLocalStorage.ts'
 import { useMiniApp, useTheme } from 'vue-tg/8.0'
 import LoadingScreen from '@/components/LoadingScreen.vue'
+import type { Marker } from 'leaflet'
 
 const router = useRouter()
 const tasksLocalStorage = useTasksLocalStorage()
@@ -100,9 +101,19 @@ const addMarkersToMap = () => {
     //     iconAnchor: [50, 30]
     //   })
     // }).addTo(map.value)
+    let marker: Marker
+    let urlRoute: string = ''
+    let urlPoint: string = ''
+    if (point.location.toRegion.latitude && point.location.toRegion.longitude) {
+      marker = createTextMarker(Number(point.location.toRegion.latitude), Number(point.location.toRegion.longitude), point.name).addTo(map.value)
+      urlRoute = `https://yandex.ru/maps/?rtext=~${point.location.toRegion.latitude},${point.location.toRegion.longitude}&rtt=auto`
+      urlPoint = `https://yandex.ru/maps/?pt=${point.location.toRegion.longitude},${point.location.toRegion.latitude}&z=18&l=map`
+    } else {
+      marker = createTextMarker(Number(point.location.fromRegion.latitude), Number(point.location.fromRegion.longitude), point.name).addTo(map.value)
+      urlRoute = `https://yandex.ru/maps/?rtext=~${point.location.fromRegion.latitude},${point.location.fromRegion.longitude}&rtt=auto`
+      urlPoint = `https://yandex.ru/maps/?pt=${point.location.fromRegion.longitude},${point.location.fromRegion.latitude}&z=18&l=map`
+    }
 
-    const marker = createTextMarker(Number(point.location.toRegion.latitude), Number(point.location.toRegion.longitude), point.name).addTo(map.value)
-    const url = `https://yandex.ru/maps/?rtext=~${point.location.toRegion.latitude},${point.location.toRegion.longitude}&rtt=auto`
 
     // Создаем popup с информацией о точке
     const popupDiv = document.createElement('div')
@@ -113,15 +124,23 @@ const addMarkersToMap = () => {
                           <div class="text-gray-600 text-sm mb-1">${point.direction}</div>
                           <div class="text-gray-600 text-sm mb-2">${point.address}</div>
                           <div class="flex gap-2 items-center">
+                          <div class="inline-flex gap-2 items-center justify-center">
                           <button
                             class="route-btn px-2 py-1 rounded text-[#ffffff] bg-[#3d7eff] active:bg-[#3c3c3c]">
                             Маршрут</button>
+                            <button
+                            class="point-btn px-2 py-1 rounded text-[#ffffff] bg-[#3d7eff] active:bg-[#3c3c3c]">
+                            Место</button>
+                          </div>
                           </div>
                         `
 
     // Добавляем обработчики
     popupDiv.querySelector('.route-btn')?.addEventListener('click', () => {
-      openLink(url)
+      openLink(urlRoute)
+    });
+    popupDiv.querySelector('.point-btn')?.addEventListener('click', () => {
+      openLink(urlPoint)
     });
 
     marker.bindPopup(popupDiv)
@@ -139,7 +158,11 @@ const fitMapToMarkers = () => {
 
   const group = L.featureGroup()
   taskItems.value.forEach(point => {
-    L.marker([Number(point.location.toRegion.latitude), Number(point.location.toRegion.longitude)]).addTo(group)
+    if (point.location.toRegion.latitude && point.location.toRegion.longitude) {
+      L.marker([Number(point.location.toRegion.latitude), Number(point.location.toRegion.longitude)]).addTo(group)
+    } else {
+      L.marker([Number(point.location.fromRegion.latitude), Number(point.location.fromRegion.longitude)]).addTo(group)
+    }
   })
 
   map.value.fitBounds(group.getBounds().pad(0.1))

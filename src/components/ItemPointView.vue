@@ -18,6 +18,7 @@ import TunnelImg from '@/assets/images/tunnel.png'
 import StepUpImg from '@/assets/images/step_up.png'
 import StepDownImg from '@/assets/images/step_down.png'
 import { useUserRole } from '@/composables/useUserRole.ts'
+import { listOfExpPoint } from '@/model/list-of-exeptions'
 
 const props = defineProps<{
   dataPoint: PointResponse;
@@ -158,13 +159,13 @@ const getIcon = (typePoint: TypePoint) => {
         <DirectionButtonView
           v-if="dataPoint.location.toRegion.latitude"
           @click="clickDirectButton(TypeDirectionButton.TO_REGION)"
-          :name="dataPoint.type === TypePoint.TA || dataPoint.direction === 'Садовое кольцо' ? 'Внешняя' : 'В область'"
+          :name="(dataPoint.type === TypePoint.TA || dataPoint.direction === 'Садовое кольцо') && !listOfExpPoint.includes(dataPoint.name) ? 'Внешняя' : 'В область'"
           :is-active="isActiveToRegionButton"
         />
         <DirectionButtonView
           v-if="dataPoint.location.fromRegion.latitude"
           @click="clickDirectButton(TypeDirectionButton.FROM_REGION)"
-          :name="dataPoint.type === TypePoint.TA || dataPoint.direction === 'Садовое кольцо' ? 'Внутренняя' : 'Из области'"
+          :name="(dataPoint.type === TypePoint.TA || dataPoint.direction === 'Садовое кольцо') && !listOfExpPoint.includes(dataPoint.name) ? 'Внутренняя' : 'Из области'"
           :is-active="isActiveFromRegionButton"
         />
       </div>
