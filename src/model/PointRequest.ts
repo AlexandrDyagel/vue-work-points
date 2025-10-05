@@ -9,13 +9,15 @@ export class PointRequest {
   readonly createdAt: string
   readonly updatedAt: string
 
-  constructor(type: string,
-              name: string,
-              direction: string,
-              address: string,
-              location: Location,
-              createdAt: string,
-              updatedAt: string) {
+  constructor(
+    type: string,
+    name: string,
+    direction: string,
+    address: string,
+    location: Location,
+    createdAt: string,
+    updatedAt: string,
+  ) {
     this.type = type
     this.name = name
     this.direction = direction

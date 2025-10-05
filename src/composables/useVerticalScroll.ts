@@ -13,7 +13,9 @@ interface VerticalScrollState {
   scrollBy: (pixels: number) => void
 }
 
-export function useVerticalScroll(scrollContainerRef: Ref<HTMLElement | null>): VerticalScrollState {
+export function useVerticalScroll(
+  scrollContainerRef: Ref<HTMLElement | null>,
+): VerticalScrollState {
   const isAtTop = ref(true)
   const isAtBottom = ref(false)
   const canScrollUp = ref(false)
@@ -47,7 +49,7 @@ export function useVerticalScroll(scrollContainerRef: Ref<HTMLElement | null>): 
     if (scrollContainerRef.value) {
       scrollContainerRef.value.scrollTo({
         top: scrollContainerRef.value.scrollHeight,
-        behavior: 'smooth'
+        behavior: 'smooth',
       })
     }
   }
@@ -80,6 +82,6 @@ export function useVerticalScroll(scrollContainerRef: Ref<HTMLElement | null>): 
     checkScrollState,
     scrollToTop,
     scrollToBottom,
-    scrollBy
+    scrollBy,
   }
 }

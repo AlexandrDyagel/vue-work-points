@@ -5,7 +5,7 @@ import LoadingIcon from '@/components/icons/LoadingIcon.vue'
 
 defineProps({
   isLoading: Boolean,
-});
+})
 
 const loadingIcon = shallowRef(LoadingIcon)
 </script>
@@ -19,8 +19,6 @@ const loadingIcon = shallowRef(LoadingIcon)
         <component ref="comp" :is="loadingIcon"></component>
       </Svg>
     </div>
-
   </div>
 </template>
-<style scoped>
-</style>
+<style scoped></style>

@@ -87,7 +87,7 @@ onUnmounted(() => {
 // Экспортируем методы для использования извне
 defineExpose({
   openSheet,
-  closeSheet
+  closeSheet,
 })
 </script>
 
@@ -101,10 +101,7 @@ defineExpose({
     ></div>
 
     <!-- Bottom Sheet -->
-    <div
-      class="bottom-sheet"
-      :class="{ 'sheet-open': isOpen }"
-    >
+    <div class="bottom-sheet" :class="{ 'sheet-open': isOpen }">
       <!-- Handle -->
       <div class="sheet-handle" @mousedown="startDrag" @touchstart="startDrag">
         <div class="handle-icon"></div>

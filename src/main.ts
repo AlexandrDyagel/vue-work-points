@@ -6,23 +6,31 @@ import { autoAnimatePlugin } from '@formkit/auto-animate/vue'
 
 import { createRouter, createWebHistory } from 'vue-router'
 import { createPinia } from 'pinia'
-import { Routes as Route } from '@/model/Enums.ts'
+import { Environment, Routes as Route } from '@/model/Enums.ts'
 
-export const DEV_VERSION = '2.39'
-export const DEVELOPMENT = false
-// export const DEVELOPMENT = true
+export const DEV_VERSION = '2.45'
+// export const ENVIRONMENT = Environment.PRODUCTION
+export const ENVIRONMENT = Environment.DEVELOPMENT
 
 const app = createApp(App)
 
 const routes = [
-  { path: '/', name: 'home', redirect: '/points' },
-  { path: Route.Points, name: 'points', component: () => import((`@/pages/PointsView.vue`)) },
-  { path: Route.AddPoint, name: 'add_point', component: () => import((`@/pages/AddPointView.vue`)) },
-  { path: Route.EditPoint, name: 'edit_point', component: () => import((`@/pages/EditPointView.vue`)) },
-  { path: Route.Tasks, name: 'tasks', component: () => import((`@/pages/TasksView.vue`)) },
-  { path: Route.TaskMap, name: 'tasks_map', component: () => import((`@/pages/TaskMapView.vue`)) },
-  { path: Route.Search, name: 'search_point', component: () => import((`@/pages/SearchPointView.vue`)) },
-  { path: Route.Settings, name: 'settings', component: () => import((`@/pages/SettingsView.vue`)) },
+  { path: Route.Home, name: 'home', redirect: Route.Points },
+  { path: Route.Points, name: 'points', component: () => import(`@/pages/PointsView.vue`) },
+  { path: Route.AddPoint, name: 'add_point', component: () => import(`@/pages/AddPointView.vue`) },
+  {
+    path: Route.EditPoint,
+    name: 'edit_point',
+    component: () => import(`@/pages/EditPointView.vue`),
+  },
+  { path: Route.Tasks, name: 'tasks', component: () => import(`@/pages/TasksView.vue`) },
+  { path: Route.TaskMap, name: 'tasks_map', component: () => import(`@/pages/TaskMapView.vue`) },
+  {
+    path: Route.Search,
+    name: 'search_point',
+    component: () => import(`@/pages/SearchPointView.vue`),
+  },
+  { path: Route.Settings, name: 'settings', component: () => import(`@/pages/SettingsView.vue`) },
 ]
 
 const router = createRouter({

@@ -29,8 +29,12 @@ const type = ref(point.type)
 const name = ref(point.name)
 const direction = ref(point.direction)
 const address = ref(point.address)
-const locationToRegion = ref(`${point.location.toRegion.latitude}, ${point.location.toRegion.longitude}`)
-const locationFromRegion = ref(`${point.location.fromRegion.latitude}, ${point.location.fromRegion.longitude}`)
+const locationToRegion = ref(
+  `${point.location.toRegion.latitude}, ${point.location.toRegion.longitude}`,
+)
+const locationFromRegion = ref(
+  `${point.location.fromRegion.latitude}, ${point.location.fromRegion.longitude}`,
+)
 
 function formatPoints(locationString: string): string[] {
   const locPoints = locationString.toString().split(',')
@@ -44,14 +48,13 @@ onMounted(async () => {
   try {
     isLoadingData.value = true
 
-    await obtainCachedPoints()
-      .then(cachedDataPoints => {
-        cachedDataPoints
-          .map(point => point.direction)
-          .forEach(directionName => {
-            directions.value.add(directionName)
-          })
-      })
+    await obtainCachedPoints().then((cachedDataPoints) => {
+      cachedDataPoints
+        .map((point) => point.direction)
+        .forEach((directionName) => {
+          directions.value.add(directionName)
+        })
+    })
   } catch (e) {
     console.error(`Ошибка AddPointView.vue в onMounted catch: ${e}`)
   } finally {
@@ -74,23 +77,25 @@ function update() {
       address.value,
       new Location(
         new GeoPoint(locToRegion[0], locToRegion[1]),
-        new GeoPoint(locFromRegion[0], locFromRegion[1])
+        new GeoPoint(locFromRegion[0], locFromRegion[1]),
       ),
       point.createdAt,
-      dateNow
+      dateNow,
     )
 
-    updatePoint(point.uid, pointRequest)
-      .then(() => {
+    updatePoint(point.uid, pointRequest).then(
+      () => {
         console.log('Обнавлено в БД')
         setLastUpdateDataPoints(dateNow)
         clearCachePoints()
         progressUpdate.value = false
         router.back()
-      }, error => {
+      },
+      (error) => {
         console.log(`Ошибка error: ${error}`)
         progressUpdate.value = false
-      })
+      },
+    )
   } catch (e) {
     console.log(`Ошибка при обновлении: ${e}`)
     progressUpdate.value = false
@@ -100,16 +105,18 @@ function update() {
 function delPoint() {
   try {
     progressDelete.value = true
-    deletePoint(point.uid)
-      .then(() => {
+    deletePoint(point.uid).then(
+      () => {
         console.log('Удалено из БД')
         clearCachePoints()
         progressDelete.value = false
         router.back()
-      }, error => {
+      },
+      (error) => {
         console.log(`Ошибка error: ${error}`)
         progressDelete.value = false
-      })
+      },
+    )
   } catch (e) {
     console.log(`Ошибка при удалении: ${e}`)
     progressDelete.value = false
@@ -122,9 +129,10 @@ const handleBlur = () => inputTopAppBarStore.changeFocus(false)
 </script>
 
 <template>
-
   <BackButton @click="router.back" />
-  <div class="fixed overflow-scroll start-0 top-0 end-0 bottom-0 w-full h-full bg-[#242528] pb-[80px]">
+  <div
+    class="fixed overflow-scroll start-0 top-0 end-0 bottom-0 w-full h-full bg-[#242528] pb-[80px]"
+  >
     <p class="text-[#ccc] text-center text-2xl mt-4"><strong>Обновление точки</strong></p>
     <div class="ms-4 me-4 mt-4">
       <select
@@ -134,6 +142,7 @@ const handleBlur = () => inputTopAppBarStore.changeFocus(false)
         <option value="тп">Тоннель пешеходный</option>
         <option value="та">Тоннель автодорожный</option>
         <option value="пп">Путепровод пешеходный. Переход надземный</option>
+        <option value="уч">Участок</option>
       </select>
     </div>
     <div class="ms-4 me-4 mt-4">
@@ -150,7 +159,9 @@ const handleBlur = () => inputTopAppBarStore.changeFocus(false)
         v-model="direction"
         class="w-full bg-black shadow-xl start-4 end-4 bottom-4 border-color-custom rounded-lg bg-[#18695A] border text-sm p-2.5 focus:outline-none"
       >
-        <option v-for="[index, dirName] of directions.entries()" :key="index" :value="dirName">{{ dirName }}</option>
+        <option v-for="[index, dirName] of directions.entries()" :key="index" :value="dirName">
+          {{ dirName }}
+        </option>
       </select>
     </div>
     <div class="ms-4 me-4 mt-4">
@@ -198,12 +209,8 @@ const handleBlur = () => inputTopAppBarStore.changeFocus(false)
       >
         {{ progressDelete ? 'Выполняется удаление. Подождите...' : 'Удалить' }}
       </div>
-
     </div>
   </div>
-
 </template>
 
-<style scoped>
-
-</style>
+<style scoped></style>

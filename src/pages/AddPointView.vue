@@ -32,16 +32,15 @@ onMounted(async () => {
   try {
     isLoadingData.value = true
 
-    await obtainCachedPoints()
-      .then(cachedDataPoints => {
-        cachedDataPoints
-          .map(point => point.direction)
-          .forEach(directionName => {
-            directions.value.add(directionName)
-          })
-        directions.value.add('+')
-        direction.value = Array.from(directions.value)[0]
-      })
+    await obtainCachedPoints().then((cachedDataPoints) => {
+      cachedDataPoints
+        .map((point) => point.direction)
+        .forEach((directionName) => {
+          directions.value.add(directionName)
+        })
+      directions.value.add('+')
+      direction.value = Array.from(directions.value)[0]
+    })
   } catch (e) {
     console.error(`Ошибка AddPointView.vue в onMounted catch: ${e}`)
   } finally {
@@ -49,11 +48,11 @@ onMounted(async () => {
   }
 })
 
-function parseLocationString(stringLocation: string): { lat: string, lon: string } {
+function parseLocationString(stringLocation: string): { lat: string; lon: string } {
   const locPoints = stringLocation.split(',')
   return {
     lat: locPoints[0].trim(),
-    lon: locPoints[1].trim()
+    lon: locPoints[1].trim(),
   }
 }
 
@@ -75,9 +74,10 @@ function save() {
     address.value,
     new Location(
       new GeoPoint(locPointToRegion.lat, locPointToRegion.lon),
-      new GeoPoint(locPointFromRegion.lat, locPointFromRegion.lon)),
+      new GeoPoint(locPointFromRegion.lat, locPointFromRegion.lon),
+    ),
     dateNow,
-    dateNow
+    dateNow,
   )
 
   addPoint(point)
@@ -119,7 +119,6 @@ watch(direction, () => {
 </script>
 
 <template>
-
   <BackButton @click="router.back" />
   <div class="fixed overflow-scroll start-0 top-0 end-0 bottom-0 w-full h-full body pb-[80px]">
     <p class="text-center text-[#ccc] text-2xl mt-4"><strong>Добавление точки</strong></p>
@@ -131,6 +130,7 @@ watch(direction, () => {
         <option :value="TypePoint.TP">Тоннель пешеходный</option>
         <option :value="TypePoint.TA">Тоннель автодорожный</option>
         <option :value="TypePoint.PP">Путепровод пешеходный. Переход надземный</option>
+        <option :value="TypePoint.Home">Участок</option>
       </select>
     </div>
     <div class="ms-4 me-4 mt-4">
@@ -138,7 +138,7 @@ watch(direction, () => {
         @focusin="handleFocus"
         @focusout="handleBlur"
         v-model="name"
-        class="w-full bg-black  shadow-xl start-4 end-4 bottom-4 border-color-custom rounded-lg bg-[#18695A] border text-sm p-2.5 focus:outline-none"
+        class="w-full bg-black shadow-xl start-4 end-4 bottom-4 border-color-custom rounded-lg bg-[#18695A] border text-sm p-2.5 focus:outline-none"
         placeholder="Название"
       />
     </div>
@@ -147,7 +147,9 @@ watch(direction, () => {
         v-model="direction"
         class="w-full bg-black shadow-xl start-4 end-4 bottom-4 border-color-custom rounded-lg bg-[#18695A] border text-sm p-2.5 focus:outline-none"
       >
-        <option v-for="[index, dirName] of directions.entries()" :key="index" :value="dirName">{{ dirName }}</option>
+        <option v-for="[index, dirName] of directions.entries()" :key="index" :value="dirName">
+          {{ dirName }}
+        </option>
       </select>
     </div>
     <div class="ms-4 me-4 mt-4">
@@ -203,7 +205,6 @@ watch(direction, () => {
       >
         {{ progress ? 'Выполняется сохранение. Подождите...' : 'Сохранить' }}
       </div>
-
     </div>
     <div v-if="isAddNewDirection" class="flex gap-2 ms-4 me-4 mt-4">
       <input
@@ -213,7 +214,9 @@ watch(direction, () => {
         class="w-full bg-black shadow-xl start-4 end-4 bottom-4 border-color-custom rounded-lg bg-[#18695A] border text-sm p-2.5 focus:outline-none"
         placeholder="Название нового направления"
       />
-      <div @click="addDirection" class="py-2 px-4 border-[#5fb336] rounded-lg bg-[#5fb336] border">+</div>
+      <div @click="addDirection" class="py-2 px-4 border-[#5fb336] rounded-lg bg-[#5fb336] border">
+        +
+      </div>
     </div>
   </div>
 </template>

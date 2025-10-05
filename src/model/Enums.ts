@@ -2,16 +2,18 @@ export enum TypePoint {
   TP = 'тп',
   TA = 'та',
   PP = 'пп',
+  Home = 'уч',
 }
 
 export enum Routes {
-  Points = "/points",
-  AddPoint = "/points/add",
-  EditPoint = "/points/edit",
-  Tasks = "/tasks",
-  TaskMap = "/tasks/map",
-  Search = "/search",
-  Settings = "/settings",
+  Home = '/',
+  Points = '/points',
+  AddPoint = '/points/add',
+  EditPoint = '/points/edit',
+  Tasks = '/tasks',
+  TaskMap = '/tasks/map',
+  Search = '/search',
+  Settings = '/settings',
 }
 
 export enum TypeDirectionButton {
@@ -26,7 +28,7 @@ export enum TypeLocationNavButton {
 }
 
 export enum CloudStorageNames {
-  TASK_ITEMS= 'task_items',
+  TASK_ITEMS = 'task_items',
 }
 
 export enum LocalStorageNames {
@@ -39,7 +41,7 @@ export enum LocalStorageNames {
 
 export enum FirestoreCollectionNames {
   POINTS = 'points',
-  UPDATE = 'timeforupdate'
+  UPDATE = 'timeforupdate',
 }
 
 export enum TypeSearchFilter {
@@ -51,4 +53,9 @@ export enum TypeSearchFilter {
 export enum UserRole {
   ADMIN = 'admin',
   USER = 'user',
+}
+
+export enum Environment {
+  DEVELOPMENT,
+  PRODUCTION
 }

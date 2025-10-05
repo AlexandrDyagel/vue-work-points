@@ -1,5 +1,4 @@
 <script setup lang="ts">
-
 import { onMounted, provide, ref } from 'vue'
 import BottomMenu from '@/components/BottomMenuView.vue'
 import { useMiniApp, useTheme, useViewport } from 'vue-tg/8.0'
@@ -30,9 +29,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <header>
-
-  </header>
+  <header></header>
 
   <main class="mb-20">
     <router-view></router-view>
@@ -41,5 +38,4 @@ onMounted(() => {
   <nav>
     <BottomMenu v-if="!inputTopAppBarStore.isFocused" />
   </nav>
-
 </template>

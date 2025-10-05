@@ -11,14 +11,16 @@ export class PointResponse {
   readonly createdAt: string
   updatedAt: string
 
-  constructor(uid: string,
-              type: TypePoint,
-              name: string,
-              direction: string,
-              address: string,
-              location: Location,
-              createdAt: string,
-              updatedAt: string) {
+  constructor(
+    uid: string,
+    type: TypePoint,
+    name: string,
+    direction: string,
+    address: string,
+    location: Location,
+    createdAt: string,
+    updatedAt: string,
+  ) {
     this.uid = uid
     this.type = type
     this.name = name

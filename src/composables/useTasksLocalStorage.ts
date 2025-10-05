@@ -2,7 +2,7 @@ import { LocalStorageNames } from '@/model/Enums.ts'
 import { PointResponse } from '@/model/PointResponse.ts'
 
 export function useTasksLocalStorage() {
-  if (typeof (Storage) !== 'undefined') {
+  if (typeof Storage !== 'undefined') {
     console.log('localStorage поддерживается')
   } else {
     console.log('localStorage не поддерживается')

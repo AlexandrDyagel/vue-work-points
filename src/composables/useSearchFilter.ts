@@ -1,9 +1,8 @@
 import { LocalStorageNames, TypeSearchFilter } from '@/model/Enums.ts'
 
 export function useSearchFilter() {
-
   const userSearchFilter = () => {
-    const cachedSearchFilter = localStorage.getItem(LocalStorageNames.SEARCH_FILTER);
+    const cachedSearchFilter = localStorage.getItem(LocalStorageNames.SEARCH_FILTER)
 
     if (cachedSearchFilter) {
       return JSON.parse(cachedSearchFilter) as TypeSearchFilter
@@ -21,6 +20,6 @@ export function useSearchFilter() {
   return {
     userSearchFilter,
     updateUserSearchFilter,
-    removeUserSearchFilter
-  };
+    removeUserSearchFilter,
+  }
 }

@@ -8,6 +8,6 @@ export const useFakeTaskItems = defineStore('fakeTaskItems', {
     },
     remove(): void {
       this.items = ''
-    }
-  }
+    },
+  },
 })

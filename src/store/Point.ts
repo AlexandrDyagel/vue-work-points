@@ -7,6 +7,6 @@ export const useEditPoint = defineStore('point', {
     savePoint(point: PointResponse | null) {
       if (point === null) return
       this.editPoint = point
-    }
-  }
+    },
+  },
 })

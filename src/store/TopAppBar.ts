@@ -5,6 +5,6 @@ export const useInputFocus = defineStore('inputFocus', {
   actions: {
     changeFocus(focus: boolean) {
       this.isFocused = focus
-    }
-  }
+    },
+  },
 })

@@ -1,11 +1,10 @@
 <script setup lang="ts">
-
 import { PointResponse } from '@/model/PointResponse.ts'
 import { ref, shallowRef } from 'vue'
 import CancelIcon from '@/components/icons/CancelIcon.vue'
 
 const props = defineProps<{
-  index: number,
+  index: number
   taskItems: PointResponse[]
 }>()
 
@@ -44,18 +43,22 @@ const path = (index: number): string => {
     <div
       class="absolute left-8 top-1/2 transform -translate-y-1/2 w-5 h-5 rounded-full bg-blue-500 border-4 border-white z-10"
       :class="{ 'animate-pulse-custom': index === 0 }"
-      style="box-shadow: 0 0 0 2px #3b82f6;"
+      style="box-shadow: 0 0 0 2px #3b82f6"
     ></div>
 
     <!-- Информация о точке point -->
     <div class="ml-10">
       <div class="font-bold text-[#F0F0F0]">{{ point.name }}</div>
-      <div class="text-sm text-[#999]">{{ point.direction }}</div>
+      <div class="text-sm text-[#ff5b4d]">{{ point.direction }}</div>
+      <div class="text-xs text-[#999]">{{ point.address }}</div>
     </div>
 
     <Svg @mousedown.prevent @click="deleteItem">
-      <component ref="comp" :is="cancelIcon"
-                 :class="isActiveCancelButton ? 'text-white' : 'text-[#61646b]'"></component>
+      <component
+        ref="comp"
+        :is="cancelIcon"
+        :class="isActiveCancelButton ? 'text-white' : 'text-[#61646b]'"
+      ></component>
     </Svg>
   </div>
 </template>

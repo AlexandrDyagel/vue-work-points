@@ -1,16 +1,18 @@
 <script setup lang="ts">
-
 import { BackButton } from 'vue-tg'
 import { useRouter } from 'vue-router'
-import { nextTick, onMounted, onUnmounted, ref, type Ref } from 'vue'
+import { computed, nextTick, onMounted, onUnmounted, ref, type Ref, watch } from 'vue'
 import { PointResponse } from '@/model/PointResponse.ts'
 import { useTasksLocalStorage } from '@/composables/useTasksLocalStorage.ts'
 import { useMiniApp, useTheme } from 'vue-tg/8.0'
 import LoadingScreen from '@/components/LoadingScreen.vue'
 import type { Marker } from 'leaflet'
+import { TypePoint } from '@/model/Enums.ts'
+import { useCache } from '@/composables/useCache.ts'
 
 const router = useRouter()
 const tasksLocalStorage = useTasksLocalStorage()
+const { obtainCachedPoints } = useCache()
 
 const { openLink } = useMiniApp()
 const { headerColor } = useTheme()
@@ -25,7 +27,13 @@ onMounted(async () => {
     // headerColor.value = '#24252870'
     isLoadingData.value = true
 
-    taskItems.value = tasksLocalStorage.getItems()
+    obtainCachedPoints().then((cachedDataPoints) => {
+      taskItems.value.push(
+        cachedDataPoints.filter((point) => point.name === 'Переходы. Тоннели')[0],
+      )
+    })
+
+    taskItems.value.push(...tasksLocalStorage.getItems())
 
     await nextTick(async () => {
       initMap()
@@ -44,7 +52,7 @@ const initMap = () => {
   // Добавляем слой карты OpenStreetMap
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '© OpenStreetMap contributors',
-    maxZoom: 18
+    maxZoom: 18,
   }).addTo(leafletMap)
 
   map.value = leafletMap
@@ -57,10 +65,11 @@ const initMap = () => {
 }
 
 // Функция для создания текстовой метки
-const createTextMarker = (lat:number, lon:number, text:string) => {
-  return L.marker([lat, lon], {
-    icon: L.divIcon({
-      html: `
+const createTextMarker = (typePoint: TypePoint, lat: number, lon: number, text: string) => {
+  if (typePoint !== TypePoint.Home) {
+    return L.marker([lat, lon], {
+      icon: L.divIcon({
+        html: `
         <div style="
           position: relative;
           display: flex;
@@ -68,7 +77,7 @@ const createTextMarker = (lat:number, lon:number, text:string) => {
           align-items: center;
         ">
           <div
-          class="truncate rounded border-1 text-[10px] font-bold px-1 py-0.5 bg-[#3388ff] mb-1">
+          class="truncate rounded border-1 text-[10px] font-bold px-1 bg-[#3388ff] py-0.5 mb-1">
           ${text}
           </div>
           <div style="
@@ -81,16 +90,46 @@ const createTextMarker = (lat:number, lon:number, text:string) => {
           "></div>
         </div>
       `,
-      className: '',
-      iconSize: [150, 30],
-      iconAnchor: [75, 30] // 75 в два раза должно быть меньше 150, а 30 должно быть 30
+        className: '',
+        iconSize: [150, 30],
+        iconAnchor: [75, 30], // 75 в два раза должно быть меньше 150, а 30 должно быть 30
+      }),
     })
-  });
-};
+  } else {
+    return L.marker([lat, lon], {
+      icon: L.divIcon({
+        html: `
+        <div style="
+          position: relative;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+        ">
+          <div
+          class="truncate rounded border-1 text-[10px] font-bold px-1 bg-[#5e0808] py-0.5 mb-1">
+          ${text}
+          </div>
+          <div style="
+            width: 10px;
+            height: 10px;
+            background: #5e0808;
+            border: 2px solid white;
+            border-radius: 50%;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+          "></div>
+        </div>
+      `,
+        className: '',
+        iconSize: [150, 30],
+        iconAnchor: [75, 30], // 75 в два раза должно быть меньше 150, а 30 должно быть 30
+      }),
+    })
+  }
+}
 
 const addMarkersToMap = () => {
   if (!map.value) return
-  taskItems.value.forEach(point => {
+  taskItems.value.forEach((point) => {
     // Создаем кастомный маркер
     // const marker = L.marker([Number(point.location.toRegion.latitude), Number(point.location.toRegion.longitude)], {
     //   title: point.name,
@@ -102,18 +141,27 @@ const addMarkersToMap = () => {
     //   })
     // }).addTo(map.value)
     let marker: Marker
-    let urlRoute: string = ''
-    let urlPoint: string = ''
+    let urlRoute: string
+    let urlPoint: string
     if (point.location.toRegion.latitude && point.location.toRegion.longitude) {
-      marker = createTextMarker(Number(point.location.toRegion.latitude), Number(point.location.toRegion.longitude), point.name).addTo(map.value)
+      marker = createTextMarker(
+        point.type,
+        Number(point.location.toRegion.latitude),
+        Number(point.location.toRegion.longitude),
+        point.name,
+      ).addTo(map.value)
       urlRoute = `https://yandex.ru/maps/?rtext=~${point.location.toRegion.latitude},${point.location.toRegion.longitude}&rtt=auto`
       urlPoint = `https://yandex.ru/maps/?pt=${point.location.toRegion.longitude},${point.location.toRegion.latitude}&z=18&l=map`
     } else {
-      marker = createTextMarker(Number(point.location.fromRegion.latitude), Number(point.location.fromRegion.longitude), point.name).addTo(map.value)
+      marker = createTextMarker(
+        point.type,
+        Number(point.location.fromRegion.latitude),
+        Number(point.location.fromRegion.longitude),
+        point.name,
+      ).addTo(map.value)
       urlRoute = `https://yandex.ru/maps/?rtext=~${point.location.fromRegion.latitude},${point.location.fromRegion.longitude}&rtt=auto`
       urlPoint = `https://yandex.ru/maps/?pt=${point.location.fromRegion.longitude},${point.location.fromRegion.latitude}&z=18&l=map`
     }
-
 
     // Создаем popup с информацией о точке
     const popupDiv = document.createElement('div')
@@ -138,10 +186,10 @@ const addMarkersToMap = () => {
     // Добавляем обработчики
     popupDiv.querySelector('.route-btn')?.addEventListener('click', () => {
       openLink(urlRoute)
-    });
+    })
     popupDiv.querySelector('.point-btn')?.addEventListener('click', () => {
       openLink(urlPoint)
-    });
+    })
 
     marker.bindPopup(popupDiv)
 
@@ -157,11 +205,17 @@ const fitMapToMarkers = () => {
   if (!map.value || taskItems.value.length === 0) return
 
   const group = L.featureGroup()
-  taskItems.value.forEach(point => {
+  taskItems.value.forEach((point) => {
     if (point.location.toRegion.latitude && point.location.toRegion.longitude) {
-      L.marker([Number(point.location.toRegion.latitude), Number(point.location.toRegion.longitude)]).addTo(group)
+      L.marker([
+        Number(point.location.toRegion.latitude),
+        Number(point.location.toRegion.longitude),
+      ]).addTo(group)
     } else {
-      L.marker([Number(point.location.fromRegion.latitude), Number(point.location.fromRegion.longitude)]).addTo(group)
+      L.marker([
+        Number(point.location.fromRegion.latitude),
+        Number(point.location.fromRegion.longitude),
+      ]).addTo(group)
     }
   })
 
@@ -193,5 +247,4 @@ onUnmounted(() => {
   </div>
 </template>
 
-<style scoped>
-</style>
+<style scoped></style>

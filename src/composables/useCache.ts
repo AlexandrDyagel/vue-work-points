@@ -4,7 +4,7 @@ import { LocalStorageNames } from '@/model/Enums.ts'
 import { ref, type Ref } from 'vue'
 
 export function useCache() {
-  if (typeof (Storage) !== 'undefined') {
+  if (typeof Storage !== 'undefined') {
     console.log('localStorage поддерживается')
   } else {
     console.log('localStorage не поддерживается')
@@ -30,7 +30,7 @@ export function useCache() {
           localStorage.setItem(LocalStorageNames.CACHE_POINTS, JSON.stringify(data))
           console.log('Данные из интернета и потом из localStorage')
         })
-        .catch(error => {
+        .catch((error) => {
           console.error(`Ошибка error getPoints(): ${error}`)
         })
 
@@ -48,10 +48,10 @@ export function useCache() {
     const lastUpdateTime: Ref<string | null> = ref(null)
 
     await lastUpdatedPoints()
-      .then(lastUpdateFromDb => {
+      .then((lastUpdateFromDb) => {
         lastUpdateTime.value = lastUpdateFromDb
       })
-      .catch(error => console.error('Ошибка получения времени последнего обновления: ', error))
+      .catch((error) => console.error('Ошибка получения времени последнего обновления: ', error))
 
     console.log('Время последнего обновления в БД: ', lastUpdateTime.value)
 
@@ -66,14 +66,14 @@ export function useCache() {
     } else {
       console.log('В localStorage не существует записи о времени последнего обновления данных')
 
-      obtainCachedPoints()
-        .then(cachedDataPoints => {
-          const lastUpdatedAt = cachedDataPoints.sort((a, b) =>
-            Number(b.updatedAt) - Number(a.updatedAt))[0].updatedAt
+      obtainCachedPoints().then((cachedDataPoints) => {
+        const lastUpdatedAt = cachedDataPoints.sort(
+          (a, b) => Number(b.updatedAt) - Number(a.updatedAt),
+        )[0].updatedAt
 
-          localStorage.setItem(LocalStorageNames.LAST_UPDATE_TIME, lastUpdatedAt)
-          console.log('В localStorage добавлена запись о времени последнего обновления данных')
-        })
+        localStorage.setItem(LocalStorageNames.LAST_UPDATE_TIME, lastUpdatedAt)
+        console.log('В localStorage добавлена запись о времени последнего обновления данных')
+      })
 
       return lastUpdateTime.value !== localStorage.getItem(LocalStorageNames.LAST_UPDATE_TIME)
     }
@@ -171,6 +171,6 @@ export function useCache() {
     clearCachePoints,
     checkForUpdate,
     setLastUpdateDataPoints,
-    removeLastUpdateDataPoints
+    removeLastUpdateDataPoints,
   }
 }

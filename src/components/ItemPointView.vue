@@ -1,5 +1,4 @@
 <script setup lang="ts">
-
 import { PointResponse } from '@/model/PointResponse.ts'
 import LocationNavButton from '@/components/LocationNavButtonView.vue'
 import { ref } from 'vue'
@@ -19,10 +18,14 @@ import StepUpImg from '@/assets/images/step_up.png'
 import StepDownImg from '@/assets/images/step_down.png'
 import { useUserRole } from '@/composables/useUserRole.ts'
 import { listOfExpPoint } from '@/model/list-of-exeptions'
+import ShareIcon from '@/components/icons/ShareIcon.vue'
+import ShareButton from '@/components/ShareButton.vue'
 
 const props = defineProps<{
-  dataPoint: PointResponse;
+  dataPoint: PointResponse,
 }>()
+
+const emit = defineEmits(['on-click-share'])
 
 const { openLink } = useMiniApp()
 
@@ -32,7 +35,10 @@ const { getUserRole } = useUserRole()
 const userRole = ref(getUserRole())
 
 const isActiveToRegionButton = ref(props.dataPoint.location.toRegion.latitude.length !== 0)
-const isActiveFromRegionButton = ref(props.dataPoint.location.fromRegion.latitude.length !== 0 && props.dataPoint.location.toRegion.latitude.length === 0)
+const isActiveFromRegionButton = ref(
+  props.dataPoint.location.fromRegion.latitude.length !== 0 &&
+  props.dataPoint.location.toRegion.latitude.length === 0
+)
 
 const clickDirectButton = (direct: TypeDirectionButton) => {
   switch (direct) {
@@ -53,29 +59,41 @@ function openLocation(type: TypeLocationNavButton) {
   switch (type) {
     case TypeLocationNavButton.ROUTE: {
       if (isActiveToRegionButton.value) {
-        openLink(stringUrl(
-          props.dataPoint.location.toRegion.longitude,
-          props.dataPoint.location.toRegion.latitude,
-          TypeLocationNavButton.ROUTE))
+        openLink(
+          stringUrl(
+            props.dataPoint.location.toRegion.longitude,
+            props.dataPoint.location.toRegion.latitude,
+            TypeLocationNavButton.ROUTE
+          )
+        )
       } else if (isActiveFromRegionButton.value) {
-        openLink(stringUrl(
-          props.dataPoint.location.fromRegion.longitude,
-          props.dataPoint.location.fromRegion.latitude,
-          TypeLocationNavButton.ROUTE))
+        openLink(
+          stringUrl(
+            props.dataPoint.location.fromRegion.longitude,
+            props.dataPoint.location.fromRegion.latitude,
+            TypeLocationNavButton.ROUTE
+          )
+        )
       }
       break
     }
     case TypeLocationNavButton.POINT: {
       if (isActiveToRegionButton.value) {
-        openLink(stringUrl(
-          props.dataPoint.location.toRegion.longitude,
-          props.dataPoint.location.toRegion.latitude,
-          TypeLocationNavButton.POINT))
+        openLink(
+          stringUrl(
+            props.dataPoint.location.toRegion.longitude,
+            props.dataPoint.location.toRegion.latitude,
+            TypeLocationNavButton.POINT
+          )
+        )
       } else if (isActiveFromRegionButton.value) {
-        openLink(stringUrl(
-          props.dataPoint.location.fromRegion.longitude,
-          props.dataPoint.location.fromRegion.latitude,
-          TypeLocationNavButton.POINT))
+        openLink(
+          stringUrl(
+            props.dataPoint.location.fromRegion.longitude,
+            props.dataPoint.location.fromRegion.latitude,
+            TypeLocationNavButton.POINT
+          )
+        )
       }
       break
     }
@@ -104,20 +122,6 @@ function editPoint(point: PointResponse | null) {
   router.push(Route.EditPoint)
 }
 
-const getColor = (typePoint: TypePoint) => {
-  switch (typePoint) {
-    case TypePoint.PP: {
-      return 'bg-blue-500'
-    }
-    case TypePoint.TA: {
-      return 'bg-[#a3a5a6]'
-    }
-    case TypePoint.TP: {
-      return 'bg-[#ff5b4d]'
-    }
-  }
-}
-
 const getIcon = (typePoint: TypePoint) => {
   switch (typePoint) {
     case TypePoint.PP: {
@@ -131,24 +135,15 @@ const getIcon = (typePoint: TypePoint) => {
     }
   }
 }
-
 </script>
 
 <template>
-  <div
-    :key="dataPoint.uid"
-    class="flex flex-row justify-between px-4 pt-4 pb-5"
-  >
+  <div :key="dataPoint.uid" class="flex flex-row justify-between px-4 pt-4 pb-5">
     <div>
-      <div
-        @click="editPoint(dataPoint)"
-        class="pb-1 text-base font-medium text-[#F0F0F0] max-w-xs"
-      >
+      <div @click="editPoint(dataPoint)" class="pb-1 text-base font-medium text-[#F0F0F0] max-w-xs">
         <slot name="name"></slot>
       </div>
-      <div
-        class="text-sm text-[#ff5b4d] font-medium max-w-xs"
-      >
+      <div class="text-sm text-[#ff5b4d] font-medium max-w-xs">
         <slot name="direction"></slot>
       </div>
       <div class="text-sm text-[#999] pb-5 max-w-xs">
@@ -159,13 +154,25 @@ const getIcon = (typePoint: TypePoint) => {
         <DirectionButtonView
           v-if="dataPoint.location.toRegion.latitude"
           @click="clickDirectButton(TypeDirectionButton.TO_REGION)"
-          :name="(dataPoint.type === TypePoint.TA || dataPoint.direction === 'Садовое кольцо') && !listOfExpPoint.includes(dataPoint.name) ? 'Внешняя' : 'В область'"
+          :name="
+            (dataPoint.type === TypePoint.TA ||
+              ['Садовое кольцо', 'ТТК'].includes(dataPoint.direction)) &&
+            !listOfExpPoint.includes(dataPoint.name)
+              ? 'Внешняя'
+              : 'В область'
+          "
           :is-active="isActiveToRegionButton"
         />
         <DirectionButtonView
           v-if="dataPoint.location.fromRegion.latitude"
           @click="clickDirectButton(TypeDirectionButton.FROM_REGION)"
-          :name="(dataPoint.type === TypePoint.TA || dataPoint.direction === 'Садовое кольцо') && !listOfExpPoint.includes(dataPoint.name) ? 'Внутренняя' : 'Из области'"
+          :name="
+            (dataPoint.type === TypePoint.TA ||
+              ['Садовое кольцо', 'ТТК'].includes(dataPoint.direction)) &&
+            !listOfExpPoint.includes(dataPoint.name)
+              ? 'Внутренняя'
+              : 'Из области'
+          "
           :is-active="isActiveFromRegionButton"
         />
       </div>
@@ -175,24 +182,19 @@ const getIcon = (typePoint: TypePoint) => {
         class="flex flex-row gap-2 items-center"
       >
         <LocationNavButton
-          name="Маршрут" @click="openLocation(TypeLocationNavButton.ROUTE)"
+          name="Маршрут"
+          @click="openLocation(TypeLocationNavButton.ROUTE)"
           :type="TypeLocationNavButton.ROUTE"
         />
         <LocationNavButton
-          name="На карте" @click="openLocation(TypeLocationNavButton.POINT)"
+          name="На карте"
+          @click="openLocation(TypeLocationNavButton.POINT)"
           :type="TypeLocationNavButton.POINT"
         />
-
-        <!--        <div
-                  @click="showSelect"
-                  class="flex flex-row cursor-pointer text-[#7a7acc] bg-[#4d4d4d] items-center gap-1 px-3 relative h-[40px] rounded-xl text-center content-center">
-
-                  <span class="text-[14px] font-medium">GO</span>
-                </div>-->
-
+        <ShareButton :icon="ShareIcon" @click="emit('on-click-share', dataPoint)" />
       </div>
     </div>
-    <!--    <div :class="getColor(dataPoint.type)" class="w-10 h-10">-->
+
     <div class="w-16 h-16">
       <img :src="getIcon(dataPoint.type)" class="rounded-sm" alt="" />
     </div>
@@ -200,7 +202,6 @@ const getIcon = (typePoint: TypePoint) => {
 </template>
 
 <style scoped>
-
 /*--color-background-primary: #242528;
 color #3d7eff BLUE
 --color-background-additional: #111;
@@ -211,5 +212,4 @@ color #3d7eff BLUE
 КРАСНЫЙ color-red: #ff5b4d;
 КРАСИВЫЙ САЛАТОВЫЙ ЦВЕТ: #88ce02
 */
-
 </style>

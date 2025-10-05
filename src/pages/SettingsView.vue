@@ -1,5 +1,4 @@
 <script setup lang="ts">
-
 import { BackButton } from 'vue-tg'
 import { useRouter } from 'vue-router'
 import { inject, nextTick, onMounted, ref, type Ref } from 'vue'
@@ -17,7 +16,6 @@ const cachedPoints: Ref<PointResponse[]> = ref([])
 const map: Ref<L.Map | null> = ref(null)
 const selectedPoint: Ref<PointResponse | null> = ref(null)
 
-
 const {
   mapContainer,
   points,
@@ -29,15 +27,13 @@ const {
   reloadRoadNetwork,
   addPoint,
   removeLastPoint,
-  initMap
+  initMap,
 } = useRealRouteMap()
 
 onMounted(async () => {
   await nextTick()
   initMap()
 })
-
-
 </script>
 
 <template>
@@ -56,7 +52,6 @@ onMounted(async () => {
     <!--            <div id="map" class="fixed overflow-auto start-0 top-0 end-0 bottom-0 w-full h-full"></div>-->
     <!--          </div>-->
     <!--    </div>-->
-
 
     <div class="h-screen w-full flex flex-col bg-gray-100">
       <!-- Заголовок и панель управления -->
@@ -99,8 +94,10 @@ onMounted(async () => {
         <!-- Статус загрузки -->
         <div v-if="loadingProgress" class="mb-4 p-3 bg-blue-50 border-l-4 border-blue-400 rounded">
           <div class="flex items-center">
-            <div v-if="isLoading"
-                 class="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500 mr-2"></div>
+            <div
+              v-if="isLoading"
+              class="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-500 mr-2"
+            ></div>
             <span class="text-blue-800">{{ loadingProgress }}</span>
           </div>
         </div>
@@ -109,13 +106,13 @@ onMounted(async () => {
         <div class="mb-2">
           <h3 class="font-semibold text-gray-700 mb-2">Точки маршрута ({{ points.length }}):</h3>
           <div class="flex flex-wrap gap-2">
-                <span
-                  v-for="(point, index) in points"
-                  :key="index"
-                  class="bg-gray-200 px-3 py-1 rounded-full text-sm"
-                >
-                  {{ index + 1 }}. {{ point.name }}
-                </span>
+            <span
+              v-for="(point, index) in points"
+              :key="index"
+              class="bg-gray-200 px-3 py-1 rounded-full text-sm"
+            >
+              {{ index + 1 }}. {{ point.name }}
+            </span>
           </div>
         </div>
 
@@ -141,13 +138,10 @@ onMounted(async () => {
               :key="index"
               class="flex items-center gap-2 bg-gray-50 px-2 py-1 rounded"
             >
-              <div
-                class="w-4 h-1 rounded"
-                :style="{ backgroundColor: route.color }"
-              ></div>
+              <div class="w-4 h-1 rounded" :style="{ backgroundColor: route.color }"></div>
               <span class="text-xs">
-                    {{ route.from }} → {{ route.to }} ({{ route.points }} точек)
-                  </span>
+                {{ route.from }} → {{ route.to }} ({{ route.points }} точек)
+              </span>
             </div>
           </div>
         </div>
@@ -167,17 +161,10 @@ onMounted(async () => {
 
       <!-- Карта -->
       <div class="flex-1 relative">
-        <div
-          ref="mapContainer"
-          class="w-full h-full"
-        ></div>
+        <div ref="mapContainer" class="w-full h-full"></div>
       </div>
     </div>
-
   </div>
-
 </template>
 
-<style scoped>
-
-</style>
+<style scoped></style>

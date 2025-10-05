@@ -16,8 +16,8 @@ const watchId = ref()
 // Опции для геолокации
 const options = {
   enableHighAccuracy: true, // Высокая точность
-  timeout: 10000,          // Таймаут 10 секунд
-  maximumAge: 60000        // Кэш на 1 минуту
+  timeout: 10000, // Таймаут 10 секунд
+  maximumAge: 60000, // Кэш на 1 минуту
 }
 
 // Проверка поддержки геолокации
@@ -43,7 +43,6 @@ const getCurrentPosition = async () => {
     position.value = pos
     positions.value.push(pos)
     console.log('Геолокация получена:', pos)
-
   } catch (err) {
     handleError(err)
   } finally {
@@ -73,7 +72,7 @@ const watchPosition = () => {
       handleError(err)
       watching.value = false
     },
-    options
+    options,
   )
 }
 
@@ -131,14 +130,10 @@ onUnmounted(() => {
         {{ watching ? 'Отслеживание активно' : 'Отслеживать позицию' }}
       </button>
 
-      <button @click="stopWatching" :disabled="!watching">
-        Остановить отслеживание
-      </button>
+      <button @click="stopWatching" :disabled="!watching">Остановить отслеживание</button>
     </div>
 
-    <div v-if="error" class="error">
-      <strong>Ошибка:</strong> {{ error }}
-    </div>
+    <div v-if="error" class="error"><strong>Ошибка:</strong> {{ error }}</div>
 
     <div v-if="position" class="position-info">
       <h3>Текущая позиция:</h3>
@@ -160,13 +155,12 @@ onUnmounted(() => {
       <h3>История позиций ({{ positions.length }}):</h3>
       <div class="history-list">
         <div v-for="(pos, index) in positions.slice().reverse()" :key="index" class="history-item">
-          {{ pos.coords.latitude.toFixed(4) }}, {{ pos.coords.longitude.toFixed(4) }}
-          - {{ formatTime(pos.timestamp) }}
+          {{ pos.coords.latitude.toFixed(4) }}, {{ pos.coords.longitude.toFixed(4) }} -
+          {{ formatTime(pos.timestamp) }}
         </div>
       </div>
     </div>
   </div>
-
 </template>
 
 <style scoped>
@@ -250,7 +244,8 @@ button:disabled {
   border-bottom: none;
 }
 
-h2, h3 {
+h2,
+h3 {
   color: #333;
   margin-top: 0;
 }

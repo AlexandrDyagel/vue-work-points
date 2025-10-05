@@ -31,13 +31,16 @@ const watchId: Ref<number | null> = ref(null)
 const closestPoint: Ref<PointResponse | null> = ref(null)
 const minDistance = ref<number>(Infinity)
 
-const url = computed(() => `https://yandex.ru/maps/?pt=${closestPoint?.value?.location.toRegion.longitude},${closestPoint?.value?.location.toRegion.latitude}&z=18&l=map`)
+const url = computed(
+  () =>
+    `https://yandex.ru/maps/?pt=${closestPoint?.value?.location.toRegion.longitude},${closestPoint?.value?.location.toRegion.latitude}&z=18&l=map`,
+)
 
 // Опции для геолокации
 const options = {
   enableHighAccuracy: true, // Высокая точность
-  timeout: 10000,          // Таймаут 10 секунд
-  maximumAge: 0        // Без кэшированных данных
+  timeout: 10000, // Таймаут 10 секунд
+  maximumAge: 0, // Без кэшированных данных
 }
 
 // Проверка поддержки геолокации
@@ -49,10 +52,9 @@ onMounted(async () => {
   try {
     isLoadingData.value = true
 
-    await obtainCachedPoints()
-      .then(cachedDataPoints => {
-        cachedPoints.value = cachedDataPoints
-      })
+    await obtainCachedPoints().then((cachedDataPoints) => {
+      cachedPoints.value = cachedDataPoints
+    })
   } catch (e) {
     console.error(`Ошибка SettingsView.vue в onMounted catch: ${e}`)
   } finally {
@@ -77,7 +79,7 @@ const watchPosition = () => {
     (pos) => {
       userLocation.value = new GeoPoint(
         pos.coords.latitude.toFixed(6).toString(),
-        pos.coords.longitude.toFixed(6).toString()
+        pos.coords.longitude.toFixed(6).toString(),
       )
 
       findClosestPoint()
@@ -90,7 +92,7 @@ const watchPosition = () => {
       watching.value = false
       stopWatching()
     },
-    options
+    options,
   )
 }
 
@@ -135,14 +137,14 @@ const formatTime = (timestamp: number) => {
  */
 function getDistance(userLocation: GeoPoint, pointLocation: GeoPoint) {
   const R = 6371e3 // Радиус Земли в метрах
-  const φ1 = Number(userLocation.latitude) * Math.PI / 180 // Преобразование широты в радианы
-  const φ2 = Number(pointLocation.latitude) * Math.PI / 180
-  const Δφ = (Number(pointLocation.latitude) - Number(userLocation.latitude)) * Math.PI / 180
-  const Δλ = (Number(pointLocation.longitude) - Number(userLocation.longitude)) * Math.PI / 180
+  const φ1 = (Number(userLocation.latitude) * Math.PI) / 180 // Преобразование широты в радианы
+  const φ2 = (Number(pointLocation.latitude) * Math.PI) / 180
+  const Δφ = ((Number(pointLocation.latitude) - Number(userLocation.latitude)) * Math.PI) / 180
+  const Δλ = ((Number(pointLocation.longitude) - Number(userLocation.longitude)) * Math.PI) / 180
 
-  const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
-    Math.cos(φ1) * Math.cos(φ2) *
-    Math.sin(Δλ / 2) * Math.sin(Δλ / 2)
+  const a =
+    Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
+    Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) * Math.sin(Δλ / 2)
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))
 
   return R * c // Расстояние в метрах
@@ -157,7 +159,7 @@ const findClosestPoint = (): void => {
     return
   }
 
-  cachedPoints.value.forEach(point => {
+  cachedPoints.value.forEach((point) => {
     const distance = getDistance(userLocation.value, point.location.toRegion)
 
     if (distance < minDistance.value) {
@@ -206,7 +208,7 @@ onUnmounted(() => {
   headerColor.value = '#242528'
 })
 
-watch(closestPoint, () => headerColor.value = '#16a34a')
+watch(closestPoint, () => (headerColor.value = '#16a34a'))
 </script>
 
 <template>
@@ -216,8 +218,10 @@ watch(closestPoint, () => headerColor.value = '#16a34a')
     class="fixed overflow-auto start-0 top-0 end-0 bottom-0 flex items-center justify-center bg-[#242528]"
   >
     <button
-      class="search-button search-btn" :class="watching ? 'search-btn-animation' : ''"
-      @click="searchPoint" aria-label="Начать поиск ближайшей точки"
+      class="search-button search-btn"
+      :class="watching ? 'search-btn-animation' : ''"
+      @click="searchPoint"
+      aria-label="Начать поиск ближайшей точки"
     >
       <Svg>
         <component ref="comp" :is="searchPointIcon"></component>
@@ -225,13 +229,23 @@ watch(closestPoint, () => headerColor.value = '#16a34a')
     </button>
   </div>
 
-  <div
-    v-if="watching"
-    class="fixed w-full bottom-[300px] start-0 end-0 text-center text-sm]">
+  <div v-if="watching" class="fixed w-full bottom-[300px] start-0 end-0 text-center text-sm]">
     <div class="inline-flex items-center justify-center gap-2">
-      <svg aria-hidden="true" class="inline w-6 h-6 text-gray-200 animate-spin dark:text-gray-600 fill-[#3d7eff]" viewBox="0 0 100 101" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
-        <path d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z" fill="currentColor"/>
-        <path d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z" fill="currentFill"/>
+      <svg
+        aria-hidden="true"
+        class="inline w-6 h-6 text-gray-200 animate-spin dark:text-gray-600 fill-[#3d7eff]"
+        viewBox="0 0 100 101"
+        fill="currentColor"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z"
+          fill="currentColor"
+        />
+        <path
+          d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z"
+          fill="currentFill"
+        />
       </svg>
       <span>Идет поиск...</span>
     </div>
@@ -253,9 +267,7 @@ watch(closestPoint, () => headerColor.value = '#16a34a')
 
     <div class="point-info">
       <div class="type-point">{{ getTypeName(closestPoint.type) }}</div>
-      <div class="point-name">
-        «{{ closestPoint.name.trim() }}»
-      </div>
+      <div class="point-name">«{{ closestPoint.name.trim() }}»</div>
       <div class="direction-badge">{{ closestPoint.direction }}</div>
       <div class="address">{{ closestPoint.address }}</div>
     </div>
@@ -269,13 +281,12 @@ watch(closestPoint, () => headerColor.value = '#16a34a')
       </Svg>
       <span class="text-sm font-medium">На карте</span>
     </div>
-
   </div>
 </template>
 
 <style scoped>
 .bg {
-  background: linear-gradient(180deg, #16a34a 0%, #0D602BFF 20%, #242528 60%);
+  background: linear-gradient(180deg, #16a34a 0%, #0d602bff 20%, #242528 60%);
   height: 100dvh;
 }
 
@@ -362,12 +373,13 @@ watch(closestPoint, () => headerColor.value = '#16a34a')
 
 /* Анимация пульсации для кнопок */
 @keyframes pulse {
-  0%, 100% {
+  0%,
+  100% {
     transform: scale(1);
     box-shadow: 0 4px 20px rgba(16, 185, 129, 0.4);
   }
   50% {
-    transform: scale(1.10);
+    transform: scale(1.1);
     box-shadow: 0 6px 45px rgba(16, 185, 129, 0.6);
   }
 }
@@ -377,7 +389,8 @@ watch(closestPoint, () => headerColor.value = '#16a34a')
 }
 
 @keyframes decline-pulse {
-  0%, 100% {
+  0%,
+  100% {
     transform: scale(1);
     box-shadow: 0 4px 20px rgba(239, 68, 68, 0.4);
   }
