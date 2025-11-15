@@ -3,9 +3,10 @@ import Svg from '@/components/Svg.vue'
 import { shallowRef } from 'vue'
 import AddIcon from '@/components/icons/AddIcon.vue'
 import CheckCircleIcon from '@/components/icons/CheckCircleIcon.vue'
+import type { PointResponse } from '@/model/PointResponse.ts'
 
 const props = defineProps<{
-  namePoint: string
+  dataPoint: PointResponse
   isAddedTaskList: boolean
 }>()
 
@@ -26,7 +27,7 @@ const onClick = () => {
       <component ref="comp" :is="isAddedTaskList ? checkCircleIcon : addIcon"></component>
     </Svg>
     <div class="text-sm">
-      {{ namePoint }}
+      {{ dataPoint.type.toUpperCase() }} | {{ dataPoint.name }}
     </div>
   </div>
 </template>

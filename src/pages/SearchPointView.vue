@@ -12,7 +12,10 @@ import { useCache } from '@/composables/useCache.ts'
 import WorldGlobeIcon from '@/components/icons/WorldGlobeIcon.vue'
 import { useMiniApp, useTheme } from 'vue-tg/8.0'
 import { DEV_VERSION } from '../main.ts'
+import { BackButton } from 'vue-tg'
+import { useRouter } from 'vue-router'
 
+const router = useRouter()
 const searchPointIcon = shallowRef(SearchPointIcon)
 const iconButton = shallowRef(WorldGlobeIcon)
 
@@ -212,6 +215,7 @@ watch(closestPoint, () => (headerColor.value = '#16a34a'))
 </script>
 
 <template>
+  <BackButton @click="router.back" />
   <div class="fixed top-1 start-0 end-0 w-full text-center text-sm z-50">v{{ DEV_VERSION }}</div>
   <div
     v-if="!closestPoint"
@@ -219,7 +223,7 @@ watch(closestPoint, () => (headerColor.value = '#16a34a'))
   >
     <button
       class="search-button search-btn"
-      :class="watching ? 'search-btn-animation' : ''"
+      :class="watching ? 'search-btn-animation-search' : 'search-btn-animation'"
       @click="searchPoint"
       aria-label="Начать поиск ближайшей точки"
     >
@@ -384,8 +388,25 @@ watch(closestPoint, () => (headerColor.value = '#16a34a'))
   }
 }
 
+/* Анимация пульсации для кнопок */
+@keyframes pulse-search {
+  0%,
+  100% {
+    transform: scale(1);
+    box-shadow: 0 4px 20px rgba(16, 64, 185, 0.4);
+  }
+  50% {
+    transform: scale(1.1);
+    box-shadow: 0 6px 45px rgba(16, 64, 185, 0.6);
+  }
+}
+
 .search-btn-animation {
   animation: pulse 2s infinite;
+}
+
+.search-btn-animation-search {
+  animation: pulse-search 2s infinite;
 }
 
 @keyframes decline-pulse {

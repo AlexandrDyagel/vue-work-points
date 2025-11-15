@@ -113,12 +113,12 @@ function isAddedTaskList(item: PointResponse): boolean {
         ref="scrollDropDownContainerRef"
         @scroll="verticalScrollDropDown.checkScrollState"
         v-if="filteredPoints.length !== 0"
-        class="absolute max-h-[280px] bg-[#17212B] overflow-y-auto mt-[-16px] mx-6 shadow-xl z-50"
+        class="absolute max-h-[280px] min-w-[250px] bg-[#17212B] overflow-y-auto mt-[-16px] mx-6 shadow-xl z-50"
       >
         <ItemDropDown
           v-for="[index, point] of filteredPoints.entries()"
           :key="point.uid"
-          :name-point="point.name"
+          :dataPoint="point"
           :is-added-task-list="isAddedTaskList(point)"
           :class="{ 'border-b-[1px] border-[#3d3e43]': index !== filteredPoints.length - 1 }"
           @on-click="clickFilteredItem(point)"
