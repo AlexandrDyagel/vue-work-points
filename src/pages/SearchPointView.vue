@@ -36,14 +36,14 @@ const minDistance = ref<number>(Infinity)
 
 const url = computed(
   () =>
-    `https://yandex.ru/maps/?pt=${closestPoint?.value?.location.toRegion.longitude},${closestPoint?.value?.location.toRegion.latitude}&z=18&l=map`,
+    `https://yandex.ru/maps/?pt=${closestPoint?.value?.location.toRegion.longitude},${closestPoint?.value?.location.toRegion.latitude}&z=18&l=map`
 )
 
 // Опции для геолокации
 const options = {
   enableHighAccuracy: true, // Высокая точность
   timeout: 10000, // Таймаут 10 секунд
-  maximumAge: 0, // Без кэшированных данных
+  maximumAge: 0 // Без кэшированных данных
 }
 
 // Проверка поддержки геолокации
@@ -95,7 +95,7 @@ const watchPosition = () => {
       watching.value = false
       stopWatching()
     },
-    options,
+    options
   )
 }
 
@@ -163,7 +163,10 @@ const findClosestPoint = (): void => {
   }
 
   cachedPoints.value.forEach((point) => {
-    const distance = getDistance(userLocation.value, point.location.toRegion)
+    const distance = getDistance(
+      userLocation.value,
+      point.location.toRegion.latitude !== '' ? point.location.toRegion : point.location.fromRegion
+    )
 
     if (distance < minDistance.value) {
       minDistance.value = distance
@@ -278,7 +281,7 @@ watch(closestPoint, () => (headerColor.value = '#16a34a'))
 
     <div
       @click="openLink(url)"
-      class="flex flex-row items-center justify-center gap-1 start-0 end-0 bottom-0 mb-[80px] bg-[#5fb336] mx-4 px-3 h-[40px] rounded-xl cursor-pointer"
+      class="flex flex-row items-center justify-center gap-1 start-0 end-0 bottom-0 mb-[80px] bg-[#5fb336] mx-4 px-3 h-[40px] rounded-xl cursor-pointer active:opacity-50"
     >
       <Svg>
         <component ref="comp" :is="iconButton"></component>

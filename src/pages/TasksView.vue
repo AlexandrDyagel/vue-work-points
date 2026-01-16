@@ -159,7 +159,7 @@ function isAddedTaskList(item: PointResponse): boolean {
     <div
       v-if="isVisibleTaskMapButton"
       @click="router.push(Route.TaskMap)"
-      class="fixed start-0 end-0 bottom-0 mb-[80px] z-10 bg-[#3d7eff] mx-4 px-3 h-[40px] rounded-xl text-center content-center cursor-pointer"
+      class="fixed start-0 end-0 bottom-0 mb-[80px] z-10 bg-[#3d7eff] mx-4 px-3 h-[40px] rounded-xl text-center content-center cursor-pointer active:opacity-50"
     >
       <span class="text-sm font-medium">На карте</span>
     </div>

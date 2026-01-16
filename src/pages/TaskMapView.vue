@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { BackButton } from 'vue-tg'
 import { useRouter } from 'vue-router'
-import { computed, nextTick, onMounted, onUnmounted, ref, type Ref, watch } from 'vue'
+import {  nextTick, onMounted, onUnmounted, ref, type Ref } from 'vue'
 import { PointResponse } from '@/model/PointResponse.ts'
 import { useTasksLocalStorage } from '@/composables/useTasksLocalStorage.ts'
-import { useMiniApp, useTheme } from 'vue-tg/8.0'
+import { useMiniApp } from 'vue-tg/8.0'
 import LoadingScreen from '@/components/LoadingScreen.vue'
 import type { Marker } from 'leaflet'
 import { TypePoint } from '@/model/Enums.ts'
@@ -15,7 +15,6 @@ const tasksLocalStorage = useTasksLocalStorage()
 const { obtainCachedPoints } = useCache()
 
 const { openLink } = useMiniApp()
-const { headerColor } = useTheme()
 
 const isLoadingData = ref(false)
 const taskItems: Ref<PointResponse[]> = ref([])
