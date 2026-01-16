@@ -38,7 +38,10 @@ export function useCache() {
     }
   }
 
-  const clearCachePoints = () => localStorage.removeItem(LocalStorageNames.CACHE_POINTS)
+  const clearCachePoints = () => {
+    localStorage.removeItem(LocalStorageNames.CACHE_POINTS)
+    console.log('Кэш точек очищен')
+  }
 
   /**
    * Проверка последнего обновления данных

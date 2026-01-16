@@ -8,9 +8,9 @@ import { createRouter, createWebHistory } from 'vue-router'
 import { createPinia } from 'pinia'
 import { Environment, Routes as Route } from '@/model/Enums.ts'
 
-export const DEV_VERSION = '2.49'
-// export const ENVIRONMENT = Environment.PRODUCTION
-export const ENVIRONMENT = Environment.DEVELOPMENT
+export const DEV_VERSION = '2.55'
+export const ENVIRONMENT = Environment.PRODUCTION
+// export const ENVIRONMENT = Environment.DEVELOPMENT
 
 const app = createApp(App)
 
@@ -31,6 +31,7 @@ const routes = [
     component: () => import(`@/pages/SearchPointView.vue`),
   },
   { path: Route.Settings, name: 'settings', component: () => import(`@/pages/DigittoedView.vue`) },
+  { path: Route.TgSettingApp, name: 'tg_settings_app', component: () => import(`@/pages/TgSettingsAppView.vue`) },
 ]
 
 const router = createRouter({

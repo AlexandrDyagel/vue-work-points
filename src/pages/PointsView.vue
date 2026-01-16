@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { computed, onMounted, type Ref, ref, watch, watchEffect } from 'vue'
+import { computed, onMounted, ref, watch, watchEffect } from 'vue'
 import { useRouter } from 'vue-router'
 import { PointResponse } from '@/model/PointResponse.ts'
-import { Routes as Route, TypeSearchFilter, UserRole } from '@/model/Enums.ts'
+import { LocalStorageNames, Routes as Route, TypeSearchFilter, UserRole } from '@/model/Enums.ts'
 import TopAppBarView from '@/components/TopAppBarView.vue'
 import { useInputFocus } from '@/store/TopAppBar.ts'
 import BottomSheetView from '@/components/BottomSheetView.vue'
@@ -12,7 +12,6 @@ import ItemPointView from '@/components/ItemPointView.vue'
 import { useUserRole } from '@/composables/useUserRole.ts'
 import LoadingScreen from '@/components/LoadingScreen.vue'
 import ShareBottomSheet from '@/components/ShareBottomSheet.vue'
-import { useTasksLocalStorage } from '@/composables/useTasksLocalStorage.ts'
 
 const isLoadingData = ref(false)
 const queryInput = ref('')
@@ -31,15 +30,15 @@ const typeSearchFilter = ref(userSearchFilter())
 const inputTopAppBarStore = useInputFocus()
 const { getUserRole } = useUserRole()
 const userRole = ref(getUserRole())
-const tasksLocalStorage = useTasksLocalStorage()
-const taskItems: Ref<PointResponse[]> = ref([])
+const cachedData = ref()
 
 onMounted(async () => {
   try {
     isLoadingData.value = true
-    taskItems.value = tasksLocalStorage.getItems()
 
     let time = performance.now();
+
+    cachedData.value = localStorage.getItem(LocalStorageNames.CACHE_POINTS) // фикс
 
     await obtainCachedPoints().then((cachedDataPoints) => {
       cachedPoints.value = cachedDataPoints
@@ -191,6 +190,20 @@ const handleShare = (point: PointResponse): void => {
       v-if="filteredPoints.length === 0"
       class="absolute w-full h-full pb-[70px] flex justify-center items-center text-2xl text-[#F0F0F0]"
     >{{ emptyElements }}
+
+<!--      <div-->
+<!--        @click="clearCachePoints"-->
+<!--        class="fixed z-20 shadow-xl start-4 end-4 top-65 rounded-xl bg-black border border-[#000] text-sm p-2.5 focus:outline-none"-->
+<!--      >-->
+<!--      <p>Удалить кэш</p>-->
+<!--    </div>-->
+
+<!--    <div>-->
+<!--      &#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;-->
+<!--      {{ cachedData }}-->
+<!--      &#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;-->
+<!--    </div>-->
+
     </span>
 
     <div
@@ -302,7 +315,7 @@ const handleShare = (point: PointResponse): void => {
   <div
     v-if="isLastUpdateTime"
     @click="updateDataPoints"
-    class="fixed start-0 end-0 bottom-0 mb-[80px] z-10 bg-[#5fb336] mx-4 px-3 h-[40px] rounded-xl text-center content-center cursor-pointer"
+    class="fixed start-0 end-0 bottom-0 mb-[80px] z-10 bg-[#5fb336] mx-4 px-3 h-[40px] rounded-xl text-center content-center cursor-pointer active:opacity-50"
   >
     <span class="text-sm font-medium">Обновить данные</span>
   </div>

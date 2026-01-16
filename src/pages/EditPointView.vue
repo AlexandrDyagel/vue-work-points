@@ -198,14 +198,14 @@ const handleBlur = () => inputTopAppBarStore.changeFocus(false)
     <div class="ms-4 me-4 mt-4">
       <div
         @click="update"
-        class="text-center w-full shadow-xl start-4 end-4 mb-4 border-[#5fb336] rounded-lg bg-[#5fb336] border text-sm p-2.5 focus:outline-none"
+        class="text-center w-full shadow-xl start-4 end-4 mb-4 border-[#5fb336] rounded-lg bg-[#5fb336] border text-sm p-2.5 focus:outline-none active:opacity-50"
       >
         {{ progressUpdate ? 'Выполняется обновление. Подождите...' : 'Обновить' }}
       </div>
 
       <div
         @click="delPoint"
-        class="text-center w-full shadow-xl start-4 end-4 bottom-4 border-[#5fb336] rounded-lg bg-[#5fb336] border text-sm p-2.5 focus:outline-none"
+        class="text-center w-full shadow-xl start-4 end-4 bottom-4 border-[#5fb336] rounded-lg bg-[#5fb336] border text-sm p-2.5 focus:outline-none active:opacity-50"
       >
         {{ progressDelete ? 'Выполняется удаление. Подождите...' : 'Удалить' }}
       </div>

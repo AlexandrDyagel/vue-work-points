@@ -14,6 +14,7 @@ export enum Routes {
   TaskMap = '/tasks/map',
   Search = '/search',
   Settings = '/settings',
+  TgSettingApp = '/tg_settings_app'
 }
 
 export enum TypeDirectionButton {

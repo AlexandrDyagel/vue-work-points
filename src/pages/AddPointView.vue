@@ -201,7 +201,7 @@ watch(direction, () => {
     <div class="ms-4 me-4 mt-4">
       <div
         @click="save"
-        class="text-center w-full shadow-xl start-4 end-4 bottom-4 border-[#5fb336] rounded-lg bg-[#5fb336] border text-sm p-2.5 focus:outline-none"
+        class="text-center w-full shadow-xl start-4 end-4 bottom-4 border-[#5fb336] rounded-lg bg-[#5fb336] border text-sm p-2.5 focus:outline-none active:opacity-50"
       >
         {{ progress ? 'Выполняется сохранение. Подождите...' : 'Сохранить' }}
       </div>
@@ -214,7 +214,7 @@ watch(direction, () => {
         class="w-full bg-black shadow-xl start-4 end-4 bottom-4 border-color-custom rounded-lg bg-[#18695A] border text-sm p-2.5 focus:outline-none"
         placeholder="Название нового направления"
       />
-      <div @click="addDirection" class="py-2 px-4 border-[#5fb336] rounded-lg bg-[#5fb336] border">
+      <div @click="addDirection" class="py-2 px-4 border-[#5fb336] rounded-lg bg-[#5fb336] border active:opacity-50">
         +
       </div>
     </div>

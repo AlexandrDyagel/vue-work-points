@@ -5,6 +5,11 @@ import { useMiniApp, useTheme, useViewport } from 'vue-tg/8.0'
 import { useInputFocus } from '@/store/TopAppBar.ts'
 import { useUserRole } from '@/composables/useUserRole.ts'
 import { useSearchFilter } from '@/composables/useSearchFilter.ts'
+import { useRouter } from 'vue-router'
+import { SettingsButton } from 'vue-tg'
+import { Routes } from '@/model/Enums.ts'
+
+const router = useRouter()
 
 const { clearUserRole } = useUserRole()
 const { removeUserSearchFilter } = useSearchFilter()
@@ -38,4 +43,6 @@ onMounted(() => {
   <nav>
     <BottomMenu v-if="!inputTopAppBarStore.isFocused" />
   </nav>
+
+  <SettingsButton @click="router.push(Routes.TgSettingApp)" />
 </template>
