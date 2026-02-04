@@ -14,6 +14,7 @@ import { useMiniApp, useTheme } from 'vue-tg/8.0'
 import { DEV_VERSION } from '../main.ts'
 import { BackButton } from 'vue-tg'
 import { useRouter } from 'vue-router'
+import formatDistance from '@/utils/format.ts'
 
 const router = useRouter()
 const searchPointIcon = shallowRef(SearchPointIcon)
@@ -31,12 +32,13 @@ const userLocation: Ref<GeoPoint> = ref(new GeoPoint())
 const error = ref('')
 const watching = ref(false)
 const watchId: Ref<number | null> = ref(null)
-const closestPoint: Ref<PointResponse | null> = ref(null)
+const nearestPoint: Ref<PointResponse | null> = ref(null) // ближайшая искомая точка
+const closestPoint: Ref<PointResponse | null> = ref(null) // ближайшая точка от искомой точки
 const minDistance = ref<number>(Infinity)
 
 const url = computed(
   () =>
-    `https://yandex.ru/maps/?pt=${closestPoint?.value?.location.toRegion.longitude},${closestPoint?.value?.location.toRegion.latitude}&z=18&l=map`
+    `https://yandex.ru/maps/?pt=${nearestPoint?.value?.location.toRegion.longitude},${nearestPoint?.value?.location.toRegion.latitude}&z=18&l=map`
 )
 
 // Опции для геолокации
@@ -85,7 +87,7 @@ const watchPosition = () => {
         pos.coords.longitude.toFixed(6).toString(),
       )
 
-      findClosestPoint()
+      findNearestPoint()
 
       console.log('formatTime: ', formatTime(pos.timestamp))
       console.log('Позиция обновлена:', pos)
@@ -154,7 +156,7 @@ function getDistance(userLocation: GeoPoint, pointLocation: GeoPoint) {
 }
 
 // Поиск в кэше ближайшей точки от позиции геолокации юзера
-const findClosestPoint = (): void => {
+const findNearestPoint = (): void => {
   minDistance.value = Infinity
 
   if (cachedPoints.value.length === 0) {
@@ -170,9 +172,27 @@ const findClosestPoint = (): void => {
 
     if (distance < minDistance.value) {
       minDistance.value = distance
-      closestPoint.value = point
+      nearestPoint.value = point
     }
   })
+}
+
+const findClosestPoint = (nearPoint: PointResponse | null): void => {
+  if (nearPoint === null) return
+  let minDistance = Infinity
+  if (nearPoint) {
+    cachedPoints.value.filter(point => point !== nearPoint).forEach((point) => {
+      const distance = getDistance(
+        nearPoint.location.toRegion.latitude !== '' ? nearPoint.location.toRegion : nearPoint.location.fromRegion,
+        point.location.toRegion.latitude !== '' ? point.location.toRegion : point.location.fromRegion
+      )
+
+      if (distance < minDistance) {
+        minDistance = distance
+        closestPoint.value = point
+      }
+    })
+  }
 }
 
 // Поиск точки
@@ -214,14 +234,17 @@ onUnmounted(() => {
   headerColor.value = '#242528'
 })
 
-watch(closestPoint, () => (headerColor.value = '#16a34a'))
+watch(nearestPoint, () => {
+  headerColor.value = '#16a34a'
+  findClosestPoint(nearestPoint.value)
+})
 </script>
 
 <template>
   <BackButton @click="router.back" />
   <div class="fixed top-1 start-0 end-0 w-full text-center text-sm z-50">v{{ DEV_VERSION }}</div>
   <div
-    v-if="!closestPoint"
+    v-if="!nearestPoint"
     class="fixed overflow-auto start-0 top-0 end-0 bottom-0 flex items-center justify-center bg-[#242528]"
   >
     <button
@@ -236,7 +259,7 @@ watch(closestPoint, () => (headerColor.value = '#16a34a'))
     </button>
   </div>
 
-  <div v-if="watching" class="fixed w-full bottom-[300px] start-0 end-0 text-center text-sm]">
+  <div v-if="watching" class="fixed w-full bottom-[200px] start-0 end-0 text-center text-sm]">
     <div class="inline-flex items-center justify-center gap-2">
       <svg
         aria-hidden="true"
@@ -259,35 +282,36 @@ watch(closestPoint, () => (headerColor.value = '#16a34a'))
   </div>
 
   <div
-    v-if="closestPoint"
+    v-if="nearestPoint"
     class="fixed overflow-auto bg start-0 top-0 end-0 bottom-0 w-full h-full text-center p-5"
   >
     <div class="call-header">
       <div class="call-status">Скорее всего это</div>
-      <div class="phone-number">~ {{ minDistance.toFixed(0) }} м</div>
+      <div class="phone-number">~ {{ formatDistance(minDistance) }}</div>
       <div class="type-point"></div>
     </div>
 
     <div class="flex items-center justify-center">
-      <img :src="getIcon(closestPoint.type)" class="rounded-sm w-24 h-24" alt="" />
+      <img :src="getIcon(nearestPoint.type)" class="rounded-sm w-24 h-24" alt="" />
     </div>
 
     <div class="point-info">
-      <div class="type-point">{{ getTypeName(closestPoint.type) }}</div>
-      <div class="point-name">«{{ closestPoint.name.trim() }}»</div>
-      <div class="direction-badge">{{ closestPoint.direction }}</div>
-      <div class="address">{{ closestPoint.address }}</div>
+      <div class="type-point">{{ getTypeName(nearestPoint.type) }}</div>
+      <div class="point-name">«{{ nearestPoint.name.trim() }}»</div>
+      <div class="direction-badge">{{ nearestPoint.direction }}</div>
+      <div class="address">{{ nearestPoint.address }}</div>
     </div>
 
     <div
       @click="openLink(url)"
-      class="flex flex-row items-center justify-center gap-1 start-0 end-0 bottom-0 mb-[80px] bg-[#5fb336] mx-4 px-3 h-[40px] rounded-xl cursor-pointer active:opacity-50"
+      class="flex flex-row mb-10 items-center justify-center gap-1 start-0 end-0 bottom-0 bg-[#5fb336] mx-4 px-3 h-[40px] rounded-xl cursor-pointer active:opacity-50"
     >
       <Svg>
         <component ref="comp" :is="iconButton"></component>
       </Svg>
       <span class="text-sm font-medium">На карте</span>
     </div>
+    <div class="point-name">Следующий: {{ closestPoint?.name.trim() }}</div>
   </div>
 </template>
 
