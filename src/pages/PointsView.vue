@@ -2,7 +2,7 @@
 import { computed, onMounted, ref, watch, watchEffect } from 'vue'
 import { useRouter } from 'vue-router'
 import { PointResponse } from '@/model/PointResponse.ts'
-import { LocalStorageNames, Routes as Route, TypeSearchFilter, UserRole } from '@/model/Enums.ts'
+import { Routes as Route, TypeSearchFilter, UserRole } from '@/model/Enums.ts'
 import TopAppBarView from '@/components/TopAppBarView.vue'
 import { useInputFocus } from '@/store/TopAppBar.ts'
 import BottomSheetView from '@/components/BottomSheetView.vue'
@@ -12,6 +12,8 @@ import ItemPointView from '@/components/ItemPointView.vue'
 import { useUserRole } from '@/composables/useUserRole.ts'
 import LoadingScreen from '@/components/LoadingScreen.vue'
 import ShareBottomSheet from '@/components/ShareBottomSheet.vue'
+import { usePointsStore } from '@/store/Points.ts'
+import { useLastUpdateTimeStore } from '@/store/LastUpdateTime.ts'
 
 const isLoadingData = ref(false)
 const queryInput = ref('')
@@ -19,12 +21,13 @@ const filteredPoints = ref([] as PointResponse[])
 const cachedPoints = ref<PointResponse[]>([])
 const bottomSheetRef = ref()
 const topAppBarRef = ref()
-const isLastUpdateTime = ref(false)
 const sharePoint = ref<PointResponse>()
 const shareBottomSheetRef = ref()
 
 const router = useRouter()
-const { obtainCachedPoints, checkForUpdate, clearCachePoints, setLastUpdateDataPoints } = useCache()
+const pointsStore = usePointsStore()
+const lastUpdateTimeStore = useLastUpdateTimeStore()
+const { obtainCachedPoints, clearCachePoints, setLastUpdateDataPoints } = useCache()
 const { userSearchFilter, updateUserSearchFilter } = useSearchFilter()
 const typeSearchFilter = ref(userSearchFilter())
 const inputTopAppBarStore = useInputFocus()
@@ -38,24 +41,27 @@ onMounted(async () => {
 
     let time = performance.now();
 
-    cachedData.value = localStorage.getItem(LocalStorageNames.CACHE_POINTS) // фикс
+    if (pointsStore.points.length !== 0) {
+      cachedPoints.value = pointsStore.points
+    } else {
+      await obtainCachedPoints().then((cachedDataPoints) => {
+        pointsStore.savePoints(cachedDataPoints)
+        cachedPoints.value = pointsStore.points
+        console.warn(`Количество точек: ${pointsStore.points.length}`)
+      })
+    }
 
-    await obtainCachedPoints().then((cachedDataPoints) => {
-      cachedPoints.value = cachedDataPoints
-      console.warn(`Количество точек: ${cachedDataPoints.length}`)
-    })
+    //cachedData.value = localStorage.getItem(LocalStorageNames.CACHE_POINTS) // фикс
 
-    time = performance.now() - time;
-    console.log('Время выполнения = ', time);
+    // await obtainCachedPoints().then((cachedDataPoints) => {
+    //   cachedPoints.value = cachedDataPoints
+    //   console.warn(`Количество точек: ${cachedDataPoints.length}`)
+    // })
 
     isLoadingData.value = false
 
-    await checkForUpdate()
-      .then((isLastUpdate) => (isLastUpdateTime.value = isLastUpdate))
-      .catch((error) => console.error('Ошибка checkForUpdate() в App.vue: ', error))
-
-    if (isLastUpdateTime.value) console.log('Есть новые обновления')
-    else console.log('Нет новых обновлений')
+    time = performance.now() - time;
+    console.log('Время выполнения = ', time);
   } catch (e) {
     console.error(`Ошибка PointsView.vue в onMounted catch: ${e}`)
   } finally {
@@ -157,7 +163,7 @@ const updateDataPoints = () => {
     console.error(`Ошибка PointsView.vue в onMounted catch: ${e}`)
   } finally {
     isLoadingData.value = false
-    isLastUpdateTime.value = false
+    lastUpdateTimeStore.setLastUpdateTime(false)
   }
 }
 
@@ -220,7 +226,7 @@ const handleShare = (point: PointResponse): void => {
           v-for="[index, point] of filteredPoints.entries()"
           :key="point.uid"
           :class="
-            index === filteredPoints.length - 1 ? `mb-[70px]` : `border-b-[1px] border-[#3d3e43]`
+            index === filteredPoints.length - 1 ? `mb-[80px]` : `border-b-[1px] border-[#3d3e43]`
           "
           :dataPoint="point"
           @on-click-share="handleShare"
@@ -313,7 +319,7 @@ const handleShare = (point: PointResponse): void => {
 
   <!-- Button Update Data -->
   <div
-    v-if="isLastUpdateTime"
+    v-if="lastUpdateTimeStore.isLastUpdateTime"
     @click="updateDataPoints"
     class="fixed start-0 end-0 bottom-0 mb-[80px] z-10 bg-[#5fb336] mx-4 px-3 h-[40px] rounded-xl text-center content-center cursor-pointer active:opacity-50"
   >

@@ -93,12 +93,12 @@ const stopCamera = () => {
 }
 
 onMounted(() => {
-  // startCamera()
+  startCamera()
   inputTopAppBarStore.changeFocus(true)
 })
 
 onUnmounted(() => {
-  // stopCamera()
+  stopCamera()
   inputTopAppBarStore.changeFocus(false)
 })
 </script>

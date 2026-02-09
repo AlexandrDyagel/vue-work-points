@@ -20,13 +20,13 @@ const bottomNavItems: Ref<UnwrapRef<BottomNavItem[]>> = ref([
     icon: shallowRef(TaskIcon),
   },
   {
-    name: 'Определить',
+    name: 'Трекинг',
     route: Route.Search,
     isActive: false,
     icon: shallowRef(WhatsIsLocationIcon),
   },
   {
-    name: 'Настройки',
+    name: 'Профиль',
     route: Route.Settings,
     isActive: false,
     icon: shallowRef(ProfileIcon),

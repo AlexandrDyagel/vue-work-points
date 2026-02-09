@@ -35,6 +35,7 @@ const watchId: Ref<number | null> = ref(null)
 const nearestPoint: Ref<PointResponse | null> = ref(null) // ближайшая искомая точка
 const closestPoint: Ref<PointResponse | null> = ref(null) // ближайшая точка от искомой точки
 const minDistance = ref<number>(Infinity)
+const previousDistance = ref<number>(0)
 
 const url = computed(
   () =>
@@ -88,6 +89,7 @@ const watchPosition = () => {
       )
 
       findNearestPoint()
+      //findClosestPoint(nearestPoint.value)
 
       console.log('formatTime: ', formatTime(pos.timestamp))
       console.log('Позиция обновлена:', pos)
@@ -180,6 +182,8 @@ const findNearestPoint = (): void => {
 const findClosestPoint = (nearPoint: PointResponse | null): void => {
   if (nearPoint === null) return
   let minDistance = Infinity
+  let tempPoint: PointResponse | null = null
+
   if (nearPoint) {
     cachedPoints.value.filter(point => point !== nearPoint).forEach((point) => {
       const distance = getDistance(
@@ -189,9 +193,14 @@ const findClosestPoint = (nearPoint: PointResponse | null): void => {
 
       if (distance < minDistance) {
         minDistance = distance
-        closestPoint.value = point
+        tempPoint = point
       }
+
     })
+    if (previousDistance.value > minDistance) {
+      closestPoint.value = tempPoint
+    }
+    previousDistance.value = minDistance
   }
 }
 
@@ -236,7 +245,6 @@ onUnmounted(() => {
 
 watch(nearestPoint, () => {
   headerColor.value = '#16a34a'
-  findClosestPoint(nearestPoint.value)
 })
 </script>
 
@@ -311,7 +319,11 @@ watch(nearestPoint, () => {
       </Svg>
       <span class="text-sm font-medium">На карте</span>
     </div>
-    <div class="point-name">Следующий: {{ closestPoint?.name.trim() }}</div>
+    <div>
+      <div v-if="closestPoint" class="point-name align-start">След. {{ closestPoint?.name.trim() }}</div>
+      <div v-else class="point-name align-start">След. определяем...</div>
+    </div>
+
   </div>
 </template>
 
