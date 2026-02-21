@@ -14,11 +14,13 @@ import ItemDropDown from '@/components/ItemDropDown.vue'
 import { useVerticalScroll } from '@/composables/useVerticalScroll.ts'
 import ArrowDropDownIcon from '@/components/icons/ArrowDropDownIcon.vue'
 import Svg from '@/components/Svg.vue'
+import { useTaskPointsStore } from '@/store/TaskPoints.ts'
 
 const router = useRouter()
 const tasksLocalStorage = useTasksLocalStorage()
 const inputFocus = useInputFocus()
 const { obtainCachedPoints } = useCache()
+const taskPointsStore = useTaskPointsStore()
 
 const isLoadingData = ref(false)
 const lastItemRef = ref()
@@ -53,6 +55,7 @@ const handleFilterChange = (inputString: string) => {
 const deleteTaskItem = (index: number) => {
   taskItems.value.splice(index, 1)
   tasksLocalStorage.setItems(taskItems.value)
+  taskPointsStore.savePoints(taskItems.value)
 }
 
 // Нажатие на элемент выподающего списка найденных элементов point
@@ -60,6 +63,7 @@ const clickFilteredItem = (point: PointResponse) => {
   if (point) {
     taskItems.value.push(point)
     tasksLocalStorage.setItems(taskItems.value)
+    taskPointsStore.savePoints(taskItems.value)
 
     if (lastItemRef.value) {
       lastItemRef.value.$el.scrollIntoView({ behavior: 'smooth', block: 'end' })
@@ -78,6 +82,7 @@ onMounted(async () => {
   try {
     isLoadingData.value = true
     taskItems.value = tasksLocalStorage.getItems()
+    taskPointsStore.savePoints(taskItems.value)
 
     await obtainCachedPoints().then((cachedDataPoints) => {
       cachedPoints.value = cachedDataPoints
@@ -102,18 +107,18 @@ function isAddedTaskList(item: PointResponse): boolean {
   <BackButton @click="router.back" />
   <LoadingScreen :is-loading="isLoadingData" />
   <div class="fixed top-0 start-0 end-0 z-50 bg-[#242528] border-b-[1px] border-[#3d3e43]">
-    <p class="text-center text-[#ccc] text-2xl mt-4"><strong>Мои задания ({{ taskItems.length }})</strong></p>
+    <p class="text-center text-[#ccc] text-2xl mt-4"><strong>Мои задания ({{ taskPointsStore.points.length }})</strong></p>
     <!-- строка поиска -->
     <SearchInputView @focus-blur="handleInputFocusBlur" @filter-changed="handleFilterChange" />
 
     <div>
-      <!-- выпадающий список поиска -->
+      <!-- выпадающий список поиска bg-[#17212B]-->
       <div
         v-auto-animate
         ref="scrollDropDownContainerRef"
         @scroll="verticalScrollDropDown.checkScrollState"
         v-if="filteredPoints.length !== 0"
-        class="absolute max-h-[280px] min-w-[250px] bg-[#17212B] overflow-y-auto mt-[-16px] mx-6 shadow-xl z-50"
+        class="absolute max-h-[280px] min-w-[250px] bg-black overflow-y-auto mt-[-16px] mx-6 shadow-xl z-50"
       >
         <ItemDropDown
           v-for="[index, point] of filteredPoints.entries()"

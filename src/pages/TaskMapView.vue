@@ -9,9 +9,11 @@ import LoadingScreen from '@/components/LoadingScreen.vue'
 import type { Marker } from 'leaflet'
 import { TypePoint } from '@/model/Enums.ts'
 import { useCache } from '@/composables/useCache.ts'
+import { useTaskPointsStore } from '@/store/TaskPoints.ts'
 
 const router = useRouter()
 const tasksLocalStorage = useTasksLocalStorage()
+const taskPointsStore = useTaskPointsStore()
 const { obtainCachedPoints } = useCache()
 
 const { openLink } = useMiniApp()
@@ -32,13 +34,15 @@ onMounted(async () => {
       )
     })
 
-    taskItems.value.push(...tasksLocalStorage.getItems())
+    const cachedPoints = tasksLocalStorage.getItems()
+    taskItems.value.push(...cachedPoints)
+    taskPointsStore.savePoints(cachedPoints)
 
     await nextTick(async () => {
       initMap()
     })
   } catch (e) {
-    console.error(`Ошибка SettingsView.vue в onMounted catch: ${e}`)
+    console.error(`Ошибка TaskMapView.vue в onMounted catch: ${e}`)
   } finally {
     isLoadingData.value = false
   }
@@ -163,6 +167,7 @@ const addMarkersToMap = () => {
     }
 
     // Создаем popup с информацией о точке
+    // if (point.type !== TypePoint.Home) {
     const popupDiv = document.createElement('div')
     popupDiv.className = 'p-2'
 
@@ -178,6 +183,9 @@ const addMarkersToMap = () => {
                             <button
                             class="point-btn px-2 py-1 rounded text-[#ffffff] bg-[#3d7eff] active:bg-[#3c3c3c]">
                             Место</button>
+                            ${point.type !== TypePoint.Home ? `<button
+                            class="delete-btn px-2 py-1 rounded text-[#ffffff] bg-[#5e0808] active:bg-[#3c3c3c]">
+                            Удалить</button>` : ''}
                           </div>
                           </div>
                         `
@@ -188,6 +196,17 @@ const addMarkersToMap = () => {
     })
     popupDiv.querySelector('.point-btn')?.addEventListener('click', () => {
       openLink(urlPoint)
+    })
+    popupDiv.querySelector('.delete-btn')?.addEventListener('click', () => {
+      if (selectedPoint.value && taskItems.value.includes(selectedPoint.value)) {
+        taskItems.value.splice(taskItems.value.indexOf(selectedPoint.value), 1)
+        taskItems.value.splice(taskItems.value.findIndex(() => selectedPoint.value?.name === 'Переходы. Тоннели'), 1)
+        tasksLocalStorage.removeItems()
+        tasksLocalStorage.setItems(taskItems.value)
+        taskPointsStore.savePoints(taskItems.value)
+        marker.closePopup()
+        marker.onRemove(map.value)
+      }
     })
 
     marker.bindPopup(popupDiv)

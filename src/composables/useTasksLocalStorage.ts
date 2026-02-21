@@ -28,8 +28,19 @@ export function useTasksLocalStorage() {
     }
   }
 
+  function removeItems(): boolean {
+    try {
+      localStorage.removeItem(LocalStorageNames.CACHE_TASKS)
+      return true
+    } catch (error) {
+      console.error('TasksLocalStorage: ', error)
+      return false
+    }
+  }
+
   return {
     getItems,
     setItems,
+    removeItems,
   }
 }

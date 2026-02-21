@@ -2,25 +2,24 @@
 import { useRoute } from 'vue-router'
 import Svg from '@/components/Svg.vue'
 import { bottomNavItems } from '@/model/BottomMenu.ts'
-import { computed, onMounted, ref, watch } from 'vue'
-import { Routes as Route } from '@/model/Enums.ts'
+import { computed, onMounted, watch } from 'vue'
+import { NavItemName, Routes as Route } from '@/model/Enums.ts'
 import { useCache } from '@/composables/useCache.ts'
 import { usePointsStore } from '@/store/Points.ts'
-const { obtainCachedPoints } = useCache()
+import { useTaskPointsStore } from '@/store/TaskPoints.ts'
+import { useTasksLocalStorage } from '@/composables/useTasksLocalStorage.ts'
 
 const route = useRoute()
-const countPoints = ref(0)
+const { obtainCachedPoints } = useCache()
 const pointsStore = usePointsStore()
+const taskPointsStore = useTaskPointsStore()
+const taskLocalStorage = useTasksLocalStorage()
 
-onMounted(async() => {
-  if (pointsStore.points.length !== 0) {
-    countPoints.value = pointsStore.points.length
-  } else {
-    await obtainCachedPoints().then((cachedDataPoints) => {
-      pointsStore.savePoints(cachedDataPoints)
-      countPoints.value = pointsStore.points.length
-    })
-  }
+onMounted(async () => {
+  await obtainCachedPoints().then((cachedDataPoints) => {
+    pointsStore.savePoints(cachedDataPoints)
+  })
+  taskPointsStore.savePoints(taskLocalStorage.getItems())
 })
 
 watch(route, () => {
@@ -47,8 +46,13 @@ const styleItemsBottomMenu = (isActive: boolean): string => {
 </script>
 
 <template>
-  <div class="fixed start-0 bottom-0 end-0 w-auto h-16 z-19 bg-gradient-to-b from-transparent to-black/90">
-    <div class="fixed start-10 bottom-4 end-10 w-auto z-20 rounded-3xl shadow-3xl border-1 border-[#17181a]" :class="styleBgBottomMenu">
+  <div
+    class="fixed start-0 bottom-0 end-0 w-auto h-16 z-19 bg-gradient-to-b from-transparent to-black/90"
+  >
+    <div
+      class="fixed start-10 bottom-4 end-10 w-auto z-20 rounded-3xl shadow-3xl border-1 border-[#17181a]"
+      :class="styleBgBottomMenu"
+    >
       <div
         class="text-xs font-bold text-medium shadow flex text-gray-400"
       >
@@ -65,14 +69,24 @@ const styleItemsBottomMenu = (isActive: boolean): string => {
             </Svg>
             <p>{{ navItem.name }}</p>
 
-            <!-- Badge -->
-            <div v-if="navItem.isActive && navItem.route === Route.Points" class="fixed px-1 -top-1 -right-0.5 h-6 bg-[#5fb336]/30 border-4 border-[#242528] rounded-2xl flex items-center justify-center">
-              <span class="text-[#5fb336] text-[9px] font-bold">{{ countPoints }}</span>
+            <!-- Badge Points -->
+            <div
+              v-if="navItem.isActive && navItem.name === NavItemName.Points"
+              class="fixed px-1 -top-1 -right-0.5 h-6 bg-[#5fb336]/30 border-4 border-[#242528] rounded-2xl flex items-center justify-center"
+            >
+              <span class="text-[#5fb336] text-[9px] font-bold">{{ pointsStore.countPoints }}</span>
             </div>
 
-            <!--
-            <span v-if="navItem.route === Route.Points" class="fixed z-50 start-13 top-2 bg-black px-1 rounded-sm text-[8px]">{{ countPoints }}</span>
-  -->
+            <!-- Badge Tasks -->
+            <div
+              v-if="navItem.isActive && navItem.name === NavItemName.Tasks && taskPointsStore.countPoints > 0"
+              class="fixed px-1 -top-1 -right-0.5 h-6 bg-[#5fb336]/30 border-4 border-[#242528] rounded-2xl flex items-center justify-center"
+            >
+              <span
+                class="text-[#5fb336] text-[9px] font-bold"
+              >{{ taskPointsStore.countPoints }}</span>
+            </div>
+
           </div>
         </RouterLink>
       </div>

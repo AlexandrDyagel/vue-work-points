@@ -26,7 +26,7 @@ const routes = [
   { path: Route.Tasks, name: 'tasks', component: () => import(`@/pages/TasksView.vue`) },
   { path: Route.TaskMap, name: 'tasks_map', component: () => import(`@/pages/TaskMapView.vue`) },
   {
-    path: Route.Search,
+    path: Route.Tracking,
     name: 'search_point',
     component: () => import(`@/pages/SearchPointView.vue`),
   },
