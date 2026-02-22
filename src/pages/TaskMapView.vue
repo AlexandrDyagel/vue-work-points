@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { BackButton } from 'vue-tg'
 import { useRouter } from 'vue-router'
-import {  nextTick, onMounted, onUnmounted, ref, type Ref } from 'vue'
+import { nextTick, onMounted, onUnmounted, ref, type Ref } from 'vue'
 import { PointResponse } from '@/model/PointResponse.ts'
 import { useTasksLocalStorage } from '@/composables/useTasksLocalStorage.ts'
 import { useMiniApp } from 'vue-tg/8.0'
@@ -10,11 +10,23 @@ import type { Marker } from 'leaflet'
 import { TypePoint } from '@/model/Enums.ts'
 import { useCache } from '@/composables/useCache.ts'
 import { useTaskPointsStore } from '@/store/TaskPoints.ts'
+import { useOptimalRoute } from '@/composables/useOptimalRoute.ts'
+import { usePointsStore } from '@/store/Points.ts'
 
 const router = useRouter()
+const pointsStore = usePointsStore()
 const tasksLocalStorage = useTasksLocalStorage()
 const taskPointsStore = useTaskPointsStore()
 const { obtainCachedPoints } = useCache()
+const {
+  points,
+  startPointId,
+  isLoading,
+  optimalRoute,
+  totalDistance,
+  removePoint,
+  init
+} = useOptimalRoute()
 
 const { openLink } = useMiniApp()
 
@@ -24,29 +36,38 @@ const map: Ref<L.Map | null> = ref(null)
 const selectedPoint: Ref<PointResponse | null> = ref(null)
 
 onMounted(async () => {
-  try {
-    // headerColor.value = '#24252870'
-    isLoadingData.value = true
+    try {
+      // headerColor.value = '#24252870'
+      isLoadingData.value = true
+      startPointId.value = 'o7YHGcpPla26GOV7bXhp' // uid Переходы. Тоннели
 
-    obtainCachedPoints().then((cachedDataPoints) => {
-      taskItems.value.push(
-        cachedDataPoints.filter((point) => point.name === 'Переходы. Тоннели')[0],
-      )
-    })
+      if (pointsStore.points.length !== 0) {
+        points.value.unshift(
+          pointsStore.points.filter((point) => point.name === 'Переходы. Тоннели')[0])
+      } else {
+        await obtainCachedPoints().then((cachedDataPoints) => {
+          pointsStore.savePoints(cachedDataPoints)
+          points.value.unshift(
+            pointsStore.points.filter((point) => point.name === 'Переходы. Тоннели')[0])
+        })
+      }
 
-    const cachedPoints = tasksLocalStorage.getItems()
-    taskItems.value.push(...cachedPoints)
-    taskPointsStore.savePoints(cachedPoints)
+      const cachedPoints = tasksLocalStorage.getItems()
+      points.value.push(...cachedPoints)
+      taskPointsStore.savePoints(cachedPoints)
 
-    await nextTick(async () => {
-      initMap()
-    })
-  } catch (e) {
-    console.error(`Ошибка TaskMapView.vue в onMounted catch: ${e}`)
-  } finally {
-    isLoadingData.value = false
+      await init()
+
+      await nextTick(async () => {
+        initMap()
+      })
+    } catch (e) {
+      console.error(`Ошибка TaskMapView.vue в onMounted catch: ${e}`)
+    } finally {
+      isLoadingData.value = false
+    }
   }
-})
+)
 
 const initMap = () => {
   // Создаем карту с центром в Москве
@@ -55,7 +76,7 @@ const initMap = () => {
   // Добавляем слой карты OpenStreetMap
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '© OpenStreetMap contributors',
-    maxZoom: 18,
+    maxZoom: 18
   }).addTo(leafletMap)
 
   map.value = leafletMap
@@ -95,8 +116,8 @@ const createTextMarker = (typePoint: TypePoint, lat: number, lon: number, text: 
       `,
         className: '',
         iconSize: [150, 30],
-        iconAnchor: [75, 30], // 75 в два раза должно быть меньше 150, а 30 должно быть 30
-      }),
+        iconAnchor: [75, 30] // 75 в два раза должно быть меньше 150, а 30 должно быть 30
+      })
     })
   } else {
     return L.marker([lat, lon], {
@@ -124,15 +145,16 @@ const createTextMarker = (typePoint: TypePoint, lat: number, lon: number, text: 
       `,
         className: '',
         iconSize: [150, 30],
-        iconAnchor: [75, 30], // 75 в два раза должно быть меньше 150, а 30 должно быть 30
-      }),
+        iconAnchor: [75, 30] // 75 в два раза должно быть меньше 150, а 30 должно быть 30
+      })
     })
   }
 }
 
 const addMarkersToMap = () => {
   if (!map.value) return
-  taskItems.value.forEach((point) => {
+
+  optimalRoute.value.forEach((point, index) => {
     // Создаем кастомный маркер
     // const marker = L.marker([Number(point.location.toRegion.latitude), Number(point.location.toRegion.longitude)], {
     //   title: point.name,
@@ -151,7 +173,7 @@ const addMarkersToMap = () => {
         point.type,
         Number(point.location.toRegion.latitude),
         Number(point.location.toRegion.longitude),
-        point.name,
+        `${index + 1}. ${point.name}`
       ).addTo(map.value)
       urlRoute = `https://yandex.ru/maps/?rtext=~${point.location.toRegion.latitude},${point.location.toRegion.longitude}&rtt=auto`
       urlPoint = `https://yandex.ru/maps/?pt=${point.location.toRegion.longitude},${point.location.toRegion.latitude}&z=18&l=map`
@@ -160,7 +182,7 @@ const addMarkersToMap = () => {
         point.type,
         Number(point.location.fromRegion.latitude),
         Number(point.location.fromRegion.longitude),
-        point.name,
+        `${index + 1}. ${point.name}`
       ).addTo(map.value)
       urlRoute = `https://yandex.ru/maps/?rtext=~${point.location.fromRegion.latitude},${point.location.fromRegion.longitude}&rtt=auto`
       urlPoint = `https://yandex.ru/maps/?pt=${point.location.fromRegion.longitude},${point.location.fromRegion.latitude}&z=18&l=map`
@@ -172,7 +194,7 @@ const addMarkersToMap = () => {
     popupDiv.className = 'p-2'
 
     popupDiv.innerHTML = `
-                          <h3 class="font-bold text-lg text-blue-600 mb-2">${point.name}</h3>
+                          <h3 class="font-bold text-lg text-blue-600 mb-2">${index + 1}. ${point.name}</h3>
                           <div class="text-gray-600 text-sm mb-1">${point.direction}</div>
                           <div class="text-gray-600 text-sm mb-2">${point.address}</div>
                           <div class="flex gap-2 items-center">
@@ -220,19 +242,19 @@ const addMarkersToMap = () => {
 }
 
 const fitMapToMarkers = () => {
-  if (!map.value || taskItems.value.length === 0) return
+  if (!map.value || optimalRoute.value.length === 0) return
 
   const group = L.featureGroup()
-  taskItems.value.forEach((point) => {
+  optimalRoute.value.forEach((point) => {
     if (point.location.toRegion.latitude && point.location.toRegion.longitude) {
       L.marker([
         Number(point.location.toRegion.latitude),
-        Number(point.location.toRegion.longitude),
+        Number(point.location.toRegion.longitude)
       ]).addTo(group)
     } else {
       L.marker([
         Number(point.location.fromRegion.latitude),
-        Number(point.location.fromRegion.longitude),
+        Number(point.location.fromRegion.longitude)
       ]).addTo(group)
     }
   })
@@ -243,6 +265,7 @@ const fitMapToMarkers = () => {
 onUnmounted(() => {
   // headerColor.value = '#242528'
 })
+
 </script>
 
 <template>

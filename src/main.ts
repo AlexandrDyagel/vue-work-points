@@ -8,7 +8,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import { createPinia } from 'pinia'
 import { Environment, Routes as Route } from '@/model/Enums.ts'
 
-export const DEV_VERSION = '2.62'
+export const DEV_VERSION = '2.63'
 // export const ENVIRONMENT = Environment.PRODUCTION
 export const ENVIRONMENT = Environment.DEVELOPMENT
 
@@ -30,7 +30,8 @@ const routes = [
     name: 'search_point',
     component: () => import(`@/pages/SearchPointView.vue`),
   },
-  { path: Route.Settings, name: 'settings', component: () => import(`@/pages/DigittoedView.vue`) },
+  //{ path: Route.Settings, name: 'settings', component: () => import(`@/pages/DigittoedView.vue`) },
+  { path: Route.Settings, name: 'settings', component: () => import(`@/pages/TestView.vue`) },
   { path: Route.TgSettingApp, name: 'tg_settings_app', component: () => import(`@/pages/TgSettingsAppView.vue`) },
 ]
 
