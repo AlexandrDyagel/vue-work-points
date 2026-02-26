@@ -4,9 +4,10 @@
 // Используем composable функцию
 import { useOptimalRoute } from '@/composables/useOptimalRoute.ts'
 import { useTasksLocalStorage } from '@/composables/useTasksLocalStorage.ts'
-import { useMiniApp } from 'vue-tg/8.0'
+import { useTgProfileStore } from '@/store/TgProfile.ts'
 
 const tasksLocalStorage = useTasksLocalStorage()
+const tgUserProfileStore = useTgProfileStore()
 
 const {
   points,
@@ -17,24 +18,15 @@ const {
   removePoint
 } = useOptimalRoute(tasksLocalStorage.getItems());
 
-const {initDataUnsafe, platform} = useMiniApp()
 </script>
 
 <template>
-  <p>initDataUnsafe.user.id: {{initDataUnsafe.user?.id}}</p>
-  <p>initDataUnsafe.user.first_name: {{initDataUnsafe.user?.first_name}}</p>
-  <p>initDataUnsafe.user.last_name: {{initDataUnsafe.user?.last_name}}</p>
-  <p>initDataUnsafe.user.username: {{initDataUnsafe.user?.username}}</p>
-  <p>initDataUnsafe.user.photo_url: {{initDataUnsafe.user?.photo_url}}</p>
-  <p>initDataUnsafe.chat?.photo_url: {{initDataUnsafe.chat?.photo_url}}</p>
-  <p>initDataUnsafe.chat?.username: {{initDataUnsafe.chat?.username}}</p>
-  <p>initDataUnsafe.chat?.title: {{initDataUnsafe.chat?.title}}</p>
-  <p>initDataUnsafe.chat?.id: {{initDataUnsafe.chat?.id}}</p>
-  <p>initDataUnsafe.chat?.type: {{initDataUnsafe.chat?.type}}</p>
-  <p>initDataUnsafe.chat?.username: {{initDataUnsafe.chat?.username}}</p>
-  <p>initDataUnsafe.signature: {{initDataUnsafe.signature}}</p>
-  <p>initDataUnsafe.start_param: {{initDataUnsafe.start_param}}</p>
-  <p>platform: {{platform}}</p>
+  <p>initDataUnsafe.user.id: {{tgUserProfileStore.userProfile.userId}}</p>
+  <p>initDataUnsafe.user.first_name: {{tgUserProfileStore.userProfile.firstName}}</p>
+  <p>initDataUnsafe.user.last_name: {{tgUserProfileStore.userProfile.lastName}}</p>
+  <p>initDataUnsafe.user.username: {{tgUserProfileStore.userProfile.username}}</p>
+  <p>initDataUnsafe.user.photo_url: {{tgUserProfileStore.userProfile.photoUrl}}</p>
+
 <!--  <div class="min-h-screen bg-gray-100 p-8">
     <div class="max-w-4xl mx-auto">
       <h1 class="text-3xl font-bold text-gray-800 mb-6">

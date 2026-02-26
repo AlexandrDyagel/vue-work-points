@@ -10,6 +10,10 @@ import { Routes } from '@/model/Enums.ts'
 import RoundedBottomMenu from '@/components/RoundedBottomMenu.vue'
 import { useCache } from '@/composables/useCache.ts'
 import { useLastUpdateTimeStore } from '@/store/LastUpdateTime.ts'
+import { useTgProfileStore } from '@/store/TgProfile.ts'
+import Site from '@/components/Site.vue'
+import Site2 from '@/components/Site2.vue'
+import Site3 from '@/components/Site3.vue'
 
 const router = useRouter()
 
@@ -24,6 +28,7 @@ provide('isLoadingData', loading)
 const miniApp = useMiniApp()
 const theme = useTheme()
 const viewport = useViewport()
+const tgProfileStore = useTgProfileStore()
 
 const inputTopAppBarStore = useInputFocus()
 
@@ -35,6 +40,8 @@ onMounted(async () => {
   viewport.isVerticalSwipesEnabled.value = false
   miniApp.ready()
 
+  setDataUserProfile()
+
   await checkForUpdate()
     .then((isLastUpdate) => (lastUpdateTimeStore.setLastUpdateTime(isLastUpdate)))
     .catch((error) => console.error('Ошибка checkForUpdate() в App.vue: ', error))
@@ -45,10 +52,18 @@ onMounted(async () => {
     console.log('Нет новых обновлений')
   }
 })
+
+function setDataUserProfile(): void {
+  tgProfileStore.userProfile.userId = miniApp.initDataUnsafe.user?.id
+  tgProfileStore.userProfile.firstName = miniApp.initDataUnsafe.user?.first_name
+  tgProfileStore.userProfile.lastName = miniApp.initDataUnsafe.user?.last_name
+  tgProfileStore.userProfile.username = miniApp.initDataUnsafe.user?.username
+  tgProfileStore.userProfile.photoUrl = miniApp.initDataUnsafe.user?.photo_url
+}
 </script>
 
 <template>
-  <header></header>
+   <header></header>
 
   <main class="mb-20">
     <router-view></router-view>

@@ -8,9 +8,11 @@ import { useCache } from '@/composables/useCache.ts'
 import { usePointsStore } from '@/store/Points.ts'
 import { useTaskPointsStore } from '@/store/TaskPoints.ts'
 import { useTasksLocalStorage } from '@/composables/useTasksLocalStorage.ts'
-
+import { useTgProfileStore } from '@/store/TgProfile.ts'
+import StepDownImg from '@/assets/images/step_down.png'
 const route = useRoute()
 const { obtainCachedPoints } = useCache()
+const tgUserProfile = useTgProfileStore()
 const pointsStore = usePointsStore()
 const taskPointsStore = useTaskPointsStore()
 const taskLocalStorage = useTasksLocalStorage()
@@ -64,7 +66,8 @@ const styleItemsBottomMenu = (isActive: boolean): string => {
           :to="navItem.route"
         >
           <div class="w-full py-0.5 focus-within:z-10 flex flex-col items-center justify-center">
-            <Svg>
+            <img v-if="navItem.name === NavItemName.Profile && tgUserProfile.photoUrl" :src="tgUserProfile.photoUrl" class="h-5 w-5 rounded-full" alt="Фото профиля" />
+            <Svg v-else>
               <component ref="comp" :is="navItem.icon"></component>
             </Svg>
             <p>{{ navItem.name }}</p>

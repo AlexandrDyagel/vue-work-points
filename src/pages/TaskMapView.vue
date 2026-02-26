@@ -6,7 +6,7 @@ import { PointResponse } from '@/model/PointResponse.ts'
 import { useTasksLocalStorage } from '@/composables/useTasksLocalStorage.ts'
 import { useMiniApp } from 'vue-tg/8.0'
 import LoadingScreen from '@/components/LoadingScreen.vue'
-import type { Marker } from 'leaflet'
+import type { Marker, Polyline } from 'leaflet'
 import { TypePoint } from '@/model/Enums.ts'
 import { useCache } from '@/composables/useCache.ts'
 import { useTaskPointsStore } from '@/store/TaskPoints.ts'
@@ -34,10 +34,27 @@ const isLoadingData = ref(false)
 const taskItems: Ref<PointResponse[]> = ref([])
 const map: Ref<L.Map | null> = ref(null)
 const selectedPoint: Ref<PointResponse | null> = ref(null)
+// Хранилище для линий маршрутов
+const routePolylines: Ref<Polyline[]> = ref([])
+// Состояние видимости линий
+const isRoutesVisible = ref(true)
+
+// Массив цветов для маршрутов
+const routeColors = [
+  '#FF5733', // Красный
+  '#33FF57', // Зеленый
+  '#3357FF', // Синий
+  '#FF33F1', // Розовый
+  '#F1FF33', // Желтый
+  '#33FFF5', // Голубой
+  '#FF8333', // Оранжевый
+  '#8333FF', // Фиолетовый
+  '#FF3383', // Розово-красный
+  '#33FF83'  // Салатовый
+]
 
 onMounted(async () => {
     try {
-      // headerColor.value = '#24252870'
       isLoadingData.value = true
       startPointId.value = 'o7YHGcpPla26GOV7bXhp' // uid Переходы. Тоннели
 
@@ -84,8 +101,104 @@ const initMap = () => {
   // Добавляем маркеры для всех точек
   addMarkersToMap()
 
+  // Рисуем маршруты между точками
+  drawRoutes()
+
   // Подгоняем карту под все маркеры
   fitMapToMarkers()
+}
+
+// Новая функция для переключения видимости линий
+const toggleRoutesVisibility = () => {
+  isRoutesVisible.value = !isRoutesVisible.value
+
+  routePolylines.value.forEach(polyline => {
+    if (isRoutesVisible.value) {
+      // Показываем линии
+      polyline.setStyle({ opacity: 0.9 })
+      // Если нужно вернуть исходный цвет (на случай, если он был изменен)
+      // polyline.setStyle({ color: polyline.options.color })
+    } else {
+      // Скрываем линии
+      polyline.setStyle({ opacity: 0 })
+    }
+  })
+}
+
+// Новая функция для отрисовки маршрутов между точками
+const drawRoutes = () => {
+  if (!map.value || optimalRoute.value.length < 2) return
+
+  // Очищаем предыдущие линии
+  routePolylines.value.forEach(polyline => {
+    polyline.remove()
+  })
+  routePolylines.value = []
+
+  // Рисуем линии между последовательными точками
+  for (let i = 0; i < optimalRoute.value.length - 1; i++) {
+    const currentPoint = optimalRoute.value[i]
+    const nextPoint = optimalRoute.value[i + 1]
+
+    // Получаем координаты текущей точки
+    const currentLat = currentPoint.location.toRegion.latitude
+      ? Number(currentPoint.location.toRegion.latitude)
+      : Number(currentPoint.location.fromRegion.latitude)
+    const currentLng = currentPoint.location.toRegion.longitude
+      ? Number(currentPoint.location.toRegion.longitude)
+      : Number(currentPoint.location.fromRegion.longitude)
+
+    // Получаем координаты следующей точки
+    const nextLat = nextPoint.location.toRegion.latitude
+      ? Number(nextPoint.location.toRegion.latitude)
+      : Number(nextPoint.location.fromRegion.latitude)
+    const nextLng = nextPoint.location.toRegion.longitude
+      ? Number(nextPoint.location.toRegion.longitude)
+      : Number(nextPoint.location.fromRegion.longitude)
+
+    // Создаем линию между точками
+    const polyline = L.polyline([
+      [currentLat, currentLng],
+      [nextLat, nextLng]
+    ], {
+      color: routeColors[i % routeColors.length],
+      weight: 4,
+      opacity: isRoutesVisible.value ? 0.9 : 0, // Учитываем текущее состояние видимости
+      smoothFactor: 1,
+      lineCap: 'round',
+      lineJoin: 'round'
+    }).addTo(map.value)
+
+    // Добавляем всплывающую подсказку с информацией о сегменте
+    const distance = calculateDistance(
+      currentLat, currentLng,
+      nextLat, nextLng
+    )
+
+    polyline.bindPopup(`
+      <div class="p-2">
+        <h4 class="font-bold text-sm mb-1">Сегмент ${i + 1}</h4>
+        <p class="text-xs">От: ${currentPoint.name}</p>
+        <p class="text-xs">До: ${nextPoint.name}</p>
+        <p class="text-xs font-bold mt-1">Расстояние: ${distance.toFixed(2)} км</p>
+      </div>
+    `)
+
+    routePolylines.value.push(polyline)
+  }
+}
+
+// Вспомогательная функция для расчета расстояния между точками (формула гаверсинуса)
+const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
+  const R = 6371 // Радиус Земли в километрах
+  const dLat = (lat2 - lat1) * Math.PI / 180
+  const dLon = (lon2 - lon1) * Math.PI / 180
+  const a =
+    Math.sin(dLat/2) * Math.sin(dLat/2) +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+    Math.sin(dLon/2) * Math.sin(dLon/2)
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a))
+  return R * c
 }
 
 // Функция для создания текстовой метки
@@ -116,7 +229,7 @@ const createTextMarker = (typePoint: TypePoint, lat: number, lon: number, text: 
       `,
         className: '',
         iconSize: [150, 30],
-        iconAnchor: [75, 30] // 75 в два раза должно быть меньше 150, а 30 должно быть 30
+        iconAnchor: [75, 30]
       })
     })
   } else {
@@ -145,7 +258,7 @@ const createTextMarker = (typePoint: TypePoint, lat: number, lon: number, text: 
       `,
         className: '',
         iconSize: [150, 30],
-        iconAnchor: [75, 30] // 75 в два раза должно быть меньше 150, а 30 должно быть 30
+        iconAnchor: [75, 30]
       })
     })
   }
@@ -155,16 +268,6 @@ const addMarkersToMap = () => {
   if (!map.value) return
 
   optimalRoute.value.forEach((point, index) => {
-    // Создаем кастомный маркер
-    // const marker = L.marker([Number(point.location.toRegion.latitude), Number(point.location.toRegion.longitude)], {
-    //   title: point.name,
-    //   icon: L.divIcon({
-    //     html: `<div class="rounded border-1 bg-[#3388ff] px-1 py-0.5 truncate">${point.name}</div>`,
-    //     className: 'label-icon',
-    //     iconSize: [100, 30],
-    //     iconAnchor: [50, 30]
-    //   })
-    // }).addTo(map.value)
     let marker: Marker
     let urlRoute: string
     let urlPoint: string
@@ -188,8 +291,6 @@ const addMarkersToMap = () => {
       urlPoint = `https://yandex.ru/maps/?pt=${point.location.fromRegion.longitude},${point.location.fromRegion.latitude}&z=18&l=map`
     }
 
-    // Создаем popup с информацией о точке
-    // if (point.type !== TypePoint.Home) {
     const popupDiv = document.createElement('div')
     popupDiv.className = 'p-2'
 
@@ -212,7 +313,6 @@ const addMarkersToMap = () => {
                           </div>
                         `
 
-    // Добавляем обработчики
     popupDiv.querySelector('.route-btn')?.addEventListener('click', () => {
       openLink(urlRoute)
     })
@@ -228,15 +328,16 @@ const addMarkersToMap = () => {
         taskPointsStore.savePoints(taskItems.value)
         marker.closePopup()
         marker.onRemove(map.value)
+
+        // Перерисовываем маршруты после удаления точки
+        drawRoutes()
       }
     })
 
     marker.bindPopup(popupDiv)
 
-    // Обработчик клика на маркер
     marker.on('click', () => {
       selectedPoint.value = point
-      // isModalOpen.value = true;
     })
   })
 }
@@ -263,7 +364,10 @@ const fitMapToMarkers = () => {
 }
 
 onUnmounted(() => {
-  // headerColor.value = '#242528'
+  // Очищаем линии при размонтировании компонента
+  routePolylines.value.forEach(polyline => {
+    polyline.remove()
+  })
 })
 
 </script>
@@ -274,13 +378,16 @@ onUnmounted(() => {
 
   <div>
     <div class="fixed overflow-auto start-0 top-0 end-0 bottom-0 w-full bg-[#242528]">
-      <!-- Карта -->
-      <!--      <div class="fixed top-0 z-10 start-0 end-0 text-black text-lg text-center">-->
-      <!--        <p>Версия: {{ DEV_VERSION }}</p>-->
-      <!--        <h2>-->
-      <!--          Карта ({{ taskItems.length }} точек)-->
-      <!--        </h2>-->
-      <!--      </div>-->
+      <!-- Кнопка переключения видимости маршрутов -->
+      <button
+        @click="toggleRoutesVisibility"
+        class="fixed top-4 right-4 z-20 px-4 py-2 rounded-lg text-white font-medium shadow-lg transition-all duration-200"
+        :class="isRoutesVisible ? 'bg-blue-600 hover:bg-blue-700' : 'bg-gray-600 hover:bg-gray-700'"
+      >
+        <span v-if="isRoutesVisible">🔍 Скрыть маршруты</span>
+        <span v-else>🗺️ Показать маршруты</span>
+      </button>
+
       <div class="pt-4">
         <div id="map" class="fixed overflow-auto start-0 top-0 end-0 bottom-0 w-full h-full"></div>
       </div>
@@ -288,4 +395,20 @@ onUnmounted(() => {
   </div>
 </template>
 
-<style scoped></style>
+<style scoped>
+/* Добавляем небольшую анимацию для кнопки */
+button {
+  transition: all 0.2s ease;
+  backdrop-filter: blur(8px);
+  background-color: v-bind('isRoutesVisible ? "rgba(37, 99, 235, 0.9)" : "rgba(75, 85, 99, 0.9)"');
+}
+
+button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+button:active {
+  transform: translateY(0);
+}
+</style>
