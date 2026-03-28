@@ -11,9 +11,7 @@ import RoundedBottomMenu from '@/components/RoundedBottomMenu.vue'
 import { useCache } from '@/composables/useCache.ts'
 import { useLastUpdateTimeStore } from '@/store/LastUpdateTime.ts'
 import { useTgProfileStore } from '@/store/TgProfile.ts'
-import Site from '@/components/Site.vue'
-import Site2 from '@/components/Site2.vue'
-import Site3 from '@/components/Site3.vue'
+import Calculation from '@/components/Calculation.vue'
 
 const router = useRouter()
 
@@ -63,15 +61,17 @@ function setDataUserProfile(): void {
 </script>
 
 <template>
-   <header></header>
+<!--  <header></header>-->
 
-  <main class="mb-20">
-    <router-view></router-view>
-  </main>
+<!--  <main class="mb-20">-->
+<!--    <router-view></router-view>-->
+<!--  </main>-->
 
-  <nav>
-    <RoundedBottomMenu v-if="!inputTopAppBarStore.isFocused" />
-  </nav>
+<!--  <nav>-->
+<!--    <RoundedBottomMenu v-if="!inputTopAppBarStore.isFocused" />-->
+<!--  </nav>-->
 
-  <SettingsButton @click="router.push(Routes.TgSettingApp)" />
+<!--  <SettingsButton @click="router.push(Routes.TgSettingApp)" />-->
+
+  <Calculation />
 </template>
