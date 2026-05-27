@@ -14,8 +14,6 @@ import { useTgProfileStore } from '@/store/TgProfile.ts'
 import Calculation from '@/components/Calculation.vue'
 import CombatsGame from '@/components/CombatsGame.vue'
 
-const router = useRouter()
-
 const { clearUserRole } = useUserRole()
 const { removeUserSearchFilter } = useSearchFilter()
 const { checkForUpdate } = useCache()
@@ -24,6 +22,7 @@ const lastUpdateTimeStore = useLastUpdateTimeStore()
 const loading = ref<boolean>(true)
 provide('isLoadingData', loading)
 
+const router = useRouter()
 const miniApp = useMiniApp()
 const theme = useTheme()
 const viewport = useViewport()
@@ -39,7 +38,7 @@ onMounted(async () => {
   viewport.isVerticalSwipesEnabled.value = false
   miniApp.ready()
 
-  setDataUserProfile()
+  //setDataUserProfile()
 
   await checkForUpdate()
     .then((isLastUpdate) => (lastUpdateTimeStore.setLastUpdateTime(isLastUpdate)))

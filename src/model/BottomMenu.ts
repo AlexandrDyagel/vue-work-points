@@ -1,6 +1,6 @@
 import type { BottomNavItem } from '@/model/BottomNavItem.ts'
 import { type Ref, ref, shallowRef, type UnwrapRef } from 'vue'
-import ProfileIcon from '@/components/icons/ProfileIcon.vue'
+import MapIcon from '@/components/icons/MapIcon.vue'
 import WhatsIsLocationIcon from '@/components/icons/WhatsIsLocationIcon.vue'
 import { NavItemName, Routes as Route } from '@/model/Enums.ts'
 import TaskIcon from '@/components/icons/TaskIcon.vue'
@@ -26,10 +26,10 @@ const bottomNavItems: Ref<UnwrapRef<BottomNavItem[]>> = ref([
     icon: shallowRef(WhatsIsLocationIcon),
   },
   {
-    name: NavItemName.Profile,
-    route: Route.Settings,
+    name: NavItemName.Map,
+    route: Route.Map,
     isActive: false,
-    icon: shallowRef(ProfileIcon),
+    icon: shallowRef(MapIcon),
   },
 ])
 

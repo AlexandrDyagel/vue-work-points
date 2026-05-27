@@ -13,7 +13,7 @@ export enum Routes {
   Tasks = '/tasks',
   TaskMap = '/tasks/map',
   Tracking = '/tracking',
-  Settings = '/settings',
+  Map = '/map',
   TgSettingApp = '/tg_settings_app'
 }
 
@@ -65,5 +65,5 @@ export enum NavItemName {
   Points= 'Точки',
   Tasks = 'Задания',
   Tracking = 'Трекинг',
-  Profile = 'Профиль',
+  Map = 'Карта',
 }

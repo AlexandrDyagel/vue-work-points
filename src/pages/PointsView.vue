@@ -43,10 +43,12 @@ onMounted(async () => {
 
     if (pointsStore.points.length !== 0) {
       cachedPoints.value = pointsStore.points
+      console.log(pointsStore.points[2])
     } else {
       await obtainCachedPoints().then((cachedDataPoints) => {
         pointsStore.savePoints(cachedDataPoints)
         cachedPoints.value = pointsStore.points
+        console.log(pointsStore.points)
         console.warn(`Количество точек: ${pointsStore.points.length}`)
       })
     }
