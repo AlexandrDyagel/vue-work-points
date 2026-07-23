@@ -7,6 +7,10 @@ import LoadingScreen from '@/components/LoadingScreen.vue'
 import type { Marker } from 'leaflet'
 import { useCache } from '@/composables/useCache.ts'
 import type { PointResponse } from '@/model/PointResponse.ts'
+import { TypePoint } from '@/model/Enums.ts'
+import StepUpImg from '@/assets/images/step_up.png'
+import TunnelImg from '@/assets/images/tunnel.png'
+import StepDownImg from '@/assets/images/step_down.png'
 
 const router = useRouter()
 const pointsStore = usePointsStore()
@@ -237,6 +241,24 @@ const clearFilters = () => {
   searchQuery.value = ''
   clearMarkers()
 }
+
+const getIcon = (typePoint: TypePoint) => {
+  switch (typePoint) {
+    case TypePoint.PP: {
+      return StepUpImg
+    }
+    case TypePoint.TA: {
+      return TunnelImg
+    }
+    case TypePoint.TP: {
+      return StepDownImg
+    }
+  }
+}
+
+const onChangeBlur = () => {
+  searchQuery.value = ''
+}
 </script>
 
 <template>
@@ -246,13 +268,13 @@ const clearFilters = () => {
   <!-- Контейнер с картой -->
   <div class="fixed inset-0 w-full h-full bg-[#242528]">
     <!-- Панель управления вверху -->
-    <div class="absolute top-4 left-4 right-4 z-[1000] bg-white rounded-xl p-3 pb-0 shadow-lg border border-gray-200">
+    <div class="absolute top-4 left-4 right-4 z-[1000] bg-[#242528] rounded-xl p-3 pb-0 shadow-lg border border-black">
       <!-- Выбор направления -->
       <div class="flex gap-2 items-center">
-        <label class="text-sm font-semibold text-gray-800 min-w-[80px]">Направление:</label>
+        <label class="text-sm font-semibold text-gray-200 min-w-[80px]">Направление:</label>
         <select
           v-model="selectedDirection"
-          class="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-800 bg-white cursor-pointer transition-all focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
+          class="flex-1 px-3 py-2 border border-[#000] rounded-lg text-sm text-white bg-black cursor-pointer transition-all focus:outline-none focus:border-gray-500 focus:ring-2 focus:ring-gray-500"
         >
           <option value="">Выберите направление</option>
           <option v-for="dir in directions" :key="dir" :value="dir">{{ dir }}</option>
@@ -266,44 +288,52 @@ const clearFilters = () => {
         </button>
       </div>
 
-      <p class="text-center text-sm text-gray-800">или</p>
+      <p class="text-center text-sm text-gray-200">или</p>
 
       <!-- Поиск точки -->
       <div class="relative mb-3">
         <input
           v-model="searchQuery"
           type="text"
+          @blur="onChangeBlur"
           placeholder="Введите название точки..."
-          class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm text-gray-800 bg-white placeholder-gray-400 transition-all focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
+          class="w-full px-3 py-2 border border-[#000] rounded-lg text-sm text-white bg-black placeholder-gray-400 transition-all focus:outline-none focus:border-gray-500 focus:ring-2 focus:ring-gray-500"
         />
 
         <!-- Результаты поиска -->
         <div
           v-if="searchQuery && searchResults.length > 0"
-          class="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-60 overflow-y-auto z-[1001]"
+          class="absolute top-full left-0 right-0 mt-1 bg-black border border-gray-500 rounded-lg shadow-lg max-h-60 overflow-y-auto z-[1001]"
         >
           <div
             v-for="point in searchResults"
-            :key="point.id"
-            @click="selectPointFromSearch(point)"
-            class="p-2 cursor-pointer border-b border-gray-100 transition-colors hover:bg-blue-50 last:border-0"
+            :key="point.uid"
+            @mousedown="selectPointFromSearch(point)"
+            class="p-2 cursor-pointer border-b border-[#3d3e43] transition-colors hover:bg-blue-50 last:border-0"
           >
-            <div class="font-medium text-gray-800 text-sm">{{ point.name }}</div>
-            <div class="text-xs text-gray-500">{{ point.direction }}</div>
-            <div class="text-[11px] text-gray-400">{{ point.address }}</div>
+            <div class="flex flex-row justify-between">
+              <div>
+                <div class="font-medium text-gray-200 text-sm">{{ point.name }}</div>
+                <div class="text-xs text-gray-400">{{ point.direction }}</div>
+                <div class="text-[11px] text-gray-500">{{ point.address }}</div>
+              </div>
+              <div class="w-8 h-8">
+                <img :src="getIcon(point.type)" class="rounded-sm" alt="" />
+              </div>
+            </div>
           </div>
         </div>
 
         <div
           v-if="searchQuery && searchResults.length === 0"
-          class="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg p-2 text-center text-sm text-gray-500"
+          class="absolute top-full left-0 right-0 mt-1 bg-black border border-gray-500 rounded-lg shadow-lg p-2 text-center text-sm text-gray-200"
         >
           Точки не найдены
         </div>
       </div>
 
       <!-- Информация о количестве точек -->
-      <div v-if="selectedDirection" class="text-center text-xs text-gray-500 pt-1 border-t border-gray-100">
+      <div v-if="selectedDirection" class="text-center text-xs text-gray-200 pt-1 border-t border-gray-500">
         Найдено точек: {{ filteredPoints.length }}
       </div>
     </div>

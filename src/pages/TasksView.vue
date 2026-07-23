@@ -11,9 +11,6 @@ import ItemTaskView from '@/components/ItemTaskView.vue'
 import { useTasksLocalStorage } from '@/composables/useTasksLocalStorage.ts'
 import LoadingScreen from '@/components/LoadingScreen.vue'
 import ItemDropDown from '@/components/ItemDropDown.vue'
-import { useVerticalScroll } from '@/composables/useVerticalScroll.ts'
-import ArrowDropDownIcon from '@/components/icons/ArrowDropDownIcon.vue'
-import Svg from '@/components/Svg.vue'
 import { useTaskPointsStore } from '@/store/TaskPoints.ts'
 
 const router = useRouter()
@@ -28,16 +25,8 @@ const taskItems: Ref<PointResponse[]> = ref([])
 const queryString = ref('')
 const filteredPoints = ref([] as PointResponse[])
 const cachedPoints = ref<PointResponse[]>([])
-const scrollDropDownContainerRef = ref<HTMLElement | null>(null)
-
-const verticalScrollDropDown = useVerticalScroll(scrollDropDownContainerRef)
 
 const isVisibleTaskMapButton = computed(() => taskItems.value.length !== 0 && !inputFocus.isFocused)
-const isVisibleArrowDropDownIcon = computed(() => {
-  if (verticalScrollDropDown.canScrollDown.value) return true
-  if (verticalScrollDropDown.isAtBottom.value) return false
-  return filteredPoints.value.length > 6
-})
 
 const search = () => {
   filteredPoints.value = cachedPoints.value.filter((point) =>
@@ -58,7 +47,7 @@ const deleteTaskItem = (index: number) => {
   taskPointsStore.savePoints(taskItems.value)
 }
 
-// Нажатие на элемент выподающего списка найденных элементов point
+// Нажатие на элемент выпадающего списка найденных элементов point
 const clickFilteredItem = (point: PointResponse) => {
   if (point) {
     taskItems.value.push(point)
@@ -74,7 +63,10 @@ const clickFilteredItem = (point: PointResponse) => {
 }
 
 // Потеря фокуса input
-const handleInputFocusBlur = () => filteredPoints.value.splice(0, filteredPoints.value.length)
+const handleInputFocusBlur = () => {
+  filteredPoints.value.splice(0, filteredPoints.value.length)
+  queryString.value = ''
+}
 
 watch(queryString, () => search())
 
@@ -108,17 +100,15 @@ function isAddedTaskList(item: PointResponse): boolean {
   <LoadingScreen :is-loading="isLoadingData" />
   <div class="fixed top-0 start-0 end-0 z-50 bg-[#242528] border-b-[1px] border-[#3d3e43]">
     <p class="text-center text-[#ccc] text-2xl mt-4"><strong>Мои задания ({{ taskPointsStore.points.length }})</strong></p>
-    <!-- строка поиска -->
-    <SearchInputView @focus-blur="handleInputFocusBlur" @filter-changed="handleFilterChange" />
 
-    <div>
-      <!-- выпадающий список поиска bg-[#17212B]-->
+    <!-- Поиск точки -->
+    <div class="relative mb-3">
+      <SearchInputView @focus-blur="handleInputFocusBlur" @filter-changed="handleFilterChange" />
+
+      <!-- Результаты поиска -->
       <div
-        v-auto-animate
-        ref="scrollDropDownContainerRef"
-        @scroll="verticalScrollDropDown.checkScrollState"
-        v-if="filteredPoints.length !== 0"
-        class="absolute max-h-[280px] min-w-[250px] bg-black overflow-y-auto mt-[-16px] mx-6 shadow-xl z-50"
+        v-if="filteredPoints.length > 0"
+        class="absolute top-full left-6 right-6 mt-[-16px] bg-black border border-gray-500 rounded-lg shadow-lg max-h-60 overflow-y-auto z-[50]"
       >
         <ItemDropDown
           v-for="[index, point] of filteredPoints.entries()"
@@ -129,12 +119,12 @@ function isAddedTaskList(item: PointResponse): boolean {
           @on-click="clickFilteredItem(point)"
         >
         </ItemDropDown>
-        <Svg
-          v-if="isVisibleArrowDropDownIcon"
-          class="fixed inline-flex items-center justify-center text-[#88ce02] text-[10px] h-[10px] top-[380px] w-[calc(100vw-6.25rem)]"
-        >
-          <component ref="comp" :is="ArrowDropDownIcon"></component>
-        </Svg>
+    </div>
+      <div
+        v-if="queryString && filteredPoints.length === 0"
+        class="absolute top-full left-6 right-6 mt-[-16px] bg-black border border-gray-500 rounded-lg shadow-lg p-2 text-center text-sm text-gray-200 z-[55]"
+      >
+        Точки не найдены
       </div>
     </div>
   </div>
