@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { PointResponse } from '@/model/PointResponse.ts'
 import LocationNavButton from '@/components/LocationNavButtonView.vue'
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import { useEditPoint } from '@/store/Point.ts'
 import {
   Routes as Route,
@@ -32,7 +32,11 @@ const { openLink } = useMiniApp()
 const router = useRouter()
 
 const { getUserRole } = useUserRole()
-const userRole = ref(getUserRole())
+const userRole = ref<UserRole>(UserRole.USER)
+
+onMounted(async () => {
+  userRole.value = await getUserRole()
+})
 
 const isActiveToRegionButton = ref(props.dataPoint.location.toRegion.latitude.length !== 0)
 const isActiveFromRegionButton = ref(

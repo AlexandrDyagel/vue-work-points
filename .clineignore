@@ -1,0 +1,67 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+dist-ssr/
+*.tsbuildinfo
+
+# Lock files (large, auto-generated)
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+bun.lockb
+
+# Native platform builds (Capacitor)
+android/
+ios/
+
+# Images and binary assets (AI can't process them)
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.svg
+*.ico
+*.woff
+*.woff2
+*.ttf
+*.eot
+*.mp4
+*.webm
+*.mp3
+*.wav
+*.pdf
+
+# Firebase config
+.firebaserc
+firebase.json
+firebase/
+
+# Logs
+logs/
+*.log
+
+# Test coverage
+coverage/
+
+# IDE / editor files
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Env files (may contain secrets)
+.env
+.env.*
+*.local
+
+# Git
+.git/

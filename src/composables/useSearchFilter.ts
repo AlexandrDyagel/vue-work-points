@@ -1,21 +1,22 @@
 import { LocalStorageNames, TypeSearchFilter } from '@/model/Enums.ts'
+import { storage } from '@/utils/storage.ts'
 
 export function useSearchFilter() {
-  const userSearchFilter = () => {
-    const cachedSearchFilter = localStorage.getItem(LocalStorageNames.SEARCH_FILTER)
+  const userSearchFilter = async (): Promise<TypeSearchFilter> => {
+    const cachedSearchFilter = await storage.get<TypeSearchFilter>(LocalStorageNames.SEARCH_FILTER)
 
     if (cachedSearchFilter) {
-      return JSON.parse(cachedSearchFilter) as TypeSearchFilter
+      return cachedSearchFilter
     } else {
-      localStorage.setItem(LocalStorageNames.SEARCH_FILTER, JSON.stringify(TypeSearchFilter.NAME))
-      return JSON.parse(localStorage.getItem(LocalStorageNames.SEARCH_FILTER)!) as TypeSearchFilter
+      await storage.set(LocalStorageNames.SEARCH_FILTER, TypeSearchFilter.NAME)
+      return (await storage.get<TypeSearchFilter>(LocalStorageNames.SEARCH_FILTER))!
     }
   }
 
-  const updateUserSearchFilter = (typeSearchFilter: TypeSearchFilter) =>
-    localStorage.setItem(LocalStorageNames.SEARCH_FILTER, JSON.stringify(typeSearchFilter))
+  const updateUserSearchFilter = async (typeSearchFilter: TypeSearchFilter) =>
+    storage.set(LocalStorageNames.SEARCH_FILTER, typeSearchFilter)
 
-  const removeUserSearchFilter = () => localStorage.removeItem(LocalStorageNames.SEARCH_FILTER)
+  const removeUserSearchFilter = async () => storage.remove(LocalStorageNames.SEARCH_FILTER)
 
   return {
     userSearchFilter,

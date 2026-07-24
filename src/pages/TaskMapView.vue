@@ -69,7 +69,7 @@ onMounted(async () => {
         })
       }
 
-      const cachedPoints = tasksLocalStorage.getItems()
+      const cachedPoints = await tasksLocalStorage.getItems()
       points.value.push(...cachedPoints)
       taskPointsStore.savePoints(cachedPoints)
 
@@ -319,12 +319,12 @@ const addMarkersToMap = () => {
     popupDiv.querySelector('.point-btn')?.addEventListener('click', () => {
       openLink(urlPoint)
     })
-    popupDiv.querySelector('.delete-btn')?.addEventListener('click', () => {
+    popupDiv.querySelector('.delete-btn')?.addEventListener('click', async () => {
       if (selectedPoint.value && taskItems.value.includes(selectedPoint.value)) {
         taskItems.value.splice(taskItems.value.indexOf(selectedPoint.value), 1)
         taskItems.value.splice(taskItems.value.findIndex(() => selectedPoint.value?.name === 'Переходы. Тоннели'), 1)
-        tasksLocalStorage.removeItems()
-        tasksLocalStorage.setItems(taskItems.value)
+        await tasksLocalStorage.removeItems()
+        await tasksLocalStorage.setItems(taskItems.value)
         taskPointsStore.savePoints(taskItems.value)
         marker.closePopup()
         marker.onRemove(map.value)

@@ -41,17 +41,17 @@ const handleFilterChange = (inputString: string) => {
 }
 
 // Удаление элемента-задачи из массива добавленных задач
-const deleteTaskItem = (index: number) => {
+const deleteTaskItem = async (index: number) => {
   taskItems.value.splice(index, 1)
-  tasksLocalStorage.setItems(taskItems.value)
+  await tasksLocalStorage.setItems(taskItems.value)
   taskPointsStore.savePoints(taskItems.value)
 }
 
 // Нажатие на элемент выпадающего списка найденных элементов point
-const clickFilteredItem = (point: PointResponse) => {
+const clickFilteredItem = async (point: PointResponse) => {
   if (point) {
     taskItems.value.push(point)
-    tasksLocalStorage.setItems(taskItems.value)
+    await tasksLocalStorage.setItems(taskItems.value)
     taskPointsStore.savePoints(taskItems.value)
 
     if (lastItemRef.value) {
@@ -73,7 +73,7 @@ watch(queryString, () => search())
 onMounted(async () => {
   try {
     isLoadingData.value = true
-    taskItems.value = tasksLocalStorage.getItems()
+    taskItems.value = await tasksLocalStorage.getItems()
     taskPointsStore.savePoints(taskItems.value)
 
     await obtainCachedPoints().then((cachedDataPoints) => {

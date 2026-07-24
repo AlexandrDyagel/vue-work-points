@@ -1,26 +1,20 @@
 import { LocalStorageNames } from '@/model/Enums.ts'
 import { PointResponse } from '@/model/PointResponse.ts'
+import { storage } from '@/utils/storage.ts'
 
 export function useTasksLocalStorage() {
-  if (typeof Storage !== 'undefined') {
-    console.log('localStorage поддерживается')
-  } else {
-    console.log('localStorage не поддерживается')
-  }
+  const getItems = async (): Promise<PointResponse[]> => {
+    const cachedData = await storage.get<PointResponse[]>(LocalStorageNames.CACHE_TASKS)
 
-  const getItems = (): PointResponse[] => {
-    const cachedData = localStorage.getItem(LocalStorageNames.CACHE_TASKS)
-
-    // Проверяем, существуют ли данные в кэше
     if (cachedData) {
-      console.log('TasksLocalStorage: Данные из LocalStorage')
-      return JSON.parse(cachedData) as PointResponse[]
+      console.log('TasksLocalStorage: Данные из хранилища')
+      return cachedData
     } else return [] as PointResponse[]
   }
 
-  function setItems(taskItems: PointResponse[]): boolean {
+  async function setItems(taskItems: PointResponse[]): Promise<boolean> {
     try {
-      localStorage.setItem(LocalStorageNames.CACHE_TASKS, JSON.stringify(taskItems))
+      await storage.set(LocalStorageNames.CACHE_TASKS, taskItems)
       return true
     } catch (error) {
       console.error('TasksLocalStorage: ', error)
@@ -28,9 +22,9 @@ export function useTasksLocalStorage() {
     }
   }
 
-  function removeItems(): boolean {
+  async function removeItems(): Promise<boolean> {
     try {
-      localStorage.removeItem(LocalStorageNames.CACHE_TASKS)
+      await storage.remove(LocalStorageNames.CACHE_TASKS)
       return true
     } catch (error) {
       console.error('TasksLocalStorage: ', error)

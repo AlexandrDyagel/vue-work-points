@@ -1,26 +1,27 @@
 import { Environment, LocalStorageNames, UserRole } from '@/model/Enums.ts'
 import { useMiniApp } from 'vue-tg/8.0'
 import { ENVIRONMENT } from '@/main.ts'
+import { storage } from '@/utils/storage.ts'
 
 export function useUserRole() {
-  const getUserRole = (): UserRole => {
-    const cachedUserRole = localStorage.getItem(LocalStorageNames.USER_ROLE)
+  const getUserRole = async (): Promise<UserRole> => {
+    const cachedUserRole = await storage.get<UserRole>(LocalStorageNames.USER_ROLE)
     const { initDataUnsafe } = useMiniApp()
     const userId = initDataUnsafe?.user?.id
 
     if (cachedUserRole) {
-      return JSON.parse(cachedUserRole) as UserRole
+      return cachedUserRole
     } else {
       if (userId === 1229865421 || ENVIRONMENT === Environment.DEVELOPMENT) {
-        localStorage.setItem(LocalStorageNames.USER_ROLE, JSON.stringify(UserRole.ADMIN))
+        await storage.set(LocalStorageNames.USER_ROLE, UserRole.ADMIN)
       } else {
-        localStorage.setItem(LocalStorageNames.USER_ROLE, JSON.stringify(UserRole.USER))
+        await storage.set(LocalStorageNames.USER_ROLE, UserRole.USER)
       }
-      return JSON.parse(localStorage.getItem(LocalStorageNames.USER_ROLE)!) as UserRole
+      return (await storage.get<UserRole>(LocalStorageNames.USER_ROLE))!
     }
   }
 
-  const clearUserRole = () => localStorage.removeItem(LocalStorageNames.USER_ROLE)
+  const clearUserRole = async () => storage.remove(LocalStorageNames.USER_ROLE)
 
   return {
     getUserRole,

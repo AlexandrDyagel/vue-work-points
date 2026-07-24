@@ -29,15 +29,19 @@ const pointsStore = usePointsStore()
 const lastUpdateTimeStore = useLastUpdateTimeStore()
 const { obtainCachedPoints, clearCachePoints, setLastUpdateDataPoints } = useCache()
 const { userSearchFilter, updateUserSearchFilter } = useSearchFilter()
-const typeSearchFilter = ref(userSearchFilter())
+const typeSearchFilter = ref<TypeSearchFilter>(TypeSearchFilter.NAME)
 const inputTopAppBarStore = useInputFocus()
 const { getUserRole } = useUserRole()
-const userRole = ref(getUserRole())
+const userRole = ref<UserRole>(UserRole.USER)
 const cachedData = ref()
 
 onMounted(async () => {
   try {
     isLoadingData.value = true
+
+    // Загружаем сохранённые настройки асинхронно
+    userRole.value = await getUserRole()
+    typeSearchFilter.value = await userSearchFilter()
 
     let time = performance.now();
 
@@ -124,12 +128,12 @@ const closeBottomSheet = () => {
   bottomSheetRef.value.closeSheet()
 }
 
-watch(typeSearchFilter, (newTypeSearchFilter) => {
+watch(typeSearchFilter, async (newTypeSearchFilter) => {
   if (newTypeSearchFilter) {
     topAppBarRef.value.clearSearchInput()
     closeBottomSheet()
   }
-  updateUserSearchFilter(newTypeSearchFilter)
+  await updateUserSearchFilter(newTypeSearchFilter)
 })
 
 const addNewPoint = () => {
