@@ -9,8 +9,8 @@ import { createPinia } from 'pinia'
 import { Environment, Routes as Route } from '@/model/Enums.ts'
 
 export const DEV_VERSION = '2.68'
-// export const ENVIRONMENT = Environment.PRODUCTION
-export const ENVIRONMENT = Environment.DEVELOPMENT
+export const ENVIRONMENT = Environment.PRODUCTION
+// export const ENVIRONMENT = Environment.DEVELOPMENT
 
 const app = createApp(App)
 

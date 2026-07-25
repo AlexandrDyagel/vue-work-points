@@ -5,6 +5,7 @@ import WhatsIsLocationIcon from '@/components/icons/WhatsIsLocationIcon.vue'
 import { NavItemName, Routes as Route } from '@/model/Enums.ts'
 import TaskIcon from '@/components/icons/TaskIcon.vue'
 import ListIcon from '@/components/icons/ListIcon.vue'
+import SettingsIcon from '@/components/icons/SettingsIcon.vue'
 
 const bottomNavItems: Ref<UnwrapRef<BottomNavItem[]>> = ref([
   {
@@ -30,6 +31,13 @@ const bottomNavItems: Ref<UnwrapRef<BottomNavItem[]>> = ref([
     route: Route.Map,
     isActive: false,
     icon: shallowRef(MapIcon),
+  },
+  {
+    name: 'Настройки',
+    route: Route.TgSettingApp,
+    isActive: false,
+    icon: shallowRef(SettingsIcon),
+    platform: 'native',
   },
 ])
 

@@ -5,6 +5,7 @@ import { bottomNavItems } from '@/model/BottomMenu.ts'
 import { computed, onMounted, watch } from 'vue'
 import { NavItemName, Routes as Route } from '@/model/Enums.ts'
 import { useCache } from '@/composables/useCache.ts'
+import { usePlatform } from '@/composables/usePlatform.ts'
 import { usePointsStore } from '@/store/Points.ts'
 import { useTaskPointsStore } from '@/store/TaskPoints.ts'
 import { useTasksLocalStorage } from '@/composables/useTasksLocalStorage.ts'
@@ -13,6 +14,7 @@ const { obtainCachedPoints } = useCache()
 const pointsStore = usePointsStore()
 const taskPointsStore = useTaskPointsStore()
 const taskLocalStorage = useTasksLocalStorage()
+const { isNative, isTelegram } = usePlatform()
 
 onMounted(async () => {
   await obtainCachedPoints().then((cachedDataPoints) => {
@@ -21,6 +23,14 @@ onMounted(async () => {
   const items = await taskLocalStorage.getItems()
 taskPointsStore.savePoints(items)
 })
+
+const visibleNavItems = computed(() =>
+  bottomNavItems.value.filter((item) => {
+    if (item.platform === 'native') return isNative()
+    if (item.platform === 'telegram') return isTelegram()
+    return true // 'all' или не указано
+  }),
+)
 
 watch(route, () => {
   bottomNavItems.value.forEach((item) => {
@@ -50,7 +60,7 @@ const styleItemsBottomMenu = (isActive: boolean): string => {
     class="fixed start-0 bottom-0 end-0 w-auto h-16 z-19 bg-gradient-to-b from-transparent to-black/90"
   >
     <div
-      class="fixed start-10 bottom-4 end-10 w-auto z-20 rounded-3xl shadow-3xl border-1 border-[#17181a]"
+      class="fixed start-5 bottom-4 end-5 w-auto z-20 rounded-3xl shadow-3xl border-1 border-[#17181a]"
       :class="styleBgBottomMenu"
     >
       <div
@@ -58,7 +68,7 @@ const styleItemsBottomMenu = (isActive: boolean): string => {
       >
         <RouterLink
           :key="navItem.route"
-          v-for="navItem in bottomNavItems"
+          v-for="navItem in visibleNavItems"
           class="w-full transition-all mx-1.5 my-1 rounded-[18px] cursor-pointer"
           :class="styleItemsBottomMenu(navItem.isActive)"
           :to="navItem.route"

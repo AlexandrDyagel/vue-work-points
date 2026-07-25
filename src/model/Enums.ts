@@ -38,6 +38,7 @@ export enum LocalStorageNames {
   USER_ROLE = 'user_role',
   LAST_UPDATE_TIME = 'last_update_time',
   CACHE_TASKS = 'cache_tasks',
+  ADMIN_DEVICE = 'admin_device',
 }
 
 export enum FirestoreCollectionNames {

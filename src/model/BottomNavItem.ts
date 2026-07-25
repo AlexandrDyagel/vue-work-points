@@ -5,4 +5,6 @@ export interface BottomNavItem {
   readonly route: string
   isActive: boolean
   readonly icon: Ref
+  /** На каких платформах показывать пункт меню. 'all' — везде (по умолчанию) */
+  readonly platform?: 'telegram' | 'native' | 'all'
 }
