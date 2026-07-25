@@ -39,6 +39,7 @@ export enum LocalStorageNames {
   LAST_UPDATE_TIME = 'last_update_time',
   CACHE_TASKS = 'cache_tasks',
   ADMIN_DEVICE = 'admin_device',
+  SORT_TYPE = 'sort_type',
 }
 
 export enum FirestoreCollectionNames {
@@ -50,6 +51,23 @@ export enum TypeSearchFilter {
   NAME = 'name',
   ADDRESS = 'address',
   DIRECTION = 'direction',
+}
+
+export enum TypeSort {
+  /** По алфавиту (А → Я) */
+  NAME_ASC = 'name_asc',
+  /** По алфавиту (Я → А) */
+  NAME_DESC = 'name_desc',
+  /** По дате добавления (новые сверху) */
+  CREATED_DESC = 'created_desc',
+  /** По дате добавления (старые сверху) */
+  CREATED_ASC = 'created_asc',
+  /** По дате обновления (новые сверху) */
+  UPDATED_DESC = 'updated_desc',
+  /** По дате обновления (старые сверху) */
+  UPDATED_ASC = 'updated_asc',
+  /** По типу точки (ТП → ТА → ПП → УЧ) */
+  TYPE = 'type',
 }
 
 export enum UserRole {

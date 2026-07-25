@@ -2,7 +2,7 @@
 import { computed, onMounted, ref, watch, watchEffect } from 'vue'
 import { useRouter } from 'vue-router'
 import { PointResponse } from '@/model/PointResponse.ts'
-import { Routes as Route, TypeSearchFilter, UserRole } from '@/model/Enums.ts'
+import { Routes as Route, TypeSearchFilter, TypeSort, UserRole, TypePoint } from '@/model/Enums.ts'
 import TopAppBarView from '@/components/TopAppBarView.vue'
 import { useInputFocus } from '@/store/TopAppBar.ts'
 import BottomSheetView from '@/components/BottomSheetView.vue'
@@ -17,7 +17,6 @@ import { useLastUpdateTimeStore } from '@/store/LastUpdateTime.ts'
 
 const isLoadingData = ref(false)
 const queryInput = ref('')
-const filteredPoints = ref([] as PointResponse[])
 const cachedPoints = ref<PointResponse[]>([])
 const bottomSheetRef = ref()
 const topAppBarRef = ref()
@@ -28,46 +27,39 @@ const router = useRouter()
 const pointsStore = usePointsStore()
 const lastUpdateTimeStore = useLastUpdateTimeStore()
 const { obtainCachedPoints, clearCachePoints, setLastUpdateDataPoints } = useCache()
-const { userSearchFilter, updateUserSearchFilter } = useSearchFilter()
+const {
+  userSearchFilter,
+  updateUserSearchFilter,
+  userSortType,
+  updateUserSortType,
+} = useSearchFilter()
 const typeSearchFilter = ref<TypeSearchFilter>(TypeSearchFilter.NAME)
+const typeSort = ref<TypeSort>(TypeSort.NAME_ASC)
 const inputTopAppBarStore = useInputFocus()
 const { getUserRole } = useUserRole()
 const userRole = ref<UserRole>(UserRole.USER)
-const cachedData = ref()
 
 onMounted(async () => {
   try {
     isLoadingData.value = true
 
-    // Загружаем сохранённые настройки асинхронно
     userRole.value = await getUserRole()
     typeSearchFilter.value = await userSearchFilter()
+    typeSort.value = await userSortType()
 
-    let time = performance.now();
+    const time = performance.now()
 
     if (pointsStore.points.length !== 0) {
       cachedPoints.value = pointsStore.points
-      console.log(pointsStore.points[2])
     } else {
       await obtainCachedPoints().then((cachedDataPoints) => {
         pointsStore.savePoints(cachedDataPoints)
         cachedPoints.value = pointsStore.points
-        console.log(pointsStore.points)
-        console.warn(`Количество точек: ${pointsStore.points.length}`)
       })
     }
 
-    //cachedData.value = localStorage.getItem(LocalStorageNames.CACHE_POINTS) // фикс
-
-    // await obtainCachedPoints().then((cachedDataPoints) => {
-    //   cachedPoints.value = cachedDataPoints
-    //   console.warn(`Количество точек: ${cachedDataPoints.length}`)
-    // })
-
     isLoadingData.value = false
-
-    time = performance.now() - time;
-    console.log('Время выполнения = ', time);
+    console.log('Время выполнения = ', performance.now() - time)
   } catch (e) {
     console.error(`Ошибка PointsView.vue в onMounted catch: ${e}`)
   } finally {
@@ -75,28 +67,72 @@ onMounted(async () => {
   }
 })
 
-const search = () => {
-  switch (typeSearchFilter.value) {
-    case TypeSearchFilter.NAME: {
-      filteredPoints.value = cachedPoints.value.filter((point) =>
-        point.name.toLowerCase().includes(queryInput.value.toLowerCase().trim())
-      )
-      break
+// --- Фильтрация ---
+
+const applyFilter = (points: PointResponse[]): PointResponse[] => {
+  if (!queryInput.value) return points
+
+  const q = queryInput.value.toLowerCase().trim()
+  return points.filter((point) => {
+    switch (typeSearchFilter.value) {
+      case TypeSearchFilter.NAME:
+        return point.name.toLowerCase().includes(q)
+      case TypeSearchFilter.DIRECTION:
+        return point.direction.toLowerCase().includes(q)
+      case TypeSearchFilter.ADDRESS:
+        return point.address.toLowerCase().includes(q)
+      default:
+        return true
     }
-    case TypeSearchFilter.DIRECTION: {
-      filteredPoints.value = cachedPoints.value.filter((point) =>
-        point.direction.toLowerCase().includes(queryInput.value.toLowerCase().trim())
-      )
-      break
-    }
-    case TypeSearchFilter.ADDRESS: {
-      filteredPoints.value = cachedPoints.value.filter((point) =>
-        point.address.toLowerCase().includes(queryInput.value.toLowerCase().trim())
-      )
-      break
-    }
-  }
+  })
 }
+
+// --- Сортировка ---
+
+/** Порядок типов для сортировки по type */
+const typeOrder: Record<TypePoint, number> = {
+  [TypePoint.TP]: 0,
+  [TypePoint.TA]: 1,
+  [TypePoint.PP]: 2,
+  [TypePoint.Home]: 3,
+}
+
+const applySort = (points: PointResponse[]): PointResponse[] => {
+  const sorted = [...points]
+  switch (typeSort.value) {
+    case TypeSort.NAME_ASC:
+      sorted.sort((a, b) => a.name.localeCompare(b.name, 'ru'))
+      break
+    case TypeSort.NAME_DESC:
+      sorted.sort((a, b) => b.name.localeCompare(a.name, 'ru'))
+      break
+    case TypeSort.CREATED_DESC:
+      sorted.sort((a, b) => Number(b.createdAt) - Number(a.createdAt))
+      break
+    case TypeSort.CREATED_ASC:
+      sorted.sort((a, b) => Number(a.createdAt) - Number(b.createdAt))
+      break
+    case TypeSort.UPDATED_DESC:
+      sorted.sort((a, b) => Number(b.updatedAt) - Number(a.updatedAt))
+      break
+    case TypeSort.UPDATED_ASC:
+      sorted.sort((a, b) => Number(a.updatedAt) - Number(b.updatedAt))
+      break
+    case TypeSort.TYPE:
+      sorted.sort(
+        (a, b) => (typeOrder[a.type] ?? 99) - (typeOrder[b.type] ?? 99),
+      )
+      break
+  }
+  return sorted
+}
+
+const filteredPoints = computed<PointResponse[]>(() => {
+  const filtered = applyFilter(cachedPoints.value)
+  return applySort(filtered)
+})
+
+// --- Подсветка совпадений ---
 
 const highlightMatches = (text: string) => {
   if (!queryInput.value) return text
@@ -104,17 +140,15 @@ const highlightMatches = (text: string) => {
   const query = queryInput.value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
   const regex = new RegExp(`(${query})`, 'gi')
 
-  return text.replace(regex, '<span class="bg-[#ffdc60] text-black font-bold">$1</span>')
+  return text.replace(
+    regex,
+    '<span class="bg-[#ffdc60] text-black font-bold">$1</span>',
+  )
 }
 
-watchEffect(() => {
-  if (queryInput.value === '' && filteredPoints.value.length === 0) {
-    filteredPoints.value = cachedPoints.value
-    console.log('Заполнение filteredPoints из cachedPoints')
-  }
+watch(queryInput, () => {
+  // filteredPoints пересчитывается через computed автоматически
 })
-
-watch(queryInput, () => search())
 
 const handleFilterChange = (queryString: string) => {
   queryInput.value = queryString
@@ -128,24 +162,61 @@ const closeBottomSheet = () => {
   bottomSheetRef.value.closeSheet()
 }
 
-watch(typeSearchFilter, async (newTypeSearchFilter) => {
-  if (newTypeSearchFilter) {
+watch(typeSearchFilter, async (newType) => {
+  if (newType) {
     topAppBarRef.value.clearSearchInput()
     closeBottomSheet()
   }
-  await updateUserSearchFilter(newTypeSearchFilter)
+  await updateUserSearchFilter(newType)
 })
+
+watch(typeSort, async (newSort) => {
+  await updateUserSortType(newSort)
+  closeBottomSheet()
+})
+
+// --- UI хелперы для чипсов ---
+
+const searchFilterChips = [
+  { value: TypeSearchFilter.NAME, label: 'По названию' },
+  { value: TypeSearchFilter.DIRECTION, label: 'По направлению' },
+  { value: TypeSearchFilter.ADDRESS, label: 'По адресу' },
+] as const
+
+const sortChips = [
+  { value: TypeSort.NAME_ASC, label: 'А → Я', group: 'Алфавит' },
+  { value: TypeSort.NAME_DESC, label: 'Я → А', group: 'Алфавит' },
+  { value: TypeSort.CREATED_DESC, label: 'Новые', group: 'Дата добавления' },
+  { value: TypeSort.CREATED_ASC, label: 'Старые', group: 'Дата добавления' },
+  { value: TypeSort.UPDATED_DESC, label: 'Новые', group: 'Дата обновления' },
+  { value: TypeSort.UPDATED_ASC, label: 'Старые', group: 'Дата обновления' },
+  { value: TypeSort.TYPE, label: 'По типу', group: 'Тип' },
+] as const
+
+const groupedSortChips = computed(() => {
+  const groups = new Map<string, typeof sortChips>()
+  for (const chip of sortChips) {
+    const list = groups.get(chip.group) ?? []
+    list.push(chip)
+    groups.set(chip.group, list)
+  }
+  return Array.from(groups.entries())
+})
+
+// --- Кнопка добавления ---
 
 const addNewPoint = () => {
   if (userRole.value !== UserRole.ADMIN) return
-
   router.push(Route.AddPoint)
 }
 
 const emptyElements = computed(() => {
   if (filteredPoints.value.length === 0 && cachedPoints.value.length === 0) {
     return 'Нет данных'
-  } else if (filteredPoints.value.length === 0 && cachedPoints.value.length !== 0) {
+  } else if (
+    filteredPoints.value.length === 0 &&
+    cachedPoints.value.length !== 0
+  ) {
     return 'Нет результата поиска'
   } else return ''
 })
@@ -156,11 +227,12 @@ const updateDataPoints = () => {
     clearCachePoints()
 
     obtainCachedPoints().then((cachedDataPoints) => {
+      cachedPoints.value = cachedDataPoints
       filteredPoints.value = []
       filteredPoints.value = cachedDataPoints
 
       const lastUpdatedAt = cachedDataPoints.sort(
-        (a, b) => Number(b.updatedAt) - Number(a.updatedAt)
+        (a, b) => Number(b.updatedAt) - Number(a.updatedAt),
       )[0].updatedAt
 
       setLastUpdateDataPoints(lastUpdatedAt)
@@ -173,7 +245,6 @@ const updateDataPoints = () => {
   }
 }
 
-// Обработчик кнопки поделиться
 const handleShare = (point: PointResponse): void => {
   sharePoint.value = point
   shareBottomSheetRef.value.openShareBottomSheet()
@@ -186,7 +257,9 @@ const handleShare = (point: PointResponse): void => {
   <TopAppBarView
     ref="topAppBarRef"
     :class="
-      inputTopAppBarStore.isFocused ? 'bottom-0 border-t-[1px]' : 'sticky top-0 border-b-[1px]'
+      inputTopAppBarStore.isFocused
+        ? 'bottom-0 border-t-[1px]'
+        : 'sticky top-0 border-b-[1px]'
     "
     class="fixed bg-[#242528] start-0 end-0 border-[#3d3e43] z-20"
     :type-search-filter="typeSearchFilter"
@@ -196,26 +269,15 @@ const handleShare = (point: PointResponse): void => {
 
   <div
     class="fixed overflow-auto start-0 end-0 w-full h-full bg-[#242528]"
-    :class="inputTopAppBarStore.isFocused ? 'top-0 bottom-0' : 'top-[80px] pb-[80px]'"
+    :class="
+      inputTopAppBarStore.isFocused ? 'top-0 bottom-0' : 'top-[80px] pb-[80px]'
+    "
   >
     <span
       v-if="filteredPoints.length === 0"
       class="absolute w-full h-full pb-[70px] flex justify-center items-center text-2xl text-[#F0F0F0]"
-    >{{ emptyElements }}
-
-<!--      <div-->
-<!--        @click="clearCachePoints"-->
-<!--        class="fixed z-20 shadow-xl start-4 end-4 top-65 rounded-xl bg-black border border-[#000] text-sm p-2.5 focus:outline-none"-->
-<!--      >-->
-<!--      <p>Удалить кэш</p>-->
-<!--    </div>-->
-
-<!--    <div>-->
-<!--      &#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;-->
-<!--      {{ cachedData }}-->
-<!--      &#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;&#45;-->
-<!--    </div>-->
-
+    >
+      {{ emptyElements }}
     </span>
 
     <div
@@ -232,7 +294,9 @@ const handleShare = (point: PointResponse): void => {
           v-for="[index, point] of filteredPoints.entries()"
           :key="point.uid"
           :class="
-            index === filteredPoints.length - 1 ? `mb-[80px]` : `border-b-[1px] border-[#3d3e43]`
+            index === filteredPoints.length - 1
+              ? `mb-[80px]`
+              : `border-b-[1px] border-[#3d3e43]`
           "
           :dataPoint="point"
           @on-click-share="handleShare"
@@ -271,57 +335,75 @@ const handleShare = (point: PointResponse): void => {
     </div>
   </div>
 
-  <!--   Bottom Sheet  -->
-
+  <!-- Bottom Sheet — фильтры и сортировка -->
   <BottomSheetView ref="bottomSheetRef">
-    <p class="text-center text-[#ccc] text-2xl"><strong>Фильтры поиска</strong></p>
-    <div class="ms-4 me-4 mt-4 mb-4">
-      <fieldset>
-        <div class="flex flex-wrap gap-4">
-          <div class="flex items-center">
-            <input
-              v-model="typeSearchFilter"
-              class="me-2"
-              type="radio"
-              :id="TypeSearchFilter.NAME"
-              :name="TypeSearchFilter.NAME"
-              :value="TypeSearchFilter.NAME"
-            />
-            <label class="text-[#cccccc] whitespace-nowrap" :for="TypeSearchFilter.NAME"
-            >По названию</label
-            >
-          </div>
-          <div class="flex items-center">
-            <input
-              v-model="typeSearchFilter"
-              class="me-2"
-              type="radio"
-              :id="TypeSearchFilter.DIRECTION"
-              :name="TypeSearchFilter.DIRECTION"
-              :value="TypeSearchFilter.DIRECTION"
-            />
-            <label :for="TypeSearchFilter.DIRECTION" class="text-[#cccccc] whitespace-nowrap"
-            >По направлению</label
-            >
-          </div>
-          <div class="flex items-center">
-            <input
-              v-model="typeSearchFilter"
-              class="me-2"
-              type="radio"
-              :id="TypeSearchFilter.ADDRESS"
-              :name="TypeSearchFilter.ADDRESS"
-              :value="TypeSearchFilter.ADDRESS"
-            />
-            <label :for="TypeSearchFilter.ADDRESS" class="text-[#cccccc] whitespace-nowrap"
-            >По адресу</label
-            >
+    <div class="pb-4">
+      <!-- Заголовок -->
+      <h2 class="text-center text-[#ccc] text-xl font-bold mb-5">
+        Фильтры и сортировка
+      </h2>
+
+      <!-- Раздел: Поиск по -->
+      <div class="mb-5">
+        <h3 class="text-sm text-gray-400 font-medium mb-2">🔍 Поиск по</h3>
+        <div class="flex flex-wrap gap-2">
+          <button
+            v-for="chip in searchFilterChips"
+            :key="chip.value"
+            @click="typeSearchFilter = chip.value"
+            class="px-4 py-2 rounded-full text-sm font-medium border transition-all"
+            :class="
+              typeSearchFilter === chip.value
+                ? 'bg-[#5fb336] border-[#5fb336] text-white shadow-sm shadow-[#5fb336]/30'
+                : 'bg-[#2a2a2e] border-[#3d3e43] text-[#aaa] hover:border-[#5fb336]/50'
+            "
+          >
+            {{ chip.label }}
+          </button>
+        </div>
+      </div>
+
+      <!-- Раздел: Сортировка -->
+      <div>
+        <h3 class="text-sm text-gray-400 font-medium mb-2">📋 Сортировка</h3>
+        <div class="space-y-3">
+          <div v-for="[group, chips] in groupedSortChips" :key="group">
+            <p class="text-xs text-gray-500 mb-1.5 uppercase tracking-wide">
+              {{ group }}
+            </p>
+            <div class="flex flex-wrap gap-2">
+              <button
+                v-for="chip in chips"
+                :key="chip.value"
+                @click="typeSort = chip.value"
+                class="px-4 py-2 rounded-full text-sm font-medium border transition-all"
+                :class="
+                  typeSort === chip.value
+                    ? 'bg-[#5fb336] border-[#5fb336] text-white shadow-sm shadow-[#5fb336]/30'
+                    : 'bg-[#2a2a2e] border-[#3d3e43] text-[#aaa] hover:border-[#5fb336]/50'
+                "
+              >
+                <span class="flex items-center gap-1.5">
+                  <svg
+                    v-if="typeSort === chip.value"
+                    xmlns="http://www.w3.org/2000/svg"
+                    class="h-3.5 w-3.5"
+                    viewBox="0 -960 960 960"
+                    fill="currentColor"
+                  >
+                    <path
+                      d="M382-240 154-468l57-57 171 171 367-367 57 57-424 424Z"
+                    />
+                  </svg>
+                  {{ chip.label }}
+                </span>
+              </button>
+            </div>
           </div>
         </div>
-      </fieldset>
+      </div>
     </div>
   </BottomSheetView>
-  <!--  END Bottom Sheet  -->
 
   <!-- Button Update Data -->
   <div
@@ -331,7 +413,6 @@ const handleShare = (point: PointResponse): void => {
   >
     <span class="text-sm font-medium">Обновить данные</span>
   </div>
-  <!-- End Button Update Data -->
 
   <ShareBottomSheet ref="shareBottomSheetRef" :sharePoint="sharePoint" />
 </template>
