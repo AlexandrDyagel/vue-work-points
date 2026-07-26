@@ -63,7 +63,7 @@ export function useCache() {
     } else {
       console.log('В хранилище не существует записи о времени последнего обновления данных')
 
-      obtainCachedPoints().then((cachedDataPoints) => {
+      await obtainCachedPoints().then((cachedDataPoints) => {
         const lastUpdatedAt = cachedDataPoints.sort(
           (a, b) => Number(b.updatedAt) - Number(a.updatedAt),
         )[0].updatedAt
