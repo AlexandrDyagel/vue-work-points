@@ -5,8 +5,13 @@
  *  - web: обычный браузер (десктоп, PWA и т.п.)
  */
 export function usePlatform() {
+  /**
+   * Определяем платформу
+   */
+  const osPlatform = navigator.userAgentData?.platform || navigator.platform
+
   const isNative = (): boolean => {
-    return typeof (window as any)?.Capacitor !== 'undefined'
+    return osPlatform !== 'Android' && osPlatform !== 'iOS'
   }
 
   /**
@@ -14,7 +19,7 @@ export function usePlatform() {
    * Telegram WebApp устанавливает window.Telegram.WebApp.
    */
   const isTelegram = (): boolean => {
-    return typeof (window as any)?.Telegram?.WebApp !== 'undefined'
+    return osPlatform === 'Android' && osPlatform === 'iOS'
   }
 
   return {
