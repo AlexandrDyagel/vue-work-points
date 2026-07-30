@@ -15,6 +15,7 @@ import { DEV_VERSION } from '../main.ts'
 import { BackButton } from 'vue-tg'
 import { useRouter } from 'vue-router'
 import formatDistance from '@/utils/format.ts'
+import { Capacitor } from '@capacitor/core'
 
 const router = useRouter()
 const searchPointIcon = shallowRef(SearchPointIcon)
