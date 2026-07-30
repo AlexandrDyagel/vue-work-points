@@ -11,11 +11,9 @@ import SearchPointIcon from '@/components/icons/SearchPointIcon.vue'
 import { useCache } from '@/composables/useCache.ts'
 import WorldGlobeIcon from '@/components/icons/WorldGlobeIcon.vue'
 import { useMiniApp, useTheme } from 'vue-tg/8.0'
-import { DEV_VERSION } from '../main.ts'
 import { BackButton } from 'vue-tg'
 import { useRouter } from 'vue-router'
 import formatDistance from '@/utils/format.ts'
-import { Capacitor } from '@capacitor/core'
 
 const router = useRouter()
 const searchPointIcon = shallowRef(SearchPointIcon)
@@ -251,7 +249,6 @@ watch(nearestPoint, () => {
 
 <template>
   <BackButton @click="router.back" />
-  <div class="fixed top-1 start-0 end-0 w-full text-center text-sm z-50">v{{ DEV_VERSION }}</div>
   <div
     v-if="!nearestPoint"
     class="fixed overflow-auto start-0 top-0 end-0 bottom-0 flex items-center justify-center bg-[#242528]"

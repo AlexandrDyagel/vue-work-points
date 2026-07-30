@@ -130,6 +130,14 @@ const handleBlur = () => inputTopAppBarStore.changeFocus(false)
 
 <template>
   <BackButton @click="router.back" />
+  <button
+    @click="router.back()"
+    class="absolute start-4 top-3 w-10 h-10 flex items-center justify-center rounded-xl bg-[#2a2a2e] text-gray-300 hover:text-white active:bg-[#3a3a3e] transition-colors z-20"
+  >
+    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 -960 960 960" fill="currentColor">
+      <path d="M560-240 320-480l240-240 56 56-184 184 184 184-56 56Z" />
+    </svg>
+  </button>
   <div
     class="fixed overflow-scroll start-0 top-0 end-0 bottom-0 w-full h-full bg-[#242528] pb-[80px]"
   >
