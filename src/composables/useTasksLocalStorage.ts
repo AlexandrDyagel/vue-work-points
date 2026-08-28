@@ -32,9 +32,30 @@ export function useTasksLocalStorage() {
     }
   }
 
+  async function getCompletedTasks(): Promise<string[]> {
+    const completed = await storage.get<string[]>(LocalStorageNames.COMPLETED_TASKS)
+    return completed ?? []
+  }
+
+  async function setCompletedTask(uid: string, completed: boolean): Promise<boolean> {
+    try {
+      const completedTasks = await getCompletedTasks()
+      const updated = completed
+        ? Array.from(new Set([...completedTasks, uid]))
+        : completedTasks.filter((item) => item !== uid)
+      await storage.set(LocalStorageNames.COMPLETED_TASKS, updated)
+      return true
+    } catch (error) {
+      console.error('TasksLocalStorage: ', error)
+      return false
+    }
+  }
+
   return {
     getItems,
     setItems,
     removeItems,
+    getCompletedTasks,
+    setCompletedTask,
   }
 }

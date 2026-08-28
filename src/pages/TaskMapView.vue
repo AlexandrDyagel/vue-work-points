@@ -16,6 +16,7 @@ import { usePointsStore } from '@/store/Points.ts'
 const router = useRouter()
 const pointsStore = usePointsStore()
 const tasksLocalStorage = useTasksLocalStorage()
+const { getCompletedTasks } = tasksLocalStorage
 const taskPointsStore = useTaskPointsStore()
 const { obtainCachedPoints } = useCache()
 const {
@@ -32,6 +33,7 @@ const { openLink } = useMiniApp()
 
 const isLoadingData = ref(false)
 const taskItems: Ref<PointResponse[]> = ref([])
+const completedTaskIds = ref<string[]>([])
 const map: Ref<L.Map | null> = ref(null)
 const selectedPoint: Ref<PointResponse | null> = ref(null)
 // Хранилище для линий маршрутов
@@ -70,6 +72,7 @@ onMounted(async () => {
       }
 
       const cachedPoints = await tasksLocalStorage.getItems()
+      completedTaskIds.value = await getCompletedTasks()
       points.value.push(...cachedPoints)
       taskPointsStore.savePoints(cachedPoints)
 
@@ -202,66 +205,39 @@ const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: numbe
 }
 
 // Функция для создания текстовой метки
-const createTextMarker = (typePoint: TypePoint, lat: number, lon: number, text: string) => {
-  if (typePoint !== TypePoint.Home) {
-    return L.marker([lat, lon], {
-      icon: L.divIcon({
-        html: `
-        <div style="
-          position: relative;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-        ">
-          <div
-          class="truncate rounded border-1 text-[10px] font-bold px-1 bg-[#3388ff] py-0.5 mb-1">
-          ${text}
-          </div>
-          <div style="
-            width: 10px;
-            height: 10px;
-            background: #3388ff;
-            border: 2px solid white;
-            border-radius: 50%;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-          "></div>
+const createTextMarker = (typePoint: TypePoint, lat: number, lon: number, text: string, isCompleted = false) => {
+  const textDecoration = isCompleted ? 'line-through' : 'none'
+  const color = isCompleted ? '#5fb336' : (typePoint !== TypePoint.Home ? '#3388ff' : '#5e0808')
+
+  return L.marker([lat, lon], {
+    icon: L.divIcon({
+      html: `
+      <div style="
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      ">
+        <div
+        class="truncate rounded border-1 text-[10px] font-bold px-1 py-0.5 mb-1"
+        style="background: ${color}; text-decoration: ${textDecoration};">
+        ${text}
         </div>
-      `,
-        className: '',
-        iconSize: [150, 30],
-        iconAnchor: [75, 30]
-      })
-    })
-  } else {
-    return L.marker([lat, lon], {
-      icon: L.divIcon({
-        html: `
         <div style="
-          position: relative;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-        ">
-          <div
-          class="truncate rounded border-1 text-[10px] font-bold px-1 bg-[#5e0808] py-0.5 mb-1">
-          ${text}
-          </div>
-          <div style="
-            width: 10px;
-            height: 10px;
-            background: #5e0808;
-            border: 2px solid white;
-            border-radius: 50%;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-          "></div>
-        </div>
-      `,
-        className: '',
-        iconSize: [150, 30],
-        iconAnchor: [75, 30]
-      })
+          width: 10px;
+          height: 10px;
+          background: ${color};
+          border: 2px solid white;
+          border-radius: 50%;
+          box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        "></div>
+      </div>
+    `,
+      className: '',
+      iconSize: [150, 30],
+      iconAnchor: [75, 30]
     })
-  }
+  })
 }
 
 const addMarkersToMap = () => {
@@ -276,7 +252,8 @@ const addMarkersToMap = () => {
         point.type,
         Number(point.location.toRegion.latitude),
         Number(point.location.toRegion.longitude),
-        `${index + 1}. ${point.name}`
+        `${index + 1}. ${point.name}`,
+        completedTaskIds.value.includes(point.uid)
       ).addTo(map.value)
       urlRoute = `https://yandex.ru/maps/?rtext=~${point.location.toRegion.latitude},${point.location.toRegion.longitude}&rtt=auto`
       urlPoint = `https://yandex.ru/maps/?pt=${point.location.toRegion.longitude},${point.location.toRegion.latitude}&z=18&l=map`
@@ -285,7 +262,8 @@ const addMarkersToMap = () => {
         point.type,
         Number(point.location.fromRegion.latitude),
         Number(point.location.fromRegion.longitude),
-        `${index + 1}. ${point.name}`
+        `${index + 1}. ${point.name}`,
+        completedTaskIds.value.includes(point.uid)
       ).addTo(map.value)
       urlRoute = `https://yandex.ru/maps/?rtext=~${point.location.fromRegion.latitude},${point.location.fromRegion.longitude}&rtt=auto`
       urlPoint = `https://yandex.ru/maps/?pt=${point.location.fromRegion.longitude},${point.location.fromRegion.latitude}&z=18&l=map`

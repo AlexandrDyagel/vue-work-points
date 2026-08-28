@@ -15,6 +15,7 @@ import { useTaskPointsStore } from '@/store/TaskPoints.ts'
 
 const router = useRouter()
 const tasksLocalStorage = useTasksLocalStorage()
+const { getCompletedTasks, setCompletedTask } = tasksLocalStorage
 const inputFocus = useInputFocus()
 const { obtainCachedPoints } = useCache()
 const taskPointsStore = useTaskPointsStore()
@@ -22,6 +23,7 @@ const taskPointsStore = useTaskPointsStore()
 const isLoadingData = ref(false)
 const lastItemRef = ref()
 const taskItems: Ref<PointResponse[]> = ref([])
+const completedTaskIds = ref<string[]>([])
 const queryString = ref('')
 const filteredPoints = ref([] as PointResponse[])
 const cachedPoints = ref<PointResponse[]>([])
@@ -42,9 +44,23 @@ const handleFilterChange = (inputString: string) => {
 
 // Удаление элемента-задачи из массива добавленных задач
 const deleteTaskItem = async (index: number) => {
-  taskItems.value.splice(index, 1)
+  const removed = taskItems.value.splice(index, 1)[0]
+  if (removed) {
+    completedTaskIds.value = completedTaskIds.value.filter((uid) => uid !== removed.uid)
+    await setCompletedTask(removed.uid, false)
+  }
   await tasksLocalStorage.setItems(taskItems.value)
   taskPointsStore.savePoints(taskItems.value)
+}
+
+// Переключение статуса «выполнено» для задачи
+const toggleTaskCompleted = async (uid: string, completed: boolean) => {
+  if (completed) {
+    completedTaskIds.value = Array.from(new Set([...completedTaskIds.value, uid]))
+  } else {
+    completedTaskIds.value = completedTaskIds.value.filter((item) => item !== uid)
+  }
+  await setCompletedTask(uid, completed)
 }
 
 // Нажатие на элемент выпадающего списка найденных элементов point
@@ -74,6 +90,7 @@ onMounted(async () => {
   try {
     isLoadingData.value = true
     taskItems.value = await tasksLocalStorage.getItems()
+    completedTaskIds.value = await getCompletedTasks()
     taskPointsStore.savePoints(taskItems.value)
 
     await obtainCachedPoints().then((cachedDataPoints) => {
@@ -141,7 +158,9 @@ function isAddedTaskList(item: PointResponse): boolean {
         :key="point.uid"
         :index="index"
         :task-items="taskItems"
+        :is-completed="completedTaskIds.includes(point.uid)"
         @delete="deleteTaskItem"
+        @toggle-completed="toggleTaskCompleted(point.uid, $event)"
         :ref="
           (el) => {
             if (index === taskItems.length - 1) lastItemRef = el
