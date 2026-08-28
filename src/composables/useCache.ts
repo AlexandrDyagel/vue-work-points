@@ -3,6 +3,7 @@ import { getPoints, lastUpdatedPoints } from '../../firebase/init.ts'
 import { LocalStorageNames } from '@/model/Enums.ts'
 import { ref, type Ref } from 'vue'
 import { storage } from '@/utils/storage.ts'
+import { getPointsFromJson } from '@/utils/getPointsFromJson.ts'
 
 export function useCache() {
   /**
@@ -19,14 +20,26 @@ export function useCache() {
       return cachedData
     } else {
       // Если данных в кэше нет, делаем запрос к серверу за данными
-      await getPoints()
-        .then(async (data: PointResponse[]) => {
-          await storage.set(LocalStorageNames.CACHE_POINTS, data)
-          console.log('Данные из интернета и потом из хранилища')
-        })
-        .catch((error) => {
-          console.error(`Ошибка error getPoints(): ${error}`)
-        })
+      // try {
+      //   const data = await getPoints()
+      //   await storage.set(LocalStorageNames.CACHE_POINTS, data)
+      //   console.log('Данные из интернета и потом из хранилища')
+      // } catch (error) {
+      //   console.error(`Ошибка error getPoints(): ${error}`)
+      //
+      //   // Если не удалось получить данные с сервера, берём их из локального файла
+      //   const dataFromJson = await getPointsFromJson()
+      //   await storage.set(LocalStorageNames.CACHE_POINTS, dataFromJson)
+      //   console.log('Данные из локального файла points.json')
+      // }
+
+      try {
+        const dataFromJson = await getPointsFromJson()
+        await storage.set(LocalStorageNames.CACHE_POINTS, dataFromJson)
+        console.log('Данные из локального файла points.json')
+      } catch (error) {
+        console.error(`Ошибка error getPoints(): ${error}`)
+      }
 
       return (await storage.get<PointResponse[]>(LocalStorageNames.CACHE_POINTS))!
     }

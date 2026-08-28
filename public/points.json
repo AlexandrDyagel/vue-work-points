@@ -1,0 +1,4391 @@
+[
+  {
+    "uid": "0RDgSeG8xEb9gOvNJafo",
+    "type": "тп",
+    "name": "М. Аэропорт (юг)",
+    "direction": "Ленинградское шоссе",
+    "address": "Ленинградский проспект, д. 60, соор. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "55.799626",
+        "longitude": "37.535047"
+      },
+      "fromRegion": {
+        "latitude": "55.798992",
+        "longitude": "37.534178"
+      }
+    },
+    "createdAt": "1759086790466",
+    "updatedAt": "1770698112271"
+  },
+  {
+    "uid": "0e0H27aRUXNMGM9QiEPq",
+    "type": "тп",
+    "name": "Кибальчича",
+    "direction": "Проспект Мира",
+    "address": "проспект Мира, д. 124, соор. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "55.816217",
+        "longitude": "37.638924"
+      },
+      "fromRegion": {
+        "latitude": "55.816209",
+        "longitude": "37.638267"
+      }
+    },
+    "createdAt": "1759080116421",
+    "updatedAt": "1759080116421"
+  },
+  {
+    "uid": "0sd6B6DCsVvVqtqWG34Q",
+    "type": "тп",
+    "name": "Краснопрудный",
+    "direction": "Садовое кольцо",
+    "address": "Краснопрудная улица, д. 38, соор. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "55.780889",
+        "longitude": "37.669251"
+      },
+      "fromRegion": {
+        "latitude": "55.781071",
+        "longitude": "37.669011"
+      }
+    },
+    "createdAt": "1759133092122",
+    "updatedAt": "1759133092122"
+  },
+  {
+    "uid": "0wteP5vNFiuHuezTOTc7",
+    "type": "тп",
+    "name": "Площадь Прямикова",
+    "direction": "Шоссе Энтузиастов",
+    "address": "улица Сергия Радонежского, д. 2, соор. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "55.746554",
+        "longitude": "37.670608"
+      },
+      "fromRegion": {
+        "latitude": "",
+        "longitude": ""
+      }
+    },
+    "createdAt": "1759759599306",
+    "updatedAt": "1759759599306"
+  },
+  {
+    "uid": "157DB2DvJlnq6kSheB4v",
+    "type": "тп",
+    "name": "Марксистский 4-й",
+    "direction": "Садовое кольцо",
+    "address": "Марксистская улица, д. 38, соор. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "55.734007",
+        "longitude": "37.668038"
+      },
+      "fromRegion": {
+        "latitude": "55.734142",
+        "longitude": "37.668263"
+      }
+    },
+    "createdAt": "1759133031019",
+    "updatedAt": "1759133031019"
+  },
+  {
+    "uid": "1SBHs9iEKilt4zB7Z6FY",
+    "type": "тп",
+    "name": "Дмитровка за МКАД 2",
+    "direction": "Дмитровское шоссе",
+    "address": "Дмитровское шоссе, вл. 165А",
+    "location": {
+      "toRegion": {
+        "latitude": "55.920454",
+        "longitude": "37.545066"
+      },
+      "fromRegion": {
+        "latitude": "55.920689",
+        "longitude": "37.543413"
+      }
+    },
+    "createdAt": "1759084303680",
+    "updatedAt": "1759084303680"
+  },
+  {
+    "uid": "1x0BmC49hUYl4LtBtcJa",
+    "type": "тп",
+    "name": "Строченовский",
+    "direction": "Садовое кольцо",
+    "address": "Валовая улица, д. 29, соор. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "55.730086",
+        "longitude": "37.629227"
+      },
+      "fromRegion": {
+        "latitude": "55.730420",
+        "longitude": "37.629413"
+      }
+    },
+    "createdAt": "1759132904725",
+    "updatedAt": "1759132904725"
+  },
+  {
+    "uid": "224M3PTuED0DjpeuoBbZ",
+    "type": "тп",
+    "name": "Лесная",
+    "direction": "Тверская улица",
+    "address": "1-я Тверская-Ямская улица, д. 36, соор. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "55.776331",
+        "longitude": "37.585555"
+      },
+      "fromRegion": {
+        "latitude": "55.776180",
+        "longitude": "37.585291"
+      }
+    },
+    "createdAt": "1759002395330",
+    "updatedAt": "1759002738366"
+  },
+  {
+    "uid": "2Kgr9cS1z9PuBrxzyokz",
+    "type": "пп",
+    "name": "Симонова",
+    "direction": "Ленинградское шоссе",
+    "address": "Ленинградский проспект, д. 54, соор. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "55.798046",
+        "longitude": "37.538641"
+      },
+      "fromRegion": {
+        "latitude": "55.797578",
+        "longitude": "37.537437"
+      }
+    },
+    "createdAt": "1759086442578",
+    "updatedAt": "1759086442578"
+  },
+  {
+    "uid": "2Zz874IaaDn64CZczEmB",
+    "type": "тп",
+    "name": "Белокаменный",
+    "direction": "Проспект Мира",
+    "address": "Яузская аллея, д. 9",
+    "location": {
+      "toRegion": {
+        "latitude": "55.829081",
+        "longitude": "37.701674"
+      },
+      "fromRegion": {
+        "latitude": "",
+        "longitude": ""
+      }
+    },
+    "createdAt": "1777733163085",
+    "updatedAt": "1777733163085"
+  },
+  {
+    "uid": "2f7C7RYXJYmp66XEKyhE",
+    "type": "тп",
+    "name": "Кудринский",
+    "direction": "Садовое кольцо",
+    "address": "Садовая-Кудринская улица, д. 2/62, соор. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "55.759624",
+        "longitude": "37.584796"
+      },
+      "fromRegion": {
+        "latitude": "55.759758",
+        "longitude": "37.585381"
+      }
+    },
+    "createdAt": "1759132458432",
+    "updatedAt": "1759132458432"
+  },
+  {
+    "uid": "2oTSSEeZze2Fq1yNbJaf",
+    "type": "тп",
+    "name": "Митино 1 (1 мкр)",
+    "direction": "Волоколамское шоссе",
+    "address": "Пятницкое шоссе, д. 16, соор. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "55.841996",
+        "longitude": "37.384361"
+      },
+      "fromRegion": {
+        "latitude": "55.842104",
+        "longitude": "37.383540"
+      }
+    },
+    "createdAt": "1759914618890",
+    "updatedAt": "1759914618890"
+  },
+  {
+    "uid": "2pcPQs0B58qeo94x4oj1",
+    "type": "пп",
+    "name": "ОПП Варшавское шоссе 1",
+    "direction": "Варшавское шоссе",
+    "address": "Варшавское шоссе, д. 16, соор. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "55.694267",
+        "longitude": "37.620913"
+      },
+      "fromRegion": {
+        "latitude": "55.693905",
+        "longitude": "37.621460"
+      }
+    },
+    "createdAt": "1759844851068",
+    "updatedAt": "1759844851068"
+  },
+  {
+    "uid": "3mmTWGyhla7lAxmsEtlL",
+    "type": "тп",
+    "name": "ВДНХ",
+    "direction": "Проспект Мира",
+    "address": "проспект Мира, д. 150, соор. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "55.822067",
+        "longitude": "37.643114"
+      },
+      "fromRegion": {
+        "latitude": "55.822230",
+        "longitude": "37.642276"
+      }
+    },
+    "createdAt": "1759080215565",
+    "updatedAt": "1759081296415"
+  },
+  {
+    "uid": "4bu8Zg0I4laaZ7Gen4JP",
+    "type": "тп",
+    "name": "Людмила",
+    "direction": "Садовое кольцо",
+    "address": "улица Земляной Вал, д. 42, соор. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "55.754883",
+        "longitude": "37.657297"
+      },
+      "fromRegion": {
+        "latitude": "55.754782",
+        "longitude": "37.656806"
+      }
+    },
+    "createdAt": "1759132764343",
+    "updatedAt": "1759132764343"
+  },
+  {
+    "uid": "50cOYvVk2g8tGQqWZq0r",
+    "type": "та",
+    "name": "Добрынинский тоннель",
+    "direction": "Садовое кольцо",
+    "address": "Валовая улица, Серпуховаская площадь",
+    "location": {
+      "toRegion": {
+        "latitude": "55.729887",
+        "longitude": "37.626346"
+      },
+      "fromRegion": {
+        "latitude": "55.729989",
+        "longitude": "37.626305"
+      }
+    },
+    "createdAt": "1759132187786",
+    "updatedAt": "1759132187786"
+  },
+  {
+    "uid": "5F6r5WiE7AS49MiFHx5C",
+    "type": "тп",
+    "name": "Ярославский 6-й",
+    "direction": "Ярославское шоссе",
+    "address": "Ярославское шоссе, д. 114, соор. 3",
+    "location": {
+      "toRegion": {
+        "latitude": "55.867166",
+        "longitude": "37.705970"
+      },
+      "fromRegion": {
+        "latitude": "55.867381",
+        "longitude": "37.705668"
+      }
+    },
+    "createdAt": "1759080534891",
+    "updatedAt": "1759080534891"
+  },
+  {
+    "uid": "5TqWcxsWZa3IRIS9KSpK",
+    "type": "тп",
+    "name": "2-я Звенигородская",
+    "direction": "Красная пресня",
+    "address": "Звенигородское шоссе, д. 18",
+    "location": {
+      "toRegion": {
+        "latitude": "55.764105",
+        "longitude": "37.555792"
+      },
+      "fromRegion": {
+        "latitude": "55.763880",
+        "longitude": "37.555415"
+      }
+    },
+    "createdAt": "1759845121356",
+    "updatedAt": "1759845121356"
+  },
+  {
+    "uid": "6LjhYt1sC81fgYnVGZYI",
+    "type": "тп",
+    "name": "Академия коммунального хозяйства (АКХ) ",
+    "direction": "Волоколамское шоссе",
+    "address": "Волоколамское шоссе, д. 116А, соор. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "55.828862",
+        "longitude": "37.414594"
+      },
+      "fromRegion": {
+        "latitude": "55.828962",
+        "longitude": "37.412575"
+      }
+    },
+    "createdAt": "1759914677699",
+    "updatedAt": "1759914677699"
+  },
+  {
+    "uid": "6OzUuGVPx9mlMhtHtfJQ",
+    "type": "тп",
+    "name": "Фрунзенский",
+    "direction": "Садовое кольцо",
+    "address": "Комсомольский проспект, д. 28, соор. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "55.726787",
+        "longitude": "37.581173"
+      },
+      "fromRegion": {
+        "latitude": "55.726545",
+        "longitude": "37.581731"
+      }
+    },
+    "createdAt": "1759132361149",
+    "updatedAt": "1759132361149"
+  },
+  {
+    "uid": "6o85ike5vMs1fEdwrTjh",
+    "type": "тп",
+    "name": "Богатырь",
+    "direction": "Проспект Мира",
+    "address": "проспект Мира, д. 104, соор. 3",
+    "location": {
+      "toRegion": {
+        "latitude": "55.802128",
+        "longitude": "37.636358"
+      },
+      "fromRegion": {
+        "latitude": "55.802186",
+        "longitude": "37.635390"
+      }
+    },
+    "createdAt": "1759077562524",
+    "updatedAt": "1759077562524"
+  },
+  {
+    "uid": "6pBu2jZFv2Lc3BgECn6q",
+    "type": "тп",
+    "name": "Клинский",
+    "direction": "Ленинградское шоссе",
+    "address": "Клинская улица, д. 16",
+    "location": {
+      "toRegion": {
+        "latitude": "55.870721",
+        "longitude": "37.492107"
+      },
+      "fromRegion": {
+        "latitude": "55.870869",
+        "longitude": "37.491785"
+      }
+    },
+    "createdAt": "1759086888646",
+    "updatedAt": "1759086888646"
+  },
+  {
+    "uid": "7B6Ay4iAeZrCejL1oK1H",
+    "type": "тп",
+    "name": "Марксистский 5-й",
+    "direction": "Садовое кольцо",
+    "address": "Волгоградский проспект, д. 1, соор. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "55.733332",
+        "longitude": "37.669121"
+      },
+      "fromRegion": {
+        "latitude": "55.733542",
+        "longitude": "37.669253"
+      }
+    },
+    "createdAt": "1759133054186",
+    "updatedAt": "1759133054186"
+  },
+  {
+    "uid": "7Ybeb6an25AW9JJKlF3D",
+    "type": "тп",
+    "name": "НАТИ",
+    "direction": "Дмитровское шоссе",
+    "address": "проезд Черепановых, 29A, соор. 6",
+    "location": {
+      "toRegion": {
+        "latitude": "55.850480",
+        "longitude": "37.550919"
+      },
+      "fromRegion": {
+        "latitude": "55.850039",
+        "longitude": "37.549960"
+      }
+    },
+    "createdAt": "1759084512047",
+    "updatedAt": "1759084512047"
+  },
+  {
+    "uid": "7hlW2P09ZUPT4Sr07eo9",
+    "type": "тп",
+    "name": "Академический",
+    "direction": "Ленинский проспект",
+    "address": "Ленинский проспект, д. 1, соор. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "55.727956",
+        "longitude": "37.610668"
+      },
+      "fromRegion": {
+        "latitude": "55.727956",
+        "longitude": "37.610668"
+      }
+    },
+    "createdAt": "1759004082352",
+    "updatedAt": "1759004321523"
+  },
+  {
+    "uid": "7uZXvTzOHt05ezWK7tTA",
+    "type": "та",
+    "name": "Складочный",
+    "direction": "ТТК",
+    "address": "улица Двинцев",
+    "location": {
+      "toRegion": {
+        "latitude": "55.798063",
+        "longitude": "37.596947"
+      },
+      "fromRegion": {
+        "latitude": "",
+        "longitude": ""
+      }
+    },
+    "createdAt": "1777733558804",
+    "updatedAt": "1777733558804"
+  },
+  {
+    "uid": "8JmBwKyNpPPckV3h1gbq",
+    "type": "тп",
+    "name": "Комсомольский",
+    "direction": "Садовое кольцо",
+    "address": "Комсомольский площадь, д. 2, соор. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "55.775171",
+        "longitude": "37.656451"
+      },
+      "fromRegion": {
+        "latitude": "55.775781",
+        "longitude": "37.655873"
+      }
+    },
+    "createdAt": "1759133072880",
+    "updatedAt": "1759133072880"
+  },
+  {
+    "uid": "8UqL7DyzigErwPefKynN",
+    "type": "тп",
+    "name": "Пикет",
+    "direction": "Щелковское шоссе",
+    "address": "Щелковское шоссе, д. 90, соор. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "55.811778",
+        "longitude": "37.821874"
+      },
+      "fromRegion": {
+        "latitude": "55.812092",
+        "longitude": "37.821681"
+      }
+    },
+    "createdAt": "1759675550051",
+    "updatedAt": "1759675550051"
+  },
+  {
+    "uid": "8fxay5tanclICEkdRfUs",
+    "type": "тп",
+    "name": "Ленинградка 34 (Стадион Динамо)",
+    "direction": "Ленинградское шоссе",
+    "address": "Ленинградский проспект, д. 34А",
+    "location": {
+      "toRegion": {
+        "latitude": "55.785835",
+        "longitude": "37.566876"
+      },
+      "fromRegion": {
+        "latitude": "55.785835",
+        "longitude": "37.566876"
+      }
+    },
+    "createdAt": "1759086747412",
+    "updatedAt": "1760280196307"
+  },
+  {
+    "uid": "8jFWWuSbaBWO2qQBo5mp",
+    "type": "пп",
+    "name": "Шебашевского",
+    "direction": "Ленинградское шоссе",
+    "address": "Ленинградский проспект, д. 64, соор. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "55.802161",
+        "longitude": "37.527201"
+      },
+      "fromRegion": {
+        "latitude": "55.801567",
+        "longitude": "37.526620"
+      }
+    },
+    "createdAt": "1759086509800",
+    "updatedAt": "1759086509800"
+  },
+  {
+    "uid": "9QaPmSvjRp8nLR4cuBKc",
+    "type": "тп",
+    "name": "Хроматрон",
+    "direction": "Щелковское шоссе",
+    "address": "Щелковское шоссе, д. 100, соор. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "55.813139",
+        "longitude": "37.833230"
+      },
+      "fromRegion": {
+        "latitude": "55.813518",
+        "longitude": "37.832818"
+      }
+    },
+    "createdAt": "1759675676469",
+    "updatedAt": "1759675676469"
+  },
+  {
+    "uid": "AFJ72qq45xblMj2RWvFt",
+    "type": "тп",
+    "name": "Хрустальный",
+    "direction": "Тверская улица",
+    "address": "Варварка улица, д. 1, соор. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "55.752421",
+        "longitude": "37.625090"
+      },
+      "fromRegion": {
+        "latitude": "55.752421",
+        "longitude": "37.625090"
+      }
+    },
+    "createdAt": "1759002673444",
+    "updatedAt": "1759002878022"
+  },
+  {
+    "uid": "AHKS3C8XLjTeLN9mXD6R",
+    "type": "тп",
+    "name": "1-й Тушинский",
+    "direction": "Волоколамское шоссе",
+    "address": "Волоколамское шоссе, д. 114, корп. 2, соор. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "55.830981",
+        "longitude": "37.415725"
+      },
+      "fromRegion": {
+        "latitude": "",
+        "longitude": ""
+      }
+    },
+    "createdAt": "1759914547338",
+    "updatedAt": "1759914547338"
+  },
+  {
+    "uid": "ANSVfecwvQR8KprZqt5U",
+    "type": "тп",
+    "name": "Ярославский 7-й",
+    "direction": "Ярославское шоссе",
+    "address": "Ярославское шоссе, д. 115, соор. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "",
+        "longitude": ""
+      },
+      "fromRegion": {
+        "latitude": "55.871443",
+        "longitude": "37.711857"
+      }
+    },
+    "createdAt": "1759080557882",
+    "updatedAt": "1759080557882"
+  },
+  {
+    "uid": "B0mkS4q1pG9syCf7dDbt",
+    "type": "тп",
+    "name": "Мантулинский",
+    "direction": "Красная пресня",
+    "address": "Мантулинская улица, д. 2, соор. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "55.756744",
+        "longitude": "37.558327"
+      },
+      "fromRegion": {
+        "latitude": "55.756575",
+        "longitude": "37.558076"
+      }
+    },
+    "createdAt": "1759845158428",
+    "updatedAt": "1759845158428"
+  },
+  {
+    "uid": "BIE6Z3SQU2xVtdK1s7N4",
+    "type": "тп",
+    "name": "Саломея Нерис",
+    "direction": "Волоколамское шоссе",
+    "address": "улица Саломеи Нерис, д. 6, соор.1",
+    "location": {
+      "toRegion": {
+        "latitude": "55.851403",
+        "longitude": "37.398263"
+      },
+      "fromRegion": {
+        "latitude": "55.851334",
+        "longitude": "37.397973"
+      }
+    },
+    "createdAt": "1759914656746",
+    "updatedAt": "1759914656746"
+  },
+  {
+    "uid": "BWYPYvyDlRqHZzkZX5WL",
+    "type": "тп",
+    "name": "МПС",
+    "direction": "Волоколамское шоссе",
+    "address": "Волоколамское шоссе, д. 80А, соор. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "",
+        "longitude": ""
+      },
+      "fromRegion": {
+        "latitude": "55.817006",
+        "longitude": "37.460307"
+      }
+    },
+    "createdAt": "1759914466839",
+    "updatedAt": "1759914466839"
+  },
+  {
+    "uid": "BafdbkIyqKU6j8hRxD8T",
+    "type": "тп",
+    "name": "Щелковский 1-й",
+    "direction": "Щелковское шоссе",
+    "address": "Щелковское шоссе, д. 2А, соор. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "55.803745",
+        "longitude": "37.757989"
+      },
+      "fromRegion": {
+        "latitude": "55.804121",
+        "longitude": "37.757603"
+      }
+    },
+    "createdAt": "1759675464998",
+    "updatedAt": "1759675464998"
+  },
+  {
+    "uid": "CKhePNRmTw7FqcW17qWc",
+    "type": "тп",
+    "name": "Новокировский",
+    "direction": "Садовое кольцо",
+    "address": "улица Маши Порываевой, д. 34, соор. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "55.772323",
+        "longitude": "37.646687"
+      },
+      "fromRegion": {
+        "latitude": "55.772568",
+        "longitude": "37.646506"
+      }
+    },
+    "createdAt": "1759133133277",
+    "updatedAt": "1759133133277"
+  },
+  {
+    "uid": "COgCJINIKwNNOj4bOFcZ",
+    "type": "тп",
+    "name": "Флотский",
+    "direction": "Ленинградское шоссе",
+    "address": "Ленинградское шоссе, вл. 88, соор. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "55.849313",
+        "longitude": "37.474616"
+      },
+      "fromRegion": {
+        "latitude": "55.849443",
+        "longitude": "37.473968"
+      }
+    },
+    "createdAt": "1759087166662",
+    "updatedAt": "1759087166662"
+  },
+  {
+    "uid": "CdA6vS3guIuOMWyMMOYo",
+    "type": "тп",
+    "name": "Красносельский",
+    "direction": "ТТК",
+    "address": "1-й Красносельский переулок, д. 3",
+    "location": {
+      "toRegion": {
+        "latitude": "55.782529",
+        "longitude": "37.668889"
+      },
+      "fromRegion": {
+        "latitude": "",
+        "longitude": ""
+      }
+    },
+    "createdAt": "1777733015142",
+    "updatedAt": "1777733015142"
+  },
+  {
+    "uid": "Cp3bsN8Y93LvYpRxSztN",
+    "type": "тп",
+    "name": "Московский",
+    "direction": "Садовое кольцо",
+    "address": "Комсомольская площадь, д. 6, соор. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "55.776605",
+        "longitude": "37.660006"
+      },
+      "fromRegion": {
+        "latitude": "55.776627",
+        "longitude": "37.659148"
+      }
+    },
+    "createdAt": "1759133113050",
+    "updatedAt": "1759133113050"
+  },
+  {
+    "uid": "DI0KNCbtasW3t4WCzVcN",
+    "type": "тп",
+    "name": "Институт Зерна",
+    "direction": "Дмитровское шоссе",
+    "address": "Дмитровское шоссе, д. 11, соор. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "55.817296",
+        "longitude": "37.575844"
+      },
+      "fromRegion": {
+        "latitude": "55.817250",
+        "longitude": "37.575492"
+      }
+    },
+    "createdAt": "1759448425579",
+    "updatedAt": "1759448425579"
+  },
+  {
+    "uid": "DYcEaPlX7K7TvMgIpcTN",
+    "type": "тп",
+    "name": "Бирюсинка (Щелковская 28/56)",
+    "direction": "Щелковское шоссе",
+    "address": "Щелковское шоссе, д. 33 у улицы 3-я Парковая (28/56, соор. 1)",
+    "location": {
+      "toRegion": {
+        "latitude": "55.809652",
+        "longitude": "37.782773"
+      },
+      "fromRegion": {
+        "latitude": "55.809931",
+        "longitude": "37.782549"
+      }
+    },
+    "createdAt": "1759675401279",
+    "updatedAt": "1759675401279"
+  },
+  {
+    "uid": "DtvqBEAQGDSWNrcGLzAD",
+    "type": "тп",
+    "name": "Гостиница Советская",
+    "direction": "Ленинградское шоссе",
+    "address": "Ленинградский проспект, д. 34, соор. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "55.784867",
+        "longitude": "37.568296"
+      },
+      "fromRegion": {
+        "latitude": "55.784295",
+        "longitude": "37.567263"
+      }
+    },
+    "createdAt": "1759086666808",
+    "updatedAt": "1759086666808"
+  },
+  {
+    "uid": "EDobG1UntBlbktSvdzvR",
+    "type": "тп",
+    "name": "Житная",
+    "direction": "Садовое кольцо",
+    "address": "Житная улица, д. 10, соор. 2А",
+    "location": {
+      "toRegion": {
+        "latitude": "55.729653",
+        "longitude": "37.618323"
+      },
+      "fromRegion": {
+        "latitude": "55.730135",
+        "longitude": "37.618556"
+      }
+    },
+    "createdAt": "1759132952466",
+    "updatedAt": "1759132952466"
+  },
+  {
+    "uid": "ELPSAcioUOA6q1IQoJOx",
+    "type": "тп",
+    "name": "Школа (Санаторий Лебедь)",
+    "direction": "Ленинградское шоссе",
+    "address": "Ленинградское шоссе, вл. 30, соор. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "55.829212",
+        "longitude": "37.489751"
+      },
+      "fromRegion": {
+        "latitude": "55.829091",
+        "longitude": "37.489264"
+      }
+    },
+    "createdAt": "1759086810391",
+    "updatedAt": "1759086810391"
+  },
+  {
+    "uid": "Ek0A43EDI2rVC8Hd8vuW",
+    "type": "тп",
+    "name": "15 автобусный парк",
+    "direction": "Волоколамское шоссе",
+    "address": "Волоколамское шоссе, д. 83",
+    "location": {
+      "toRegion": {
+        "latitude": "",
+        "longitude": ""
+      },
+      "fromRegion": {
+        "latitude": "55.828091",
+        "longitude": "37.416828"
+      }
+    },
+    "createdAt": "1759914564902",
+    "updatedAt": "1759914564902"
+  },
+  {
+    "uid": "EnjbfUzaQwALx9GCkiCC",
+    "type": "тп",
+    "name": "Новороссийск",
+    "direction": "Садовое кольцо",
+    "address": "Садовая-Черногрязская улица, д. 22, соор. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "55.764402",
+        "longitude": "37.656172"
+      },
+      "fromRegion": {
+        "latitude": "55.764274",
+        "longitude": "37.655713"
+      }
+    },
+    "createdAt": "1759132724863",
+    "updatedAt": "1759132724863"
+  },
+  {
+    "uid": "FWf57uLqwh3QbvGwgnHD",
+    "type": "тп",
+    "name": "Выборгский",
+    "direction": "Ленинградское шоссе",
+    "address": "Ленинградское шоссе, вл. 44, соор. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "55.832282",
+        "longitude": "37.487225"
+      },
+      "fromRegion": {
+        "latitude": "55.832166",
+        "longitude": "37.486748"
+      }
+    },
+    "createdAt": "1759086909820",
+    "updatedAt": "1759086909820"
+  },
+  {
+    "uid": "FboknBRSuANVY6yMdV80",
+    "type": "тп",
+    "name": "Ярославский 5-й",
+    "direction": "Ярославское шоссе",
+    "address": "Ярославское шоссе, д. 38А, соор. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "55.863742",
+        "longitude": "37.698520"
+      },
+      "fromRegion": {
+        "latitude": "55.863941",
+        "longitude": "37.698129"
+      }
+    },
+    "createdAt": "1759080510612",
+    "updatedAt": "1759080510612"
+  },
+  {
+    "uid": "Fd8Og2SU2k7cvWZiG1j8",
+    "type": "тп",
+    "name": "Зацепский вал(Павелецкий) ",
+    "direction": "Садовое кольцо",
+    "address": "Павелецкая площадь, д. 1, соор. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "55.730808",
+        "longitude": "37.635831"
+      },
+      "fromRegion": {
+        "latitude": "55.731279",
+        "longitude": "37.636992"
+      }
+    },
+    "createdAt": "1759132884066",
+    "updatedAt": "1759132884066"
+  },
+  {
+    "uid": "GtVsxaAtBRcdCaRzysgN",
+    "type": "тп",
+    "name": "Нижегородская 52",
+    "direction": "Шоссе Энтузиастов",
+    "address": "Нижегородская улица, д. 52, соор. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "55.735295",
+        "longitude": "37.703928"
+      },
+      "fromRegion": {
+        "latitude": "55.735165",
+        "longitude": "37.705540"
+      }
+    },
+    "createdAt": "1759760000591",
+    "updatedAt": "1759760000591"
+  },
+  {
+    "uid": "HDcgQEfvfgr7eC6mXQwu",
+    "type": "тп",
+    "name": "Ярославский 8-й",
+    "direction": "Ярославское шоссе",
+    "address": "Ярославское шоссе, д. 136, соор. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "55.874147",
+        "longitude": "37.715894"
+      },
+      "fromRegion": {
+        "latitude": "55.874259",
+        "longitude": "37.715406"
+      }
+    },
+    "createdAt": "1759080581086",
+    "updatedAt": "1759080581086"
+  },
+  {
+    "uid": "HFxFgcthqoKfllC8DFqt",
+    "type": "тп",
+    "name": "Онежский (дырка)",
+    "direction": "Ленинградское шоссе",
+    "address": "Онежская улица, д. 2к3",
+    "location": {
+      "toRegion": {
+        "latitude": "55.842863",
+        "longitude": "37.522554"
+      },
+      "fromRegion": {
+        "latitude": "55.842863",
+        "longitude": "37.522554"
+      }
+    },
+    "createdAt": "1759086929927",
+    "updatedAt": "1759086929927"
+  },
+  {
+    "uid": "HIZ1mTyui2peDa7T7VGb",
+    "type": "тп",
+    "name": "Малая Грузинская",
+    "direction": "Красная пресня",
+    "address": "улица Красная Пресня, д. 22",
+    "location": {
+      "toRegion": {
+        "latitude": "55.761814",
+        "longitude": "37.570954"
+      },
+      "fromRegion": {
+        "latitude": "55.761610",
+        "longitude": "37.570621"
+      }
+    },
+    "createdAt": "1759845081200",
+    "updatedAt": "1759845081200"
+  },
+  {
+    "uid": "He2s8br2Zkdnnw6ZTNR8",
+    "type": "тп",
+    "name": "Большие Каменщики",
+    "direction": "Садовое кольцо",
+    "address": "улица Большие Каменщики, д. 8, соор. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "55.735442",
+        "longitude": "37.656318"
+      },
+      "fromRegion": {
+        "latitude": "55.735381",
+        "longitude": "37.656806"
+      }
+    },
+    "createdAt": "1759132825747",
+    "updatedAt": "1759132825747"
+  },
+  {
+    "uid": "HghMCUgjLe8rEv7AkTXa",
+    "type": "тп",
+    "name": "М. Волоколамская (Новотушинский)",
+    "direction": "Волоколамское шоссе",
+    "address": "Новотушинский проезд, д. 6, корп. 1, соор. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "55.837092",
+        "longitude": "37.382151"
+      },
+      "fromRegion": {
+        "latitude": "55.836955",
+        "longitude": "37.381882"
+      }
+    },
+    "createdAt": "1759914508979",
+    "updatedAt": "1759914508979"
+  },
+  {
+    "uid": "HwzXQbMXGC3TMZIK1Sz2",
+    "type": "тп",
+    "name": "Телецентр",
+    "direction": "Проспект Мира",
+    "address": "улица Академика Королева, д. 12, соор. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "55.821749",
+        "longitude": "37.604169"
+      },
+      "fromRegion": {
+        "latitude": "55.821477",
+        "longitude": "37.604223"
+      }
+    },
+    "createdAt": "1759080190849",
+    "updatedAt": "1759080190849"
+  },
+  {
+    "uid": "IB4SUWYMlqEofZ6FtRRd",
+    "type": "тп",
+    "name": "Лихоборы",
+    "direction": "Дмитровское шоссе",
+    "address": "Дмитровское шоссе, д. 50",
+    "location": {
+      "toRegion": {
+        "latitude": "55.846560",
+        "longitude": "37.568548"
+      },
+      "fromRegion": {
+        "latitude": "55.846510",
+        "longitude": "37.567780"
+      }
+    },
+    "createdAt": "1759084256210",
+    "updatedAt": "1759084256210"
+  },
+  {
+    "uid": "IDDSMXzTyKAqPtqojAwp",
+    "type": "тп",
+    "name": "Рижский",
+    "direction": "ТТК",
+    "address": "проспект Мира, д. 78, соор. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "55.792560",
+        "longitude": "37.634841"
+      },
+      "fromRegion": {
+        "latitude": "",
+        "longitude": ""
+      }
+    },
+    "createdAt": "1759917410961",
+    "updatedAt": "1759917410961"
+  },
+  {
+    "uid": "IIid06p0E5kLbcbgFgeh",
+    "type": "тп",
+    "name": "Правда",
+    "direction": "Ленинградское шоссе",
+    "address": "Ленинградский проспект, д. 13, соор. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "55.781979",
+        "longitude": "37.574563"
+      },
+      "fromRegion": {
+        "latitude": "55.781412",
+        "longitude": "37.573480"
+      }
+    },
+    "createdAt": "1759086645476",
+    "updatedAt": "1759086645476"
+  },
+  {
+    "uid": "IMO87rPibjiMntscpEki",
+    "type": "тп",
+    "name": "Большой Каменный",
+    "direction": "Ленинский проспект",
+    "address": "Серафимовича улица, д. 2А",
+    "location": {
+      "toRegion": {
+        "latitude": "55.744486",
+        "longitude": "37.613750"
+      },
+      "fromRegion": {
+        "latitude": "55.744831",
+        "longitude": "37.614082"
+      }
+    },
+    "createdAt": "1759004199869",
+    "updatedAt": "1759004403943"
+  },
+  {
+    "uid": "ImQLjqrnIz76S77vVoxp",
+    "type": "тп",
+    "name": "Улица 1905 года",
+    "direction": "Красная пресня",
+    "address": "Звенигородское шоссе, д. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "55.763525",
+        "longitude": "37.560367"
+      },
+      "fromRegion": {
+        "latitude": "55.763309",
+        "longitude": "37.559935"
+      }
+    },
+    "createdAt": "1759845102374",
+    "updatedAt": "1759845102374"
+  },
+  {
+    "uid": "IsuoTnurGUBBNshlcPDg",
+    "type": "тп",
+    "name": "Москворецкий",
+    "direction": "Тверская улица",
+    "address": "Варварка улица, д. 6, соор. 3",
+    "location": {
+      "toRegion": {
+        "latitude": "55.751429",
+        "longitude": "37.624660"
+      },
+      "fromRegion": {
+        "latitude": "55.751428",
+        "longitude": "37.623973"
+      }
+    },
+    "createdAt": "1759002695948",
+    "updatedAt": "1759002887131"
+  },
+  {
+    "uid": "JUSTRznr5ZFUlV4jqXqI",
+    "type": "тп",
+    "name": "Свобода",
+    "direction": "Волоколамское шоссе",
+    "address": "Волоколамское шоссе, д. 86, соор. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "",
+        "longitude": ""
+      },
+      "fromRegion": {
+        "latitude": "55.820932",
+        "longitude": "37.446728"
+      }
+    },
+    "createdAt": "1759914482837",
+    "updatedAt": "1759914482837"
+  },
+  {
+    "uid": "JbqC5yG7nP9XC1aPQc1K",
+    "type": "тп",
+    "name": "Парковая 5-я",
+    "direction": "Щелковское шоссе",
+    "address": "Измайловский проспект, д. 56, соор. 5",
+    "location": {
+      "toRegion": {
+        "latitude": "55.788007",
+        "longitude": "37.788605"
+      },
+      "fromRegion": {
+        "latitude": "55.788007",
+        "longitude": "37.788605"
+      }
+    },
+    "createdAt": "1759675633585",
+    "updatedAt": "1759675633585"
+  },
+  {
+    "uid": "KWGtU3nhd8WxVD6xf1NN",
+    "type": "тп",
+    "name": "София",
+    "direction": "Тверская улица",
+    "address": "1-я Тверская-Ямская улица, д. 2, соор. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "55.770303",
+        "longitude": "37.595860"
+      },
+      "fromRegion": {
+        "latitude": "55.770157",
+        "longitude": "37.595598"
+      }
+    },
+    "createdAt": "1759002516318",
+    "updatedAt": "1759002789400"
+  },
+  {
+    "uid": "KYDzCP2m2aR1AJpCA9ev",
+    "type": "тп",
+    "name": "Покрово-Глебово",
+    "direction": "Волоколамское шоссе",
+    "address": "Волоколамское шоссе, д. 52А, соор. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "",
+        "longitude": ""
+      },
+      "fromRegion": {
+        "latitude": "55.814583",
+        "longitude": "37.468996"
+      }
+    },
+    "createdAt": "1759914143987",
+    "updatedAt": "1759914143987"
+  },
+  {
+    "uid": "KhqqpdtBmzps4sO0VbgI",
+    "type": "тп",
+    "name": "Академика Петровского",
+    "direction": "Ленинский проспект",
+    "address": "Ленинский проспект, д. 8А, соор. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "55.721160",
+        "longitude": "37.599793"
+      },
+      "fromRegion": {
+        "latitude": "55.720863",
+        "longitude": "37.600054"
+      }
+    },
+    "createdAt": "1759004058627",
+    "updatedAt": "1759004302403"
+  },
+  {
+    "uid": "LVwBnwJI3cQ02WPLCDmo",
+    "type": "тп",
+    "name": "Ярославский 2-й",
+    "direction": "Ярославское шоссе",
+    "address": "Ярославское шоссе, д. 12, соор. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "55.854878",
+        "longitude": "37.682447"
+      },
+      "fromRegion": {
+        "latitude": "55.855129",
+        "longitude": "37.682232"
+      }
+    },
+    "createdAt": "1759080444216",
+    "updatedAt": "1759080444216"
+  },
+  {
+    "uid": "LdIvxXzMbEnwyCkknS5d",
+    "type": "тп",
+    "name": "Яузский",
+    "direction": "Садовое кольцо",
+    "address": "Серебряническая набережная, д. 29, соор. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "",
+        "longitude": ""
+      },
+      "fromRegion": {
+        "latitude": "55.750855",
+        "longitude": "37.655657"
+      }
+    },
+    "createdAt": "1759133164771",
+    "updatedAt": "1759133164771"
+  },
+  {
+    "uid": "LoaxMSrvt8Z6N8H5EvW4",
+    "type": "пп",
+    "name": "ОПП Варшавское шоссе 3",
+    "direction": "Варшавское шоссе",
+    "address": "Варшавское шоссе, д. 38, соор. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "55.678429",
+        "longitude": "37.624839"
+      },
+      "fromRegion": {
+        "latitude": "55.678091",
+        "longitude": "37.625466"
+      }
+    },
+    "createdAt": "1759844898865",
+    "updatedAt": "1759844898865"
+  },
+  {
+    "uid": "Lqw6iDKD7JPY6a50Ytkn",
+    "type": "тп",
+    "name": "Бескудниковский",
+    "direction": "Дмитровское шоссе",
+    "address": "Дмитровское шоссе, вл. 96, соор. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "55.874258",
+        "longitude": "37.548025"
+      },
+      "fromRegion": {
+        "latitude": "55.874222",
+        "longitude": "37.547198"
+      }
+    },
+    "createdAt": "1759084422957",
+    "updatedAt": "1759084422957"
+  },
+  {
+    "uid": "Lx79FkpimULWFEYqqH7Y",
+    "type": "тп",
+    "name": "Сущевский Вал 23",
+    "direction": "ТТК",
+    "address": "улица Сущевский Вал, д. 18, соор. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "55.792836",
+        "longitude": "37.603401"
+      },
+      "fromRegion": {
+        "latitude": "55.792556",
+        "longitude": "37.603345"
+      }
+    },
+    "createdAt": "1759917502195",
+    "updatedAt": "1759917502195"
+  },
+  {
+    "uid": "M1xDrTDomyLnqhgkxeEl",
+    "type": "тп",
+    "name": "Преображенская площадь",
+    "direction": "Щелковское шоссе",
+    "address": "Преображенская площадь, д. 12, соор. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "55.795646",
+        "longitude": "37.714336"
+      },
+      "fromRegion": {
+        "latitude": "55.795884",
+        "longitude": "37.713767"
+      }
+    },
+    "createdAt": "1759675338698",
+    "updatedAt": "1759675338698"
+  },
+  {
+    "uid": "MiAxbY9Icyu2j7GlDx2u",
+    "type": "тп",
+    "name": "Серегинский",
+    "direction": "Ленинградское шоссе",
+    "address": "Ленинградский проспект, д. 44, соор. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "55.794233",
+        "longitude": "37.547348"
+      },
+      "fromRegion": {
+        "latitude": "55.793494",
+        "longitude": "37.546626"
+      }
+    },
+    "createdAt": "1759087075188",
+    "updatedAt": "1759087075188"
+  },
+  {
+    "uid": "NcoMtzSzgN6ZaFb8Welf",
+    "type": "тп",
+    "name": "Мытный",
+    "direction": "Ленинский проспект",
+    "address": "Калужская площадь, д. 1, соор. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "55.728646",
+        "longitude": "37.614090"
+      },
+      "fromRegion": {
+        "latitude": "55.728668",
+        "longitude": "37.614399"
+      }
+    },
+    "createdAt": "1759004106462",
+    "updatedAt": "1759004338953"
+  },
+  {
+    "uid": "Ny1Sg6DKkApiaKSOlsKN",
+    "type": "тп",
+    "name": "Беговая аллея (Ипподром)",
+    "direction": "Ленинградское шоссе",
+    "address": "Беговая улица, д. 34, соор. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "55.784775",
+        "longitude": "37.566143"
+      },
+      "fromRegion": {
+        "latitude": "55.784775",
+        "longitude": "37.566143"
+      }
+    },
+    "createdAt": "1759087187399",
+    "updatedAt": "1759087187399"
+  },
+  {
+    "uid": "OBir94RgBWhhT7rJf5N7",
+    "type": "тп",
+    "name": "Тургеневский",
+    "direction": "Садовое кольцо",
+    "address": "Сретенский бульвар, д. 11А",
+    "location": {
+      "toRegion": {
+        "latitude": "55.765702",
+        "longitude": "37.637376"
+      },
+      "fromRegion": {
+        "latitude": "55.765481",
+        "longitude": "37.636699"
+      }
+    },
+    "createdAt": "1759132705838",
+    "updatedAt": "1759132705838"
+  },
+  {
+    "uid": "ODCptcItk0V5wPiQu4wJ",
+    "type": "тп",
+    "name": "Сущевский Вал 13 (Савеловский)",
+    "direction": "ТТК",
+    "address": "улица Сущевский Вал, д. 10, соор. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "55.792342",
+        "longitude": "37.595316"
+      },
+      "fromRegion": {
+        "latitude": "55.792052",
+        "longitude": "37.595920"
+      }
+    },
+    "createdAt": "1759917459016",
+    "updatedAt": "1759917459016"
+  },
+  {
+    "uid": "Ol9PGyXfJLh5sXe8k73Y",
+    "type": "тп",
+    "name": "Пушкинский, Армения",
+    "direction": "Тверская улица",
+    "address": "Тверская улица, д. 16, соор. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "55.765008",
+        "longitude": "37.605212"
+      },
+      "fromRegion": {
+        "latitude": "55.765468",
+        "longitude": "37.603803"
+      }
+    },
+    "createdAt": "1759002578893",
+    "updatedAt": "1759002819247"
+  },
+  {
+    "uid": "P2Tx7xUWgNQ2rTjreEjV",
+    "type": "тп",
+    "name": "Селигерский",
+    "direction": "Дмитровское шоссе",
+    "address": "Дмитровское шоссе, вл. 86, соор. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "55.868814",
+        "longitude": "37.547459"
+      },
+      "fromRegion": {
+        "latitude": "55.868894",
+        "longitude": "37.546658"
+      }
+    },
+    "createdAt": "1759084399065",
+    "updatedAt": "1759084399065"
+  },
+  {
+    "uid": "P5EVV5vqrfZmPkWWEumG",
+    "type": "тп",
+    "name": "Кафе Паланга",
+    "direction": "Ленинский проспект",
+    "address": "Ленинский проспект, д. 18, соор. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "55.717173",
+        "longitude": "37.593945"
+      },
+      "fromRegion": {
+        "latitude": "55.716971",
+        "longitude": "37.594356"
+      }
+    },
+    "createdAt": "1759004037976",
+    "updatedAt": "1759004260172"
+  },
+  {
+    "uid": "PCL7JTJGSAVa0saNYoMH",
+    "type": "тп",
+    "name": "Парковая 13-я",
+    "direction": "Щелковское шоссе",
+    "address": "Щелковское шоссе, д. 74, соор. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "55.810427",
+        "longitude": "37.810931"
+      },
+      "fromRegion": {
+        "latitude": "55.810765",
+        "longitude": "37.810891"
+      }
+    },
+    "createdAt": "1759675569829",
+    "updatedAt": "1759675569829"
+  },
+  {
+    "uid": "PRAF7fxfzATX0VTpMQxk",
+    "type": "тп",
+    "name": "ДСК",
+    "direction": "Дмитровское шоссе",
+    "address": "Дмитровское шоссе, д. 155",
+    "location": {
+      "toRegion": {
+        "latitude": "55.897765",
+        "longitude": "37.543663"
+      },
+      "fromRegion": {
+        "latitude": "55.897905",
+        "longitude": "37.543222"
+      }
+    },
+    "createdAt": "1759084470683",
+    "updatedAt": "1759084470683"
+  },
+  {
+    "uid": "PgXZMNJQfzZpbPlLa2Dg",
+    "type": "та",
+    "name": "Ленинградский тоннель",
+    "direction": "Ленинградское шоссе",
+    "address": "Ленинградский проспект",
+    "location": {
+      "toRegion": {
+        "latitude": "55.805338",
+        "longitude": "37.513743"
+      },
+      "fromRegion": {
+        "latitude": "55.805233",
+        "longitude": "37.513637"
+      }
+    },
+    "createdAt": "1759129677438",
+    "updatedAt": "1759129713722"
+  },
+  {
+    "uid": "PusiIxpoQSggvie4VqqW",
+    "type": "тп",
+    "name": "М. Новослободская",
+    "direction": "Дмитровское шоссе",
+    "address": "Новослабодская улица, д. 3, соор. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "55.779352",
+        "longitude": "37.600941"
+      },
+      "fromRegion": {
+        "latitude": "55.779231",
+        "longitude": "37.601556"
+      }
+    },
+    "createdAt": "1759084021600",
+    "updatedAt": "1759084021600"
+  },
+  {
+    "uid": "Q5CfbrmLsyuUOCIutgAg",
+    "type": "тп",
+    "name": "Сивяков",
+    "direction": "Садовое кольцо",
+    "address": "улица Земляной Вал, д. 52, соор. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "55.749124",
+        "longitude": "37.656022"
+      },
+      "fromRegion": {
+        "latitude": "55.748992",
+        "longitude": "37.655498"
+      }
+    },
+    "createdAt": "1759132784313",
+    "updatedAt": "1759132784313"
+  },
+  {
+    "uid": "Q609ScNrbnC8AUxl1aJE",
+    "type": "тп",
+    "name": "Щелковский 4-й",
+    "direction": "Щелковское шоссе",
+    "address": "Щелковское шоссе, д. 38/66",
+    "location": {
+      "toRegion": {
+        "latitude": "55.809742",
+        "longitude": "37.787864"
+      },
+      "fromRegion": {
+        "latitude": "55.810087",
+        "longitude": "37.788079"
+      }
+    },
+    "createdAt": "1759675529222",
+    "updatedAt": "1759675529222"
+  },
+  {
+    "uid": "Q6Ek1aWCQBSM6faz2lya",
+    "type": "тп",
+    "name": "Ярославский 3-й",
+    "direction": "Ярославское шоссе",
+    "address": "Ярославское шоссе, д. 24, соор. 2",
+    "location": {
+      "toRegion": {
+        "latitude": "55.857674",
+        "longitude": "37.686377"
+      },
+      "fromRegion": {
+        "latitude": "55.857865",
+        "longitude": "37.686035"
+      }
+    },
+    "createdAt": "1759080466575",
+    "updatedAt": "1759080466575"
+  },
+  {
+    "uid": "Qu2kgNFjP2QRMgLb85rl",
+    "type": "тп",
+    "name": "Стрельбищенский",
+    "direction": "Красная пресня",
+    "address": "Звенигородское шоссе, д. 26А, соор. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "55.765827",
+        "longitude": "37.542182"
+      },
+      "fromRegion": {
+        "latitude": "55.765577",
+        "longitude": "37.542162"
+      }
+    },
+    "createdAt": "1759845139683",
+    "updatedAt": "1759845139683"
+  },
+  {
+    "uid": "RQFFTdmNEAxSGi4pbat3",
+    "type": "тп",
+    "name": "Петровско-Разумовский",
+    "direction": "Дмитровское шоссе",
+    "address": "Дмитровское шоссе, д. 24, соор. 2",
+    "location": {
+      "toRegion": {
+        "latitude": "55.834663",
+        "longitude": "37.572869"
+      },
+      "fromRegion": {
+        "latitude": "55.834527",
+        "longitude": "37.572431"
+      }
+    },
+    "createdAt": "1759084200832",
+    "updatedAt": "1759084200832"
+  },
+  {
+    "uid": "Ri6E3irmwGCAtGqzO8Uy",
+    "type": "тп",
+    "name": "Алексея Толстого",
+    "direction": "Садовое кольцо",
+    "address": "Садовая-Кудринская улица, д. 24, соор. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "55.763270",
+        "longitude": "37.587479"
+      },
+      "fromRegion": {
+        "latitude": "55.763176",
+        "longitude": "37.587902"
+      }
+    },
+    "createdAt": "1759132478573",
+    "updatedAt": "1759132478573"
+  },
+  {
+    "uid": "SGjjLsZ3D8ojXPqHPxo8",
+    "type": "тп",
+    "name": "Немчиново (гостиница Молодёжная)",
+    "direction": "Дмитровское шоссе",
+    "address": "Дмитровское шоссе, вл. 14, соор. 2",
+    "location": {
+      "toRegion": {
+        "latitude": "55.825370",
+        "longitude": "37.573054"
+      },
+      "fromRegion": {
+        "latitude": "55.825370",
+        "longitude": "37.572632"
+      }
+    },
+    "createdAt": "1759084354071",
+    "updatedAt": "1759084354071"
+  },
+  {
+    "uid": "SSbTRVpj77v9q6GSh86X",
+    "type": "тп",
+    "name": "Выставочный",
+    "direction": "Красная пресня",
+    "address": "Краснопресненская набережная, д. 14, соор. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "55.749083",
+        "longitude": "37.546398"
+      },
+      "fromRegion": {
+        "latitude": "55.748880",
+        "longitude": "37.546433"
+      }
+    },
+    "createdAt": "1759845197732",
+    "updatedAt": "1759845197732"
+  },
+  {
+    "uid": "SU4phxFOp0ZOiAqrVuIm",
+    "type": "тп",
+    "name": "Нефтемаслозавод",
+    "direction": "Проспект Мира",
+    "address": "проспект Мира, д. 222, соор. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "55.842282",
+        "longitude": "37.665771"
+      },
+      "fromRegion": {
+        "latitude": "55.842372",
+        "longitude": "37.665203"
+      }
+    },
+    "createdAt": "1759080266910",
+    "updatedAt": "1759080266910"
+  },
+  {
+    "uid": "SekvllqbGswoIFE5EAZa",
+    "type": "тп",
+    "name": "Шоссе Энтузиастов 74",
+    "direction": "Шоссе Энтузиастов",
+    "address": "шоссе Энтузиастов, д. 74/2, стр. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "55.764105",
+        "longitude": "37.784376"
+      },
+      "fromRegion": {
+        "latitude": "55.764668",
+        "longitude": "37.784009"
+      }
+    },
+    "createdAt": "1759759915008",
+    "updatedAt": "1759759915008"
+  },
+  {
+    "uid": "ShbHmWjiDtce8bcH9rlR",
+    "type": "тп",
+    "name": "Кинотеатр Ереван",
+    "direction": "Дмитровское шоссе",
+    "address": "Дмитровское шоссе, вл. 80, соор. 2",
+    "location": {
+      "toRegion": {
+        "latitude": "55.863469",
+        "longitude": "37.549400"
+      },
+      "fromRegion": {
+        "latitude": "55.863029",
+        "longitude": "37.549153"
+      }
+    },
+    "createdAt": "1759084376759",
+    "updatedAt": "1759084376759"
+  },
+  {
+    "uid": "SltpFJrZHA38oTAB0syj",
+    "type": "тп",
+    "name": "Митино (Спас)",
+    "direction": "Волоколамское шоссе",
+    "address": "Волоколамское шоссе за МКАД",
+    "location": {
+      "toRegion": {
+        "latitude": "",
+        "longitude": ""
+      },
+      "fromRegion": {
+        "latitude": "55.832749",
+        "longitude": "37.392247"
+      }
+    },
+    "createdAt": "1759914598350",
+    "updatedAt": "1759914598350"
+  },
+  {
+    "uid": "T2eTcSJRX0fefDyzGX9I",
+    "type": "тп",
+    "name": "Моссовет",
+    "direction": "Тверская улица",
+    "address": "Тверская улица, д. 8, соор. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "55.762214",
+        "longitude": "37.608999"
+      },
+      "fromRegion": {
+        "latitude": "55.762106",
+        "longitude": "37.608658"
+      }
+    },
+    "createdAt": "1759002599580",
+    "updatedAt": "1759002837124"
+  },
+  {
+    "uid": "T97SFSW2eGFg2dxU6MUu",
+    "type": "тп",
+    "name": "Бусиново-2",
+    "direction": "Ленинградское шоссе",
+    "address": "Зелиноградская улица, д. 31к1",
+    "location": {
+      "toRegion": {
+        "latitude": "55.875273",
+        "longitude": "37.494251"
+      },
+      "fromRegion": {
+        "latitude": "55.875273",
+        "longitude": "37.494251"
+      }
+    },
+    "createdAt": "1759086868041",
+    "updatedAt": "1759086868041"
+  },
+  {
+    "uid": "TCxBqLIOcDSjqVjpWzkL",
+    "type": "тп",
+    "name": "м-н Санкт-Петербург",
+    "direction": "Ленинградское шоссе",
+    "address": "Ленинградский проспект, вл. 112, соор. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "55.864058",
+        "longitude": "37.464482"
+      },
+      "fromRegion": {
+        "latitude": "55.864080",
+        "longitude": "37.463936"
+      }
+    },
+    "createdAt": "1759086706483",
+    "updatedAt": "1759086706483"
+  },
+  {
+    "uid": "TXBMV8UPz6AkA060IwgX",
+    "type": "тп",
+    "name": "Пехотный",
+    "direction": "Волоколамское шоссе",
+    "address": "Волоколамское шоссе, д. 26А, соор. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "55.811481",
+        "longitude": "37.483237"
+      },
+      "fromRegion": {
+        "latitude": "",
+        "longitude": ""
+      }
+    },
+    "createdAt": "1759914126857",
+    "updatedAt": "1759914126857"
+  },
+  {
+    "uid": "UTu8KC7F0HMeIMnlbhEn",
+    "type": "тп",
+    "name": "Речной вокзал",
+    "direction": "Ленинградское шоссе",
+    "address": "Ленинградский проспект, вл. 88",
+    "location": {
+      "toRegion": {
+        "latitude": "55.852186",
+        "longitude": "37.472677"
+      },
+      "fromRegion": {
+        "latitude": "55.852199",
+        "longitude": "37.472092"
+      }
+    },
+    "createdAt": "1759086991260",
+    "updatedAt": "1759086991260"
+  },
+  {
+    "uid": "UXtE441VyyjNxw6g4ivC",
+    "type": "тп",
+    "name": "Щелковский 2-й",
+    "direction": "Щелковское шоссе",
+    "address": "Щелковское шоссе, д. 12, соор. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "55.805309",
+        "longitude": "37.763894"
+      },
+      "fromRegion": {
+        "latitude": "55.805587",
+        "longitude": "37.763950"
+      }
+    },
+    "createdAt": "1759675489043",
+    "updatedAt": "1759675489043"
+  },
+  {
+    "uid": "UqBN24rhhq1PZvkAzTzD",
+    "type": "тп",
+    "name": "Долгоруковский",
+    "direction": "Садовое кольцо",
+    "address": "Садовая-Триумфальная улица, д. 22, соор. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "55.773186",
+        "longitude": "37.604428"
+      },
+      "fromRegion": {
+        "latitude": "55.773355",
+        "longitude": "37.604077"
+      }
+    },
+    "createdAt": "1759132516346",
+    "updatedAt": "1759132516346"
+  },
+  {
+    "uid": "Uw84laKsZ6mo9ViE4KLj",
+    "type": "тп",
+    "name": "Шоссе Энтузиастов 82",
+    "direction": "Шоссе Энтузиастов",
+    "address": "шоссе Энтузиастов, д. 82/2, корп. 1, соор. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "55.765603",
+        "longitude": "37.789597"
+      },
+      "fromRegion": {
+        "latitude": "55.765835",
+        "longitude": "37.789417"
+      }
+    },
+    "createdAt": "1759759938754",
+    "updatedAt": "1759759938754"
+  },
+  {
+    "uid": "V0dVBss8hw4WxvYsFKY7",
+    "type": "тп",
+    "name": "Фучика",
+    "direction": "Тверская улица",
+    "address": "1-я Тверская-Ямская улица, д. 14, соор. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "55.772517",
+        "longitude": "37.592111"
+      },
+      "fromRegion": {
+        "latitude": "55.772393",
+        "longitude": "37.591793"
+      }
+    },
+    "createdAt": "1759002490162",
+    "updatedAt": "1759002773381"
+  },
+  {
+    "uid": "VYkoLJms2k7joPIFELIG",
+    "type": "тп",
+    "name": "Габричевского (новый)",
+    "direction": "Волоколамское шоссе",
+    "address": "улица Габричевского, вл. 1, корп. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "55.811702",
+        "longitude": "37.455310"
+      },
+      "fromRegion": {
+        "latitude": "55.810935",
+        "longitude": "37.454459"
+      }
+    },
+    "createdAt": "1759914449778",
+    "updatedAt": "1759914449778"
+  },
+  {
+    "uid": "VdABYFnsjaMUkdLaZHzs",
+    "type": "пп",
+    "name": "Гризодубовой",
+    "direction": "Ленинградское шоссе",
+    "address": "улица Гризодубовой, д. 2",
+    "location": {
+      "toRegion": {
+        "latitude": "55.782230",
+        "longitude": "37.530786"
+      },
+      "fromRegion": {
+        "latitude": "55.781882",
+        "longitude": "37.530651"
+      }
+    },
+    "createdAt": "1759086539196",
+    "updatedAt": "1759086539196"
+  },
+  {
+    "uid": "VpALxedFhYYYHE58AxWU",
+    "type": "тп",
+    "name": "Красные ворота",
+    "direction": "Садовое кольцо",
+    "address": "улица Садовая-Черногрязская, д. 4, соор. 1а",
+    "location": {
+      "toRegion": {
+        "latitude": "55.768466",
+        "longitude": "37.650381"
+      },
+      "fromRegion": {
+        "latitude": "55.768314",
+        "longitude": "37.649965"
+      }
+    },
+    "createdAt": "1759132645796",
+    "updatedAt": "1759132645796"
+  },
+  {
+    "uid": "VrcidUQgmkcQ4YbgHqxJ",
+    "type": "тп",
+    "name": "Габричевского (старый)",
+    "direction": "Волоколамское шоссе",
+    "address": "Врачебный проезд, д. 2",
+    "location": {
+      "toRegion": {
+        "latitude": "55.812064",
+        "longitude": "37.463535"
+      },
+      "fromRegion": {
+        "latitude": "55.812064",
+        "longitude": "37.463535"
+      }
+    },
+    "createdAt": "1770821196336",
+    "updatedAt": "1770821196336"
+  },
+  {
+    "uid": "W9MoVci6X8Om9IkQqF90",
+    "type": "тп",
+    "name": "Потешный",
+    "direction": "Щелковское шоссе",
+    "address": "Потешная улица, д. 2, соор. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "",
+        "longitude": ""
+      },
+      "fromRegion": {
+        "latitude": "55.796699",
+        "longitude": "37.704342"
+      }
+    },
+    "createdAt": "1759758336952",
+    "updatedAt": "1759758336952"
+  },
+  {
+    "uid": "WHRLz9xLx1Z84H0fbjn6",
+    "type": "тп",
+    "name": "Ярославский 9-й",
+    "direction": "Ярославское шоссе",
+    "address": "Ярославское шоссе, д. 142, соор. 6",
+    "location": {
+      "toRegion": {
+        "latitude": "55.877573",
+        "longitude": "37.720150"
+      },
+      "fromRegion": {
+        "latitude": "55.878006",
+        "longitude": "37.719322"
+      }
+    },
+    "createdAt": "1759080601270",
+    "updatedAt": "1759080601270"
+  },
+  {
+    "uid": "WHlk8bThsHhtDMQDFsRU",
+    "type": "та",
+    "name": "Нижняя Масловка",
+    "direction": "ТТК",
+    "address": "улица Нижняя Масловка",
+    "location": {
+      "toRegion": {
+        "latitude": "",
+        "longitude": ""
+      },
+      "fromRegion": {
+        "latitude": "55.791367",
+        "longitude": "37.573117"
+      }
+    },
+    "createdAt": "1759917531967",
+    "updatedAt": "1759917531967"
+  },
+  {
+    "uid": "WfR0XhX9TupbYi9rPgWK",
+    "type": "тп",
+    "name": "Канал-2",
+    "direction": "Ленинградское шоссе",
+    "address": "Ленинградский проспект, вл. 136А, соор. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "55.879346",
+        "longitude": "37.448991"
+      },
+      "fromRegion": {
+        "latitude": "55.878965",
+        "longitude": "37.447921"
+      }
+    },
+    "createdAt": "1759087053195",
+    "updatedAt": "1759087053195"
+  },
+  {
+    "uid": "WjlTRARsJyCdkSKtxKkS",
+    "type": "тп",
+    "name": "Нижегородская 32",
+    "direction": "Шоссе Энтузиастов",
+    "address": "Нижегородская улица, д. 32, соор. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "55.736804",
+        "longitude": "37.694636"
+      },
+      "fromRegion": {
+        "latitude": "55.736968",
+        "longitude": "37.694793"
+      }
+    },
+    "createdAt": "1759759978774",
+    "updatedAt": "1759759978774"
+  },
+  {
+    "uid": "X4WVrAyp8okaLaG07C6K",
+    "type": "тп",
+    "name": "Минск",
+    "direction": "Тверская улица",
+    "address": "Тверская улица, д. 22, соор. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "55.767673",
+        "longitude": "37.600351"
+      },
+      "fromRegion": {
+        "latitude": "55.767493",
+        "longitude": "37.600120"
+      }
+    },
+    "createdAt": "1759002554310",
+    "updatedAt": "1759002803528"
+  },
+  {
+    "uid": "XpCu2xnvGSyjEyc0czWA",
+    "type": "тп",
+    "name": "МСХ",
+    "direction": "Садовое кольцо",
+    "address": "проспект Академика Сахарова, д. 12, соор. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "55.769792",
+        "longitude": "37.643222"
+      },
+      "fromRegion": {
+        "latitude": "55.769951",
+        "longitude": "37.642916"
+      }
+    },
+    "createdAt": "1759132624925",
+    "updatedAt": "1759132624925"
+  },
+  {
+    "uid": "Y4wzwIs5vcH656n8oisU",
+    "type": "тп",
+    "name": "Парковая 15-я",
+    "direction": "Щелковское шоссе",
+    "address": "Щелковское шоссе, д. 84, соор. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "55.811149",
+        "longitude": "37.817144"
+      },
+      "fromRegion": {
+        "latitude": "55.811500",
+        "longitude": "37.817229"
+      }
+    },
+    "createdAt": "1759675591674",
+    "updatedAt": "1759675591674"
+  },
+  {
+    "uid": "YhCgKZRqYJa24v764B2I",
+    "type": "тп",
+    "name": "Маломосковский",
+    "direction": "Проспект Мира",
+    "address": "проспект Мира, д. 122, соор. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "55.813377",
+        "longitude": "37.638328"
+      },
+      "fromRegion": {
+        "latitude": "55.813389",
+        "longitude": "37.637728"
+      }
+    },
+    "createdAt": "1759080051699",
+    "updatedAt": "1759080064488"
+  },
+  {
+    "uid": "YiAeAQIillQIska8fwV6",
+    "type": "тп",
+    "name": "Локомотив",
+    "direction": "Щелковское шоссе",
+    "address": "Большая Черкизовская улица",
+    "location": {
+      "toRegion": {
+        "latitude": "55.800234",
+        "longitude": "37.740482"
+      },
+      "fromRegion": {
+        "latitude": "55.800455",
+        "longitude": "37.740348"
+      }
+    },
+    "createdAt": "1759675381343",
+    "updatedAt": "1759675381343"
+  },
+  {
+    "uid": "ZALPdb9Hmh2JoL4dBvH0",
+    "type": "тп",
+    "name": "Пионер",
+    "direction": "Тверская улица",
+    "address": "1-я Тверская-Ямская улица, д. 28, соор. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "55.774713",
+        "longitude": "37.588381"
+      },
+      "fromRegion": {
+        "latitude": "55.774637",
+        "longitude": "37.587914"
+      }
+    },
+    "createdAt": "1759002465088",
+    "updatedAt": "1759002756868"
+  },
+  {
+    "uid": "ZCSmtHCWr1s4qoY3BFfT",
+    "type": "тп",
+    "name": "Диета",
+    "direction": "Ленинский проспект",
+    "address": "Ленинский проспект, д. 30",
+    "location": {
+      "toRegion": {
+        "latitude": "55.711258",
+        "longitude": "37.585984"
+      },
+      "fromRegion": {
+        "latitude": "55.711079",
+        "longitude": "37.586357"
+      }
+    },
+    "createdAt": "1759003987209",
+    "updatedAt": "1759004228895"
+  },
+  {
+    "uid": "ZbgOR4pkW8WbIQoj3msU",
+    "type": "тп",
+    "name": "Девятинский",
+    "direction": "Садовое кольцо",
+    "address": "Новинский бульвар, д. 18, соор. 1а",
+    "location": {
+      "toRegion": {
+        "latitude": "55.755087",
+        "longitude": "37.583538"
+      },
+      "fromRegion": {
+        "latitude": "55.755110",
+        "longitude": "37.584321"
+      }
+    },
+    "createdAt": "1759132437122",
+    "updatedAt": "1759132437122"
+  },
+  {
+    "uid": "ZgqpD4GNzGS5umlXBcNP",
+    "type": "тп",
+    "name": "Докукина",
+    "direction": "Проспект Мира",
+    "address": "проспект Мира, д. 190, соор. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "55.836510",
+        "longitude": "37.658188"
+      },
+      "fromRegion": {
+        "latitude": "55.836659",
+        "longitude": "37.657854"
+      }
+    },
+    "createdAt": "1759080240729",
+    "updatedAt": "1759080240729"
+  },
+  {
+    "uid": "ayHLjm0Zl1oVwMneHqyW",
+    "type": "тп",
+    "name": "Дмитровский (платформа)",
+    "direction": "Дмитровское шоссе",
+    "address": "Бутырская улица, д. 97, соор. 3",
+    "location": {
+      "toRegion": {
+        "latitude": "55.807967",
+        "longitude": "37.581106"
+      },
+      "fromRegion": {
+        "latitude": "55.807952",
+        "longitude": "37.580637"
+      }
+    },
+    "createdAt": "1759084172209",
+    "updatedAt": "1759084172209"
+  },
+  {
+    "uid": "b07TAiJnNjhJYqAWn7Oq",
+    "type": "пп",
+    "name": "ОПП Варшавское шоссе 2",
+    "direction": "Варшавское шоссе",
+    "address": "Варшавское шоссе, д. 32, соор. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "55.681223",
+        "longitude": "37.623854"
+      },
+      "fromRegion": {
+        "latitude": "55.681105",
+        "longitude": "37.624384"
+      }
+    },
+    "createdAt": "1759844876776",
+    "updatedAt": "1759844876776"
+  },
+  {
+    "uid": "bXJilJmySoUKyKHaYadB",
+    "type": "тп",
+    "name": "ЦПКиО им. Горького",
+    "direction": "Садовое кольцо",
+    "address": "Крымский Вал улица, д. 10А",
+    "location": {
+      "toRegion": {
+        "latitude": "55.732171",
+        "longitude": "37.604013"
+      },
+      "fromRegion": {
+        "latitude": "55.732515",
+        "longitude": "37.604245"
+      }
+    },
+    "createdAt": "1759132320958",
+    "updatedAt": "1759132320958"
+  },
+  {
+    "uid": "bgCJS3WqwCGRZGuOk1i6",
+    "type": "тп",
+    "name": "Боткинский (Динамо юг) ",
+    "direction": "Ленинградское шоссе",
+    "address": "Ленинградский проспект, д. 33, соор. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "55.788024",
+        "longitude": "37.561186"
+      },
+      "fromRegion": {
+        "latitude": "55.787314",
+        "longitude": "37.560591"
+      }
+    },
+    "createdAt": "1759086686326",
+    "updatedAt": "1759086686326"
+  },
+  {
+    "uid": "bp3hnyfdlxgJ9BHWEpwD",
+    "type": "тп",
+    "name": "Марксистский 2-й",
+    "direction": "Садовое кольцо",
+    "address": "Марксистская улица, д. 22",
+    "location": {
+      "toRegion": {
+        "latitude": "55.737904",
+        "longitude": "37.661418"
+      },
+      "fromRegion": {
+        "latitude": "55.738006",
+        "longitude": "37.661671"
+      }
+    },
+    "createdAt": "1759132991531",
+    "updatedAt": "1759132991531"
+  },
+  {
+    "uid": "bzu2pFVwcudKnLI2yrry",
+    "type": "та",
+    "name": "Таганский тоннель",
+    "direction": "Садовое кольцо",
+    "address": "Таганская площадь, улица Земляной Вал",
+    "location": {
+      "toRegion": {
+        "latitude": "55.739997",
+        "longitude": "37.651910"
+      },
+      "fromRegion": {
+        "latitude": "55.740078",
+        "longitude": "37.651766"
+      }
+    },
+    "createdAt": "1759132109561",
+    "updatedAt": "1759132109561"
+  },
+  {
+    "uid": "c5dJkjrEGSqEa4IevFb8",
+    "type": "тп",
+    "name": "Большая Академическая 3(39)",
+    "direction": "Ленинградское шоссе",
+    "address": "Б. Академическая улица, д. 39к3",
+    "location": {
+      "toRegion": {
+        "latitude": "55.833375",
+        "longitude": "37.533566"
+      },
+      "fromRegion": {
+        "latitude": "55.833477",
+        "longitude": "37.533276"
+      }
+    },
+    "createdAt": "1759087146128",
+    "updatedAt": "1759087146128"
+  },
+  {
+    "uid": "cW1bGuFUlWLWVxsdwbwj",
+    "type": "тп",
+    "name": "Компрессор",
+    "direction": "Шоссе Энтузиастов",
+    "address": "шоссе Энтузиастов, д. 30",
+    "location": {
+      "toRegion": {
+        "latitude": "55.752673",
+        "longitude": "37.723467"
+      },
+      "fromRegion": {
+        "latitude": "55.752926",
+        "longitude": "37.723684"
+      }
+    },
+    "createdAt": "1759759622115",
+    "updatedAt": "1759759622115"
+  },
+  {
+    "uid": "cZ7TKs5HT3IHlt9RdTzZ",
+    "type": "тп",
+    "name": "Телеграф",
+    "direction": "Тверская улица",
+    "address": "Тверская улица, д. 4, соор. 2",
+    "location": {
+      "toRegion": {
+        "latitude": "55.759073",
+        "longitude": "37.612249"
+      },
+      "fromRegion": {
+        "latitude": "55.758948",
+        "longitude": "37.611877"
+      }
+    },
+    "createdAt": "1759002630407",
+    "updatedAt": "1759002851657"
+  },
+  {
+    "uid": "cgW1lKNmguvGTSt1cnZE",
+    "type": "тп",
+    "name": "2-й Рыбинский",
+    "direction": "ТТК",
+    "address": "2-я Рыбинская улица, д. 12, соор. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "55.790786",
+        "longitude": "37.656823"
+      },
+      "fromRegion": {
+        "latitude": "55.790548",
+        "longitude": "37.656505"
+      }
+    },
+    "createdAt": "1759917431462",
+    "updatedAt": "1759917431462"
+  },
+  {
+    "uid": "ckkRF4BCjmY6Qe1oVUVD",
+    "type": "та",
+    "name": "Маяковский тоннель",
+    "direction": "Садовое кольцо",
+    "address": "Большая Садовая улица, Садовая-Триумфальная улица",
+    "location": {
+      "toRegion": {
+        "latitude": "55.770381",
+        "longitude": "37.597881"
+      },
+      "fromRegion": {
+        "latitude": "55.770281",
+        "longitude": "37.597982"
+      }
+    },
+    "createdAt": "1759132070102",
+    "updatedAt": "1759132070102"
+  },
+  {
+    "uid": "ct8jDLwoDyfM7yImKong",
+    "type": "тп",
+    "name": "Электродный",
+    "direction": "Шоссе Энтузиастов",
+    "address": "шоссе Энтузиастов, вл. 44А",
+    "location": {
+      "toRegion": {
+        "latitude": "",
+        "longitude": ""
+      },
+      "fromRegion": {
+        "latitude": "55.758370",
+        "longitude": "37.751597"
+      }
+    },
+    "createdAt": "1759759642241",
+    "updatedAt": "1759759642241"
+  },
+  {
+    "uid": "d3uAMenVML2x07OPoun2",
+    "type": "тп",
+    "name": "Кинотеатр Комсомолец",
+    "direction": "Дмитровское шоссе",
+    "address": "Дмитровское шоссе, д. 42",
+    "location": {
+      "toRegion": {
+        "latitude": "55.841821",
+        "longitude": "37.570321"
+      },
+      "fromRegion": {
+        "latitude": "55.841826",
+        "longitude": "37.569746"
+      }
+    },
+    "createdAt": "1759084233655",
+    "updatedAt": "1759084233655"
+  },
+  {
+    "uid": "dKpDmPMoXJviMrNNQyn7",
+    "type": "тп",
+    "name": "Шлюзовая набережная",
+    "direction": "Садовое кольцо",
+    "address": "улица Зацепский Вал, д. 2",
+    "location": {
+      "toRegion": {
+        "latitude": "55.733007",
+        "longitude": "37.641446"
+      },
+      "fromRegion": {
+        "latitude": "55.733177",
+        "longitude": "37.640690"
+      }
+    },
+    "createdAt": "1759132863646",
+    "updatedAt": "1759132863646"
+  },
+  {
+    "uid": "dMog9RnTKJXJg92GKXlp",
+    "type": "тп",
+    "name": "Измайловский парк",
+    "direction": "Щелковское шоссе",
+    "address": "Измайловское шоссе, д. 69Б, соор. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "55.787850",
+        "longitude": "37.750056"
+      },
+      "fromRegion": {
+        "latitude": "55.787981",
+        "longitude": "37.749847"
+      }
+    },
+    "createdAt": "1759675702753",
+    "updatedAt": "1759675702753"
+  },
+  {
+    "uid": "dOAed58GIDdSI1V5t2C7",
+    "type": "тп",
+    "name": "Октябрьский",
+    "direction": "Ленинский проспект",
+    "address": "Ленинский проспект, д. 2, соор. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "55.728676",
+        "longitude": "37.611327"
+      },
+      "fromRegion": {
+        "latitude": "55.728461",
+        "longitude": "37.611722"
+      }
+    },
+    "createdAt": "1759004016812",
+    "updatedAt": "1759004244604"
+  },
+  {
+    "uid": "dd9YTT5nTtHHoZU4D16N",
+    "type": "тп",
+    "name": "Канал-1",
+    "direction": "Ленинградское шоссе",
+    "address": "Ленинградский проспект, вл. 124, соор. 3",
+    "location": {
+      "toRegion": {
+        "latitude": "55.868219",
+        "longitude": "37.461634"
+      },
+      "fromRegion": {
+        "latitude": "55.868110",
+        "longitude": "37.461132"
+      }
+    },
+    "createdAt": "1759087032433",
+    "updatedAt": "1759087032433"
+  },
+  {
+    "uid": "eBK2SrtGOMmNL1oBtyBL",
+    "type": "тп",
+    "name": "Неопалимовский",
+    "direction": "Садовое кольцо",
+    "address": "Смоленский бульвар, д. 10, соор. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "55.740669",
+        "longitude": "37.584760"
+      },
+      "fromRegion": {
+        "latitude": "55.740719",
+        "longitude": "37.585455"
+      }
+    },
+    "createdAt": "1759132380646",
+    "updatedAt": "1759132380646"
+  },
+  {
+    "uid": "eGgtbZQwucdpXoDJ0V4D",
+    "type": "тп",
+    "name": "Покровское-Стрешнево",
+    "direction": "Волоколамское шоссе",
+    "address": "Волоколамское шоссе, д. 30А, соор. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "55.812771",
+        "longitude": "37.476583"
+      },
+      "fromRegion": {
+        "latitude": "55.812423",
+        "longitude": "37.475891"
+      }
+    },
+    "createdAt": "1759914180969",
+    "updatedAt": "1759914180969"
+  },
+  {
+    "uid": "f35IHiiBd4ZrtEMfKEYB",
+    "type": "тп",
+    "name": "Ярославский 1-й",
+    "direction": "Ярославское шоссе",
+    "address": "Ярославское шоссе, д. 2, соор. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "55.851867",
+        "longitude": "37.678944"
+      },
+      "fromRegion": {
+        "latitude": "55.852280",
+        "longitude": "37.678469"
+      }
+    },
+    "createdAt": "1759080367819",
+    "updatedAt": "1759080393757"
+  },
+  {
+    "uid": "fC2H9cK7MfRCIbb44euN",
+    "type": "тп",
+    "name": "Спартаковский",
+    "direction": "ТТК",
+    "address": "Спартаковская площадь, д. 16, соор. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "55.776817",
+        "longitude": "37.681580"
+      },
+      "fromRegion": {
+        "latitude": "55.776531",
+        "longitude": "37.680844"
+      }
+    },
+    "createdAt": "1759917480336",
+    "updatedAt": "1759917480336"
+  },
+  {
+    "uid": "fElbhkj6oFRntwQHo12r",
+    "type": "тп",
+    "name": "Нижняя Масловка",
+    "direction": "ТТК",
+    "address": "Вятская улица, д. 6, соор. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "55.792420",
+        "longitude": "37.583342"
+      },
+      "fromRegion": {
+        "latitude": "55.791891",
+        "longitude": "37.583839"
+      }
+    },
+    "createdAt": "1759917216307",
+    "updatedAt": "1759917216307"
+  },
+  {
+    "uid": "fzSW1AbpvYitpTfz6rCs",
+    "type": "тп",
+    "name": "Буденный",
+    "direction": "Шоссе Энтузиастов",
+    "address": "шоссе Энтузиастов, д. 42",
+    "location": {
+      "toRegion": {
+        "latitude": "55.756290",
+        "longitude": "37.742433"
+      },
+      "fromRegion": {
+        "latitude": "55.756719",
+        "longitude": "37.742279"
+      }
+    },
+    "createdAt": "1767291684975",
+    "updatedAt": "1767291684975"
+  },
+  {
+    "uid": "g114cujvD4BDrUtlpe0U",
+    "type": "тп",
+    "name": "Шоссе Энтузиастов 98",
+    "direction": "Шоссе Энтузиастов",
+    "address": "шоссе Энтузиастов, д. 98, корп. 1, соор. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "",
+        "longitude": ""
+      },
+      "fromRegion": {
+        "latitude": "55.774424",
+        "longitude": "37.830941"
+      }
+    },
+    "createdAt": "1759759957477",
+    "updatedAt": "1759759957477"
+  },
+  {
+    "uid": "gCflkrZhtqZUnrhkEJH4",
+    "type": "тп",
+    "name": "Тушинский",
+    "direction": "Волоколамское шоссе",
+    "address": "Волоколамское шоссе, д. 92",
+    "location": {
+      "toRegion": {
+        "latitude": "55.824427",
+        "longitude": "37.434954"
+      },
+      "fromRegion": {
+        "latitude": "",
+        "longitude": ""
+      }
+    },
+    "createdAt": "1759914530003",
+    "updatedAt": "1759914530003"
+  },
+  {
+    "uid": "gH3ach3mM0Wi7arXCMKj",
+    "type": "тп",
+    "name": "2-я Квесисская",
+    "direction": "Дмитровское шоссе",
+    "address": "Бутырская улица, д. 9, соор. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "55.795157",
+        "longitude": "37.584669"
+      },
+      "fromRegion": {
+        "latitude": "55.795194",
+        "longitude": "37.584044"
+      }
+    },
+    "createdAt": "1759084491543",
+    "updatedAt": "1759084491543"
+  },
+  {
+    "uid": "ga16skCIZ5Ckr0mDywX0",
+    "type": "тп",
+    "name": "Дмитровка за МКАД 1",
+    "direction": "Дмитровское шоссе",
+    "address": "Дмитровское шоссе, вл. 163Ж, соор. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "55.915389",
+        "longitude": "37.544893"
+      },
+      "fromRegion": {
+        "latitude": "55.915357",
+        "longitude": "37.543751"
+      }
+    },
+    "createdAt": "1759084282977",
+    "updatedAt": "1759084282977"
+  },
+  {
+    "uid": "gkAIZ6xJfalbudkjZe6X",
+    "type": "тп",
+    "name": "Парковая 7-я",
+    "direction": "Щелковское шоссе",
+    "address": "Измайловский проспект, д. 58, соор. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "55.788126",
+        "longitude": "37.794410"
+      },
+      "fromRegion": {
+        "latitude": "55.788126",
+        "longitude": "37.794410"
+      }
+    },
+    "createdAt": "1759675655683",
+    "updatedAt": "1759675655683"
+  },
+  {
+    "uid": "gpk8KcR7eetqm3o4Geav",
+    "type": "тп",
+    "name": "М. Аэропорт (север)",
+    "direction": "Ленинградское шоссе",
+    "address": "Ленинградский проспект, д. 62А, соор. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "55.801138",
+        "longitude": "37.531751"
+      },
+      "fromRegion": {
+        "latitude": "55.800531",
+        "longitude": "37.530541"
+      }
+    },
+    "createdAt": "1759086771846",
+    "updatedAt": "1759086771846"
+  },
+  {
+    "uid": "gzeJYs6Vwv7N6hJa0Srg",
+    "type": "тп",
+    "name": "Сухаревский",
+    "direction": "Садовое кольцо",
+    "address": "Малая Сухаревская площадь, д. 12, соор. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "55.772939",
+        "longitude": "37.632190"
+      },
+      "fromRegion": {
+        "latitude": "",
+        "longitude": ""
+      }
+    },
+    "createdAt": "1759132579363",
+    "updatedAt": "1759132579363"
+  },
+  {
+    "uid": "h9EzqUolt8WcGbcokVzp",
+    "type": "тп",
+    "name": "Складочный",
+    "direction": "ТТК",
+    "address": "Полковая улица, д. 1, корп. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "55.798311",
+        "longitude": "37.597000"
+      },
+      "fromRegion": {
+        "latitude": "",
+        "longitude": ""
+      }
+    },
+    "createdAt": "1777733487910",
+    "updatedAt": "1777733487910"
+  },
+  {
+    "uid": "hvLkZ24BDhVWbp8d81km",
+    "type": "тп",
+    "name": "Лихов",
+    "direction": "Садовое кольцо",
+    "address": "Садовая-Самотечная улица, д. 6, соор.3",
+    "location": {
+      "toRegion": {
+        "latitude": "55.773641",
+        "longitude": "37.613707"
+      },
+      "fromRegion": {
+        "latitude": "55.773327",
+        "longitude": "37.613699"
+      }
+    },
+    "createdAt": "1759132540707",
+    "updatedAt": "1759132540707"
+  },
+  {
+    "uid": "i59UMRw6iXOGDnQyjt8t",
+    "type": "тп",
+    "name": "Слава",
+    "direction": "Шоссе Энтузиастов",
+    "address": "шоссе Энтузиастов, д. 58, соор. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "55.762289",
+        "longitude": "37.773123"
+      },
+      "fromRegion": {
+        "latitude": "55.762751",
+        "longitude": "37.773054"
+      }
+    },
+    "createdAt": "1759759780521",
+    "updatedAt": "1759759780521"
+  },
+  {
+    "uid": "iXg0xtuRsQ8spGWBmyr7",
+    "type": "тп",
+    "name": "Шоколадница",
+    "direction": "Ленинский проспект",
+    "address": "Большая Якиманка улица, д. 58, соор. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "55.730617",
+        "longitude": "37.612363"
+      },
+      "fromRegion": {
+        "latitude": "55.730617",
+        "longitude": "37.612363"
+      }
+    },
+    "createdAt": "1759004125437",
+    "updatedAt": "1759004353510"
+  },
+  {
+    "uid": "iZz8ZjKS1r87hInrBzXc",
+    "type": "тп",
+    "name": "1-й Красногвардейский",
+    "direction": "Красная пресня",
+    "address": "1-й Красногвардейский проезд",
+    "location": {
+      "toRegion": {
+        "latitude": "55.752961",
+        "longitude": "37.543304"
+      },
+      "fromRegion": {
+        "latitude": "55.752859",
+        "longitude": "37.543353"
+      }
+    },
+    "createdAt": "1759845218975",
+    "updatedAt": "1759845218975"
+  },
+  {
+    "uid": "iaxwN2iuvZqnBhvVt8U8",
+    "type": "уч",
+    "name": "Сайкина",
+    "direction": "ТТК",
+    "address": "улица Сайкина, д. 2А",
+    "location": {
+      "toRegion": {
+        "latitude": "55.707719",
+        "longitude": "37.668124"
+      },
+      "fromRegion": {
+        "latitude": "",
+        "longitude": ""
+      }
+    },
+    "createdAt": "1760352060004",
+    "updatedAt": "1760352137365"
+  },
+  {
+    "uid": "jEZuWB531BCVKXxLpw0O",
+    "type": "тп",
+    "name": "Управление речного пароходства",
+    "direction": "Ленинградское шоссе",
+    "address": "Ленинградский проспект, вл. 94",
+    "location": {
+      "toRegion": {
+        "latitude": "55.856047",
+        "longitude": "37.469945"
+      },
+      "fromRegion": {
+        "latitude": "55.855776",
+        "longitude": "37.469592"
+      }
+    },
+    "createdAt": "1759087011660",
+    "updatedAt": "1759087011660"
+  },
+  {
+    "uid": "jTYGg71cc35BeXx0ss7p",
+    "type": "тп",
+    "name": "Краснохолмский",
+    "direction": "Садовое кольцо",
+    "address": "Гончарный проезд, д. 6, соор. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "55.738671",
+        "longitude": "37.650167"
+      },
+      "fromRegion": {
+        "latitude": "55.739016",
+        "longitude": "37.649516"
+      }
+    },
+    "createdAt": "1759132843735",
+    "updatedAt": "1759132843735"
+  },
+  {
+    "uid": "jzcOFnh5esI2uyDdkQ1W",
+    "type": "тп",
+    "name": "Краснопресненская набережная",
+    "direction": "Красная пресня",
+    "address": "Краснопресненская набережная, д. 12А",
+    "location": {
+      "toRegion": {
+        "latitude": "55.753930",
+        "longitude": "37.559004"
+      },
+      "fromRegion": {
+        "latitude": "55.753779",
+        "longitude": "37.559087"
+      }
+    },
+    "createdAt": "1759845178127",
+    "updatedAt": "1759845178127"
+  },
+  {
+    "uid": "kS5Y3fGXwmpN2PHdkfG1",
+    "type": "тп",
+    "name": "Курский",
+    "direction": "Садовое кольцо",
+    "address": "улица Земляной Вал, д. 24, соор. 2",
+    "location": {
+      "toRegion": {
+        "latitude": "55.758585",
+        "longitude": "37.657963"
+      },
+      "fromRegion": {
+        "latitude": "55.758604",
+        "longitude": "37.657485"
+      }
+    },
+    "createdAt": "1759132744033",
+    "updatedAt": "1759132744033"
+  },
+  {
+    "uid": "ksIchiqWGT39kioZQWQk",
+    "type": "тп",
+    "name": "МИД",
+    "direction": "Садовое кольцо",
+    "address": "Смоленская-Сенная площадь",
+    "location": {
+      "toRegion": {
+        "latitude": "55.745915",
+        "longitude": "37.582530"
+      },
+      "fromRegion": {
+        "latitude": "55.745864",
+        "longitude": "37.583158"
+      }
+    },
+    "createdAt": "1759132399277",
+    "updatedAt": "1759132399277"
+  },
+  {
+    "uid": "l2vpmE5VgSlja0M6GlLa",
+    "type": "тп",
+    "name": "М. Сити",
+    "direction": "Красная пресня",
+    "address": "2-й Красногвардейский проезд, участок №20 ММДЦ \"Москва-Сити\" ",
+    "location": {
+      "toRegion": {
+        "latitude": "55.751464",
+        "longitude": "37.538343"
+      },
+      "fromRegion": {
+        "latitude": "55.751203",
+        "longitude": "37.536617"
+      }
+    },
+    "createdAt": "1759845261356",
+    "updatedAt": "1759845261356"
+  },
+  {
+    "uid": "l5Cy7xNdeNz5rgPn770X",
+    "type": "тп",
+    "name": "Митино 2 (12 мкр)",
+    "direction": "Волоколамское шоссе",
+    "address": "Пятницкое шоссе, д. 36, соор. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "55.853057",
+        "longitude": "37.362034"
+      },
+      "fromRegion": {
+        "latitude": "",
+        "longitude": ""
+      }
+    },
+    "createdAt": "1759914634357",
+    "updatedAt": "1759914634357"
+  },
+  {
+    "uid": "lAUw45FqhBVjllLk48FK",
+    "type": "тп",
+    "name": "Водный стадион",
+    "direction": "Ленинградское шоссе",
+    "address": "Ленинградский проспект, вл. 52, соор. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "55.836118",
+        "longitude": "37.484250"
+      },
+      "fromRegion": {
+        "latitude": "55.835924",
+        "longitude": "37.483609"
+      }
+    },
+    "createdAt": "1759086950821",
+    "updatedAt": "1759086950821"
+  },
+  {
+    "uid": "lNmCbCGhJfVowWW9azwh",
+    "type": "тп",
+    "name": "Добрынинский",
+    "direction": "Садовое кольцо",
+    "address": "улица Коровий Вал, д. 1, соор. 3",
+    "location": {
+      "toRegion": {
+        "latitude": "55.729614",
+        "longitude": "37.624519"
+      },
+      "fromRegion": {
+        "latitude": "55.730084",
+        "longitude": "37.626082"
+      }
+    },
+    "createdAt": "1759132929823",
+    "updatedAt": "1759132929823"
+  },
+  {
+    "uid": "lQ7CqRL64tAbSE6NmVfK",
+    "type": "тп",
+    "name": "Монтажный",
+    "direction": "Щелковское шоссе",
+    "address": "Щелковское шоссе, д. 24, корп. 1, соор. 2",
+    "location": {
+      "toRegion": {
+        "latitude": "55.808460",
+        "longitude": "37.776315"
+      },
+      "fromRegion": {
+        "latitude": "55.808821",
+        "longitude": "37.775278"
+      }
+    },
+    "createdAt": "1759675421492",
+    "updatedAt": "1759675421492"
+  },
+  {
+    "uid": "lS5N1WxJkWOiEEZB51Mi",
+    "type": "тп",
+    "name": "М. Динамо (Динамо север)",
+    "direction": "Ленинградское шоссе",
+    "address": "Ленинградский проспект, д. 36, соор. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "55.790051",
+        "longitude": "37.556611"
+      },
+      "fromRegion": {
+        "latitude": "55.789586",
+        "longitude": "37.555541"
+      }
+    },
+    "createdAt": "1759086727521",
+    "updatedAt": "1759086727521"
+  },
+  {
+    "uid": "lbWGYRqd4lLdyxK4iKQZ",
+    "type": "тп",
+    "name": "Новая Башиловка 1",
+    "direction": "ТТК",
+    "address": "улица Новая Башиловка, вл. 10, соор. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "55.788588",
+        "longitude": "37.569662"
+      },
+      "fromRegion": {
+        "latitude": "55.788399",
+        "longitude": "37.570127"
+      }
+    },
+    "createdAt": "1759917238561",
+    "updatedAt": "1759917238561"
+  },
+  {
+    "uid": "ll6uEgs9LfWeEXOQQAZv",
+    "type": "тп",
+    "name": "Щербаковский (Алексеевская)",
+    "direction": "Проспект Мира",
+    "address": "проспект Мира, д. 112, соор. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "55.808052",
+        "longitude": "37.637461"
+      },
+      "fromRegion": {
+        "latitude": "55.808088",
+        "longitude": "37.636723"
+      }
+    },
+    "createdAt": "1759077634681",
+    "updatedAt": "1760096688077"
+  },
+  {
+    "uid": "m0Hl7yhnTmkOCDJy0BJR",
+    "type": "тп",
+    "name": "Нижегородская 92",
+    "direction": "Шоссе Энтузиастов",
+    "address": "Нижегородская улица, д. 92, соор. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "55.731057",
+        "longitude": "37.721496"
+      },
+      "fromRegion": {
+        "latitude": "55.731308",
+        "longitude": "37.721610"
+      }
+    },
+    "createdAt": "1759760021827",
+    "updatedAt": "1759760021827"
+  },
+  {
+    "uid": "m4Vy0mGcxBXkKqKc9sCl",
+    "type": "тп",
+    "name": "Северная Рокада",
+    "direction": "Ленинградское шоссе",
+    "address": "Зелиноградская улица, д. 31к1",
+    "location": {
+      "toRegion": {
+        "latitude": "55.875273",
+        "longitude": "37.494251"
+      },
+      "fromRegion": {
+        "latitude": "55.875273",
+        "longitude": "37.494251"
+      }
+    },
+    "createdAt": "1759086831230",
+    "updatedAt": "1759086831230"
+  },
+  {
+    "uid": "n3HQJjHBCrAOxqY6qFds",
+    "type": "та",
+    "name": "Октябрьский тоннель",
+    "direction": "Садовое кольцо",
+    "address": "улица Крымский Вал, Калужская площадь",
+    "location": {
+      "toRegion": {
+        "latitude": "55.729610",
+        "longitude": "37.615049"
+      },
+      "fromRegion": {
+        "latitude": "55.729710",
+        "longitude": "37.615070"
+      }
+    },
+    "createdAt": "1759132163939",
+    "updatedAt": "1759132163939"
+  },
+  {
+    "uid": "n5V2hsY1vuIkrqyQ7coe",
+    "type": "тп",
+    "name": "Парковая 16-я",
+    "direction": "Щелковское шоссе",
+    "address": "Щелковское шоссе, д. 96, соор. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "55.812483",
+        "longitude": "37.827217"
+      },
+      "fromRegion": {
+        "latitude": "55.812842",
+        "longitude": "37.827357"
+      }
+    },
+    "createdAt": "1759675613177",
+    "updatedAt": "1759675613177"
+  },
+  {
+    "uid": "nEoWKhcQW1wgS0rmOgPv",
+    "type": "тп",
+    "name": "Шепелюгинский",
+    "direction": "Шоссе Энтузиастов",
+    "address": "шоссе Энтузиастов, д. 7А",
+    "location": {
+      "toRegion": {
+        "latitude": "55.748347",
+        "longitude": "37.701742"
+      },
+      "fromRegion": {
+        "latitude": "55.748691",
+        "longitude": "37.702244"
+      }
+    },
+    "createdAt": "1762960079780",
+    "updatedAt": "1762960079780"
+  },
+  {
+    "uid": "nFCAPLZ65imLgHgMfY6g",
+    "type": "тп",
+    "name": "Смоленский",
+    "direction": "Садовое кольцо",
+    "address": "Смоленская площадь, д. 13",
+    "location": {
+      "toRegion": {
+        "latitude": "55.748721",
+        "longitude": "37.582475"
+      },
+      "fromRegion": {
+        "latitude": "55.748723",
+        "longitude": "37.582968"
+      }
+    },
+    "createdAt": "1759132418034",
+    "updatedAt": "1759132418034"
+  },
+  {
+    "uid": "nIIshl4VDZtVH9J0hGd6",
+    "type": "тп",
+    "name": "Марксистский 1-й",
+    "direction": "Садовое кольцо",
+    "address": "Марксистская улица, д. 16, соор. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "55.739531",
+        "longitude": "37.658590"
+      },
+      "fromRegion": {
+        "latitude": "55.739544",
+        "longitude": "37.659004"
+      }
+    },
+    "createdAt": "1759132972372",
+    "updatedAt": "1759132972372"
+  },
+  {
+    "uid": "npMGrRgJooeNSS3Pc7Xb",
+    "type": "пп",
+    "name": "Супруна",
+    "direction": "Ленинградское шоссе",
+    "address": "Ленинградский проспект, д. 48, соор. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "55.795770",
+        "longitude": "37.543798"
+      },
+      "fromRegion": {
+        "latitude": "55.795166",
+        "longitude": "37.542879"
+      }
+    },
+    "createdAt": "1759086479515",
+    "updatedAt": "1759086479515"
+  },
+  {
+    "uid": "nuwU8hsbu9s5JqWYQMNR",
+    "type": "тп",
+    "name": "Новая Башиловка 16",
+    "direction": "ТТК",
+    "address": "улица Новая Башиловка, д. 16, соор. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "55.790691",
+        "longitude": "37.572657"
+      },
+      "fromRegion": {
+        "latitude": "55.790551",
+        "longitude": "37.573003"
+      }
+    },
+    "createdAt": "1759917259712",
+    "updatedAt": "1759917259712"
+  },
+  {
+    "uid": "nx66S9HLyLnjhxoJQJGw",
+    "type": "та",
+    "name": "Чайковский тоннель",
+    "direction": "Садовое кольцо",
+    "address": "Новинский бульвар, улица Новый Арбат",
+    "location": {
+      "toRegion": {
+        "latitude": "55.751935",
+        "longitude": "37.583169"
+      },
+      "fromRegion": {
+        "latitude": "55.751924",
+        "longitude": "37.583357"
+      }
+    },
+    "createdAt": "1759132137689",
+    "updatedAt": "1759132137689"
+  },
+  {
+    "uid": "o0z2v7Jx7ACfVvKz91gI",
+    "type": "тп",
+    "name": "Плеханова",
+    "direction": "Шоссе Энтузиастов",
+    "address": "пересечение с ул. Плеханова, д. 48",
+    "location": {
+      "toRegion": {
+        "latitude": "55.759157",
+        "longitude": "37.757468"
+      },
+      "fromRegion": {
+        "latitude": "55.759477",
+        "longitude": "37.757225"
+      }
+    },
+    "createdAt": "1759759894579",
+    "updatedAt": "1759759894579"
+  },
+  {
+    "uid": "o7YHGcpPla26GOV7bXhp",
+    "type": "уч",
+    "name": "Переходы. Тоннели",
+    "direction": "Садовое кольцо",
+    "address": "Космодамианская набережная, д.46-50с1",
+    "location": {
+      "toRegion": {
+        "latitude": "",
+        "longitude": ""
+      },
+      "fromRegion": {
+        "latitude": "55.735388",
+        "longitude": "37.644578"
+      }
+    },
+    "createdAt": "1759494814232",
+    "updatedAt": "1759494814232"
+  },
+  {
+    "uid": "oolclNtPlLEZAlsvY8or",
+    "type": "тп",
+    "name": "Фонвизенский",
+    "direction": "Дмитровское шоссе",
+    "address": "улица Милашенкова, д. 4",
+    "location": {
+      "toRegion": {
+        "latitude": "55.822975",
+        "longitude": "37.592113"
+      },
+      "fromRegion": {
+        "latitude": "55.824369",
+        "longitude": "37.593682"
+      }
+    },
+    "createdAt": "1759084326112",
+    "updatedAt": "1759084326112"
+  },
+  {
+    "uid": "pJiOBq8eDRAAuSwuCfPR",
+    "type": "тп",
+    "name": "Щелковское шоссе д. 1 (Черкизовский)",
+    "direction": "Щелковское шоссе",
+    "address": "Щелковское шоссе, д. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "55.801976",
+        "longitude": "37.750596"
+      },
+      "fromRegion": {
+        "latitude": "55.802318",
+        "longitude": "37.750378"
+      }
+    },
+    "createdAt": "1759675443786",
+    "updatedAt": "1759675443786"
+  },
+  {
+    "uid": "pUvezjWVGTTiKd9f6WQj",
+    "type": "тп",
+    "name": "Гастроном",
+    "direction": "Ленинский проспект",
+    "address": "Большая Якиманка улица, д. 32, соор. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "55.734922",
+        "longitude": "37.612957"
+      },
+      "fromRegion": {
+        "latitude": "55.734860",
+        "longitude": "37.613380"
+      }
+    },
+    "createdAt": "1759004148765",
+    "updatedAt": "1759004369369"
+  },
+  {
+    "uid": "pqMj7heKda5ba2PDa3Jb",
+    "type": "тп",
+    "name": "Буракова",
+    "direction": "Шоссе Энтузиастов",
+    "address": "шоссе Энтузиастов, д. 36, соор. 2",
+    "location": {
+      "toRegion": {
+        "latitude": "55.755379",
+        "longitude": "37.737596"
+      },
+      "fromRegion": {
+        "latitude": "55.755801",
+        "longitude": "37.737353"
+      }
+    },
+    "createdAt": "1777733414580",
+    "updatedAt": "1777733414580"
+  },
+  {
+    "uid": "qQcZ83aFlYnM7kXRi3C9",
+    "type": "тп",
+    "name": "Новая Башиловка 4 (Беговой)",
+    "direction": "ТТК",
+    "address": "улица Новая Башиловка, д. 4, соор. 2",
+    "location": {
+      "toRegion": {
+        "latitude": "55.786521",
+        "longitude": "37.566063"
+      },
+      "fromRegion": {
+        "latitude": "55.786465",
+        "longitude": "37.566203"
+      }
+    },
+    "createdAt": "1759917281621",
+    "updatedAt": "1760280467191"
+  },
+  {
+    "uid": "qZKzRGK8ObfWIJ2LxZQn",
+    "type": "тп",
+    "name": "Малая Бронная",
+    "direction": "Садовое кольцо",
+    "address": "Большая Садовая улица, д. 2, соор. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "55.766164",
+        "longitude": "37.590839"
+      },
+      "fromRegion": {
+        "latitude": "55.766052",
+        "longitude": "37.591193"
+      }
+    },
+    "createdAt": "1759132497304",
+    "updatedAt": "1759132497304"
+  },
+  {
+    "uid": "rJ26e8RqxwW0kMnqvsYg",
+    "type": "тп",
+    "name": "Черкизовский",
+    "direction": "Щелковское шоссе",
+    "address": "улица Большая Черкизовская, д. 10",
+    "location": {
+      "toRegion": {
+        "latitude": "55.797298",
+        "longitude": "37.723706"
+      },
+      "fromRegion": {
+        "latitude": "55.797670",
+        "longitude": "37.723579"
+      }
+    },
+    "createdAt": "1759675360604",
+    "updatedAt": "1759675360604"
+  },
+  {
+    "uid": "rOD5fFjTMNTG7wCL6e1C",
+    "type": "тп",
+    "name": "Электрозаводский",
+    "direction": "Шоссе Энтузиастов",
+    "address": "Большая Семеновская улица, д. 26, соор. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "55.782257",
+        "longitude": "37.705849"
+      },
+      "fromRegion": {
+        "latitude": "55.782389",
+        "longitude": "37.706092"
+      }
+    },
+    "createdAt": "1759760042172",
+    "updatedAt": "1759760042172"
+  },
+  {
+    "uid": "rOPHANip2nMgoQjkdHQZ",
+    "type": "тп",
+    "name": "Авиамоторный",
+    "direction": "Шоссе Энтузиастов",
+    "address": "шоссе Энтузиастов, д. 22/18",
+    "location": {
+      "toRegion": {
+        "latitude": "55.750962",
+        "longitude": "37.717510"
+      },
+      "fromRegion": {
+        "latitude": "55.750971",
+        "longitude": "37.717671"
+      }
+    },
+    "createdAt": "1759759872366",
+    "updatedAt": "1759759872366"
+  },
+  {
+    "uid": "rWpQReOkLcPNr5MFbzl9",
+    "type": "тп",
+    "name": "Панфилова",
+    "direction": "Волоколамское шоссе",
+    "address": "Волоколамское шоссе, д. 14, соор. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "55.809451",
+        "longitude": "37.493570"
+      },
+      "fromRegion": {
+        "latitude": "55.808987",
+        "longitude": "37.493310"
+      }
+    },
+    "createdAt": "1759914088104",
+    "updatedAt": "1759914088104"
+  },
+  {
+    "uid": "rXNrILE9h3JqgzY6QTVi",
+    "type": "тп",
+    "name": "Детский Мир",
+    "direction": "Тверская улица",
+    "address": "Театральный проезд, д. 5, соор. 2",
+    "location": {
+      "toRegion": {
+        "latitude": "55.759440",
+        "longitude": "37.624851"
+      },
+      "fromRegion": {
+        "latitude": "55.759440",
+        "longitude": "37.624851"
+      }
+    },
+    "createdAt": "1759002716642",
+    "updatedAt": "1759002900046"
+  },
+  {
+    "uid": "s23dd3jHKvQsEyrn1dMm",
+    "type": "тп",
+    "name": "Авиамоторный (новый)",
+    "direction": "Шоссе Энтузиастов",
+    "address": "Авиамоторная улица, д. 10, корп. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "55.754393",
+        "longitude": "37.716080"
+      },
+      "fromRegion": {
+        "latitude": "55.754463",
+        "longitude": "37.715826"
+      }
+    },
+    "createdAt": "1762960697923",
+    "updatedAt": "1762960697923"
+  },
+  {
+    "uid": "s55lcVDxQhPBXkT8PTld",
+    "type": "тп",
+    "name": "Красные ворота 2",
+    "direction": "Садовое кольцо",
+    "address": "улица Новая Басманная, д. 2, соор. 1а",
+    "location": {
+      "toRegion": {
+        "latitude": "55.768830",
+        "longitude": "37.650077"
+      },
+      "fromRegion": {
+        "latitude": "",
+        "longitude": ""
+      }
+    },
+    "createdAt": "1759132662361",
+    "updatedAt": "1759132662361"
+  },
+  {
+    "uid": "sDOkFOVRgcpseyX7LDwp",
+    "type": "тп",
+    "name": "Бусиново-1",
+    "direction": "Ленинградское шоссе",
+    "address": "Зелиноградская улица, д. 31к1",
+    "location": {
+      "toRegion": {
+        "latitude": "55.875273",
+        "longitude": "37.494251"
+      },
+      "fromRegion": {
+        "latitude": "55.875273",
+        "longitude": "37.494251"
+      }
+    },
+    "createdAt": "1759086850905",
+    "updatedAt": "1759086850905"
+  },
+  {
+    "uid": "sREwbwezz4HYBS7BPQhS",
+    "type": "тп",
+    "name": "Новоалексеевский",
+    "direction": "Проспект Мира",
+    "address": "проспект Мира, д. 112, соор. 3",
+    "location": {
+      "toRegion": {
+        "latitude": "55.805556",
+        "longitude": "37.637019"
+      },
+      "fromRegion": {
+        "latitude": "55.805584",
+        "longitude": "37.636205"
+      }
+    },
+    "createdAt": "1759077596133",
+    "updatedAt": "1759077596133"
+  },
+  {
+    "uid": "sY6b7NGvAIn6dFMco5FI",
+    "type": "тп",
+    "name": "Щелковский 3-й",
+    "direction": "Щелковское шоссе",
+    "address": "Щелковское шоссе, д. 12, кор. 1, соор. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "55.806933",
+        "longitude": "37.769883"
+      },
+      "fromRegion": {
+        "latitude": "55.807211",
+        "longitude": "37.769878"
+      }
+    },
+    "createdAt": "1759675507709",
+    "updatedAt": "1759675507709"
+  },
+  {
+    "uid": "sfBQOuPsNvk65hOW5vf7",
+    "type": "тп",
+    "name": "Кирпичный завод",
+    "direction": "Ленинградское шоссе",
+    "address": "Ленинградский проспект, вл. 62",
+    "location": {
+      "toRegion": {
+        "latitude": "55.843752",
+        "longitude": "37.478442"
+      },
+      "fromRegion": {
+        "latitude": "55.843676",
+        "longitude": "37.477977"
+      }
+    },
+    "createdAt": "1759086969472",
+    "updatedAt": "1759086969472"
+  },
+  {
+    "uid": "tCIxqZ7HEXfDMMXoIKIQ",
+    "type": "тп",
+    "name": "Олимпийский",
+    "direction": "Проспект Мира",
+    "address": "Олимпийский проспект, д. 16, соор. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "55.780811",
+        "longitude": "37.623385"
+      },
+      "fromRegion": {
+        "latitude": "55.780887",
+        "longitude": "37.623053"
+      }
+    },
+    "createdAt": "1759077505796",
+    "updatedAt": "1759077505796"
+  },
+  {
+    "uid": "tEC8mq0GQzgfOnzzrTSi",
+    "type": "тп",
+    "name": "Марксистский 3-й",
+    "direction": "Садовое кольцо",
+    "address": "Марксистская улица, д. 34",
+    "location": {
+      "toRegion": {
+        "latitude": "55.735839",
+        "longitude": "37.665018"
+      },
+      "fromRegion": {
+        "latitude": "55.735856",
+        "longitude": "37.665368"
+      }
+    },
+    "createdAt": "1759133011141",
+    "updatedAt": "1759133011141"
+  },
+  {
+    "uid": "u6fYk0ULbwnMbLDvTwWa",
+    "type": "тп",
+    "name": "Серп и Молот",
+    "direction": "Шоссе Энтузиастов",
+    "address": "улица Золоторожский Вал, д. 34, соор. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "55.747466",
+        "longitude": "37.680918"
+      },
+      "fromRegion": {
+        "latitude": "",
+        "longitude": ""
+      }
+    },
+    "createdAt": "1759845604978",
+    "updatedAt": "1759845604978"
+  },
+  {
+    "uid": "uQmom2XRuZDV54sroFQD",
+    "type": "тп",
+    "name": "Метрополь",
+    "direction": "Тверская улица",
+    "address": "Театральный проезд, д. 2, соор. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "55.758814",
+        "longitude": "37.620612"
+      },
+      "fromRegion": {
+        "latitude": "55.758814",
+        "longitude": "37.620612"
+      }
+    },
+    "createdAt": "1759002651790",
+    "updatedAt": "1759002867391"
+  },
+  {
+    "uid": "ucwfUvPA1NwYZKvIzWVt",
+    "type": "тп",
+    "name": "Трикотажный",
+    "direction": "Волоколамское шоссе",
+    "address": "Волоколамское шоссе, д. 128",
+    "location": {
+      "toRegion": {
+        "latitude": "",
+        "longitude": ""
+      },
+      "fromRegion": {
+        "latitude": "55.831117",
+        "longitude": "37.401772"
+      }
+    },
+    "createdAt": "1759914695544",
+    "updatedAt": "1759914695544"
+  },
+  {
+    "uid": "ugJSDFztVUgrWP7XEhGS",
+    "type": "тп",
+    "name": "Ярославский 4-й",
+    "direction": "Ярославское шоссе",
+    "address": "Ярославское шоссе, д. 26, соор. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "55.859848",
+        "longitude": "37.691002"
+      },
+      "fromRegion": {
+        "latitude": "55.860484",
+        "longitude": "37.690472"
+      }
+    },
+    "createdAt": "1759080487737",
+    "updatedAt": "1759080487737"
+  },
+  {
+    "uid": "uvTdXVMrqnigoSnfGZ3h",
+    "type": "тп",
+    "name": "Большая Академическая 2(33)",
+    "direction": "Ленинградское шоссе",
+    "address": "Б. Академическая улица, д. 33",
+    "location": {
+      "toRegion": {
+        "latitude": "55.829835",
+        "longitude": "37.531064"
+      },
+      "fromRegion": {
+        "latitude": "55.830031",
+        "longitude": "37.530774"
+      }
+    },
+    "createdAt": "1759087124899",
+    "updatedAt": "1759087124899"
+  },
+  {
+    "uid": "v6xIBjFddWF9Cod1dFYr",
+    "type": "тп",
+    "name": "Вагоноремонтный",
+    "direction": "Дмитровское шоссе",
+    "address": "Дмитровское шоссе, д. 110Г",
+    "location": {
+      "toRegion": {
+        "latitude": "55.891105",
+        "longitude": "37.543363"
+      },
+      "fromRegion": {
+        "latitude": "55.891274",
+        "longitude": "37.542649"
+      }
+    },
+    "createdAt": "1759084447719",
+    "updatedAt": "1759084447719"
+  },
+  {
+    "uid": "vce00baIPuCoirZBscny",
+    "type": "тп",
+    "name": "Марины Расковой",
+    "direction": "ТТК",
+    "address": "улица Нижняя Масловка, вл.10, соор. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "55.792054",
+        "longitude": "37.577770"
+      },
+      "fromRegion": {
+        "latitude": "55.791937",
+        "longitude": "37.577808"
+      }
+    },
+    "createdAt": "1759504096893",
+    "updatedAt": "1759504096893"
+  },
+  {
+    "uid": "vmn3wXN8KbsrTaVmFqKg",
+    "type": "тп",
+    "name": "Чкаловский",
+    "direction": "Волоколамское шоссе",
+    "address": "Волоколамское шоссе, д. 88",
+    "location": {
+      "toRegion": {
+        "latitude": "55.823198",
+        "longitude": "37.439712"
+      },
+      "fromRegion": {
+        "latitude": "",
+        "longitude": ""
+      }
+    },
+    "createdAt": "1759914580641",
+    "updatedAt": "1759914580641"
+  },
+  {
+    "uid": "vsvWgXli6VkiRQM8bNdA",
+    "type": "тп",
+    "name": "Большая Академическая 1(20)",
+    "direction": "Ленинградское шоссе",
+    "address": "Б. Академическая улица, д. 20",
+    "location": {
+      "toRegion": {
+        "latitude": "55.822856",
+        "longitude": "37.527521"
+      },
+      "fromRegion": {
+        "latitude": "55.823100",
+        "longitude": "37.527364"
+      }
+    },
+    "createdAt": "1759087098393",
+    "updatedAt": "1759087098393"
+  },
+  {
+    "uid": "vxI16SLSp9v7YCYLKdET",
+    "type": "тп",
+    "name": "Площадь Ильича",
+    "direction": "Шоссе Энтузиастов",
+    "address": "улица Золоторожский Вал, д. 42, соор. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "55.746544",
+        "longitude": "37.678874"
+      },
+      "fromRegion": {
+        "latitude": "",
+        "longitude": ""
+      }
+    },
+    "createdAt": "1759759580298",
+    "updatedAt": "1759759580298"
+  },
+  {
+    "uid": "w2iq3pXGvwmqD0sZE4Yv",
+    "type": "тп",
+    "name": "Проспект Мира",
+    "direction": "Проспект Мира",
+    "address": "проспект Мира, д. 38, соор. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "55.780354",
+        "longitude": "37.633399"
+      },
+      "fromRegion": {
+        "latitude": "55.780367",
+        "longitude": "37.632948"
+      }
+    },
+    "createdAt": "1759077365825",
+    "updatedAt": "1759077365825"
+  },
+  {
+    "uid": "wGJIno1KxQ3R5jyHMBtO",
+    "type": "тп",
+    "name": "Детский парк",
+    "direction": "ТТК",
+    "address": "Верхняя Красносельская улица, д. 15Б, соор. 2",
+    "location": {
+      "toRegion": {
+        "latitude": "55.784498",
+        "longitude": "37.664995"
+      },
+      "fromRegion": {
+        "latitude": "55.784442",
+        "longitude": "37.664434"
+      }
+    },
+    "createdAt": "1759917194425",
+    "updatedAt": "1759917194425"
+  },
+  {
+    "uid": "wgBp6blt1eC5I0TvU4TD",
+    "type": "тп",
+    "name": "Кинотеатр Форум",
+    "direction": "Садовое кольцо",
+    "address": "Садовая-Сухаревская улица, д. 14, соор. 2",
+    "location": {
+      "toRegion": {
+        "latitude": "55.773651",
+        "longitude": "37.627680"
+      },
+      "fromRegion": {
+        "latitude": "55.773321",
+        "longitude": "37.627300"
+      }
+    },
+    "createdAt": "1759132562067",
+    "updatedAt": "1759132562067"
+  },
+  {
+    "uid": "wq7koY4lZKAoT8kQdKx9",
+    "type": "тп",
+    "name": "Сухого",
+    "direction": "Ленинградское шоссе",
+    "address": "Ленинградский проспект, д. 37",
+    "location": {
+      "toRegion": {
+        "latitude": "",
+        "longitude": ""
+      },
+      "fromRegion": {
+        "latitude": "55.791514",
+        "longitude": "37.551127"
+      }
+    },
+    "createdAt": "1760037319345",
+    "updatedAt": "1760037319345"
+  },
+  {
+    "uid": "wrnUcGwKY1I2KYyeRLTy",
+    "type": "тп",
+    "name": "Зоопарк",
+    "direction": "Красная пресня",
+    "address": "улица Красная Пресня, д. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "55.760847",
+        "longitude": "37.578314"
+      },
+      "fromRegion": {
+        "latitude": "55.760831",
+        "longitude": "37.576146"
+      }
+    },
+    "createdAt": "1759845061423",
+    "updatedAt": "1759845061423"
+  },
+  {
+    "uid": "x2kBgAVaiUQ99ENy0ItK",
+    "type": "тп",
+    "name": "Таганский",
+    "direction": "Садовое кольцо",
+    "address": "улица Большие Каменщики, д. 2, соор. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "55.739386",
+        "longitude": "37.653112"
+      },
+      "fromRegion": {
+        "latitude": "55.739521",
+        "longitude": "37.653453"
+      }
+    },
+    "createdAt": "1759132806389",
+    "updatedAt": "1759132806389"
+  },
+  {
+    "uid": "x7wCalYE3zJNfjr7Dddu",
+    "type": "тп",
+    "name": "Уланский",
+    "direction": "Садовое кольцо",
+    "address": "проспект Академика Сахарова, д. 6, соор. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "55.767520",
+        "longitude": "37.639387"
+      },
+      "fromRegion": {
+        "latitude": "55.767653",
+        "longitude": "37.639139"
+      }
+    },
+    "createdAt": "1759132686650",
+    "updatedAt": "1759132686650"
+  },
+  {
+    "uid": "xUZoA22IBin3Ko8gUFQh",
+    "type": "тп",
+    "name": "Колодезный",
+    "direction": "Щелковское шоссе",
+    "address": "Колодезный переулок, д. 14",
+    "location": {
+      "toRegion": {
+        "latitude": "",
+        "longitude": ""
+      },
+      "fromRegion": {
+        "latitude": "55.796049",
+        "longitude": "37.699317"
+      }
+    },
+    "createdAt": "1759758319824",
+    "updatedAt": "1759758319824"
+  },
+  {
+    "uid": "xvtRIwzmG9REEDicK2Ja",
+    "type": "тп",
+    "name": "Крымский",
+    "direction": "Садовое кольцо",
+    "address": "Зубовский бульвар, д. 2, соор. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "55.735652",
+        "longitude": "37.593268"
+      },
+      "fromRegion": {
+        "latitude": "55.735892",
+        "longitude": "37.593701"
+      }
+    },
+    "createdAt": "1759132340443",
+    "updatedAt": "1759132340443"
+  },
+  {
+    "uid": "y5ZNQmqf3U9ISBLnUA23",
+    "type": "тп",
+    "name": "Бочкова",
+    "direction": "Проспект Мира",
+    "address": "проспект Мира, д. 118, соор. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "55.810506",
+        "longitude": "37.637739"
+      },
+      "fromRegion": {
+        "latitude": "55.810576",
+        "longitude": "37.637155"
+      }
+    },
+    "createdAt": "1759079972813",
+    "updatedAt": "1759079972813"
+  },
+  {
+    "uid": "y9YrvXERiWEbRDF2GpJY",
+    "type": "тп",
+    "name": "Гостиница ЦК",
+    "direction": "Ленинский проспект",
+    "address": "Большая Якиманка улица, д. 22, соор. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "55.738109",
+        "longitude": "37.614969"
+      },
+      "fromRegion": {
+        "latitude": "55.738018",
+        "longitude": "37.615367"
+      }
+    },
+    "createdAt": "1759004174066",
+    "updatedAt": "1759004383128"
+  },
+  {
+    "uid": "yD6NgwpwAt8JH6BJFezf",
+    "type": "тп",
+    "name": "Лобачика",
+    "direction": "ТТК",
+    "address": "улица Лобачика, д. 14, соор. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "55.786912",
+        "longitude": "37.662278"
+      },
+      "fromRegion": {
+        "latitude": "",
+        "longitude": ""
+      }
+    },
+    "createdAt": "1759917170176",
+    "updatedAt": "1759917170176"
+  },
+  {
+    "uid": "zSvsnRseCxceoKEgtZEH",
+    "type": "тп",
+    "name": "Большая Спасская",
+    "direction": "Садовое кольцо",
+    "address": "Садово-Спасская улица, д. 1А, соор. 1",
+    "location": {
+      "toRegion": {
+        "latitude": "55.771820",
+        "longitude": "37.639190"
+      },
+      "fromRegion": {
+        "latitude": "55.771573",
+        "longitude": "37.638946"
+      }
+    },
+    "createdAt": "1759132605297",
+    "updatedAt": "1759132605297"
+  },
+  {
+    "uid": "zwcYBUvr27oAgVtRMSnL",
+    "type": "тп",
+    "name": "Новослободская",
+    "direction": "Дмитровское шоссе",
+    "address": "Новослабодская улица, д. 62",
+    "location": {
+      "toRegion": {
+        "latitude": "55.790892",
+        "longitude": "37.590316"
+      },
+      "fromRegion": {
+        "latitude": "55.790769",
+        "longitude": "37.589858"
+      }
+    },
+    "createdAt": "1759084147385",
+    "updatedAt": "1759084147385"
+  }
+]

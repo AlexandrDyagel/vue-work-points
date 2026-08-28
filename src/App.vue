@@ -10,8 +10,7 @@ import { Routes } from '@/model/Enums.ts'
 import RoundedBottomMenu from '@/components/RoundedBottomMenu.vue'
 import { useCache } from '@/composables/useCache.ts'
 import { useLastUpdateTimeStore } from '@/store/LastUpdateTime.ts'
-import Calculation from '@/components/Calculation.vue'
-import CombatsGame from '@/components/CombatsGame.vue'
+import LoadingScreen from '@/components/LoadingScreen.vue'
 
 const { clearUserRole } = useUserRole()
 const { removeUserSearchFilter } = useSearchFilter()
@@ -29,26 +28,32 @@ const viewport = useViewport()
 const inputTopAppBarStore = useInputFocus()
 
 onMounted(async () => {
-  await clearUserRole()
-  await removeUserSearchFilter()
-  theme.headerColor.value = '#242528'
-  viewport.expand()
-  viewport.isVerticalSwipesEnabled.value = false
-  miniApp.ready()
+  try {
+    await clearUserRole()
+    await removeUserSearchFilter()
+    theme.headerColor.value = '#242528'
+    viewport.expand()
+    viewport.isVerticalSwipesEnabled.value = false
+    miniApp.ready()
 
-  await checkForUpdate()
-    .then((isLastUpdate) => (lastUpdateTimeStore.setLastUpdateTime(isLastUpdate)))
-    .catch((error) => console.error('Ошибка checkForUpdate() в App.vue: ', error))
+    await checkForUpdate()
+      .then((isLastUpdate) => (lastUpdateTimeStore.setLastUpdateTime(isLastUpdate)))
+      .catch((error) => console.error('Ошибка checkForUpdate() в App.vue: ', error))
 
-  if (lastUpdateTimeStore.isLastUpdateTime) {
-    console.log('Есть новые обновления')
-  } else {
-    console.log('Нет новых обновлений')
+    if (lastUpdateTimeStore.isLastUpdateTime) {
+      console.log('Есть новые обновления')
+    } else {
+      console.log('Нет новых обновлений')
+    }
+  } finally {
+    loading.value = false
   }
 })
 </script>
 
 <template>
+  <LoadingScreen :is-loading="loading" />
+
   <header></header>
 
   <main class="mb-20">

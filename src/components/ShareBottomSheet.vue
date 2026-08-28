@@ -1,5 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
+import { Capacitor } from '@capacitor/core'
+import { AppLauncher } from '@capacitor/app-launcher'
 import BottomSheetView from '@/components/BottomSheetView.vue'
 import WhatsAppIcon from '@/components/icons/WhatsAppIcon.vue'
 import TelegramIcon from '@/components/icons/TelegramIcon.vue'
@@ -7,8 +9,22 @@ import { PointResponse } from '@/model/PointResponse.ts'
 import { useMiniApp } from 'vue-tg/8.0'
 import Svg from '@/components/Svg.vue'
 import ClipboardIcon from '@/components/icons/ClipboardIcon.vue'
+import MaxIcon from '@/components/icons/MaxIcon.vue'
 
 const { openLink } = useMiniApp()
+
+/**
+ * Открывает ссылку в зависимости от платформы.
+ * В нативном Android/iOS приложении (Capacitor) используем системный intent/браузер,
+ * чтобы корректно запускались приложения Telegram и МАКС по deep-link.
+ */
+const openShareLink = async (url: string): Promise<void> => {
+  if (Capacitor.isNativePlatform()) {
+    await AppLauncher.openUrl({ url })
+  } else {
+    openLink(url)
+  }
+}
 
 const props = defineProps({
   sharePoint: PointResponse,
@@ -36,17 +52,27 @@ const shareOptions = [
     label: 'Telegram',
     icon: TelegramIcon,
   },
+  {
+    id: 'max',
+    label: 'МАКС',
+    icon: MaxIcon,
+  },
 ]
 
-function sharedData(point: PointResponse): string {
-  let urlPoint: string
-  if (point.location.toRegion.latitude && point.location.toRegion.longitude) {
-    urlPoint = `https://yandex.ru/maps/?pt=${point.location.toRegion.longitude},${point.location.toRegion.latitude}&z=18&l=map`
-  } else {
-    urlPoint = `https://yandex.ru/maps/?pt=${point.location.fromRegion.longitude},${point.location.fromRegion.latitude}&z=18&l=map`
+function pointMapUrl(point: PointResponse): string {
+  const { toRegion, fromRegion } = point.location
+  if (toRegion.latitude && toRegion.longitude) {
+    return `https://yandex.ru/maps/?pt=${toRegion.longitude},${toRegion.latitude}&z=18&l=map`
   }
+  return `https://yandex.ru/maps/?pt=${fromRegion.longitude},${fromRegion.latitude}&z=18&l=map`
+}
 
-  return `${point.name}\n${point.direction}\n${point.address}\n${urlPoint}`
+function shareText(point: PointResponse): string {
+  return `${point.name}\n${point.direction}\n${point.address}`
+}
+
+function sharedData(point: PointResponse): string {
+  return `${shareText(point)}\n${pointMapUrl(point)}`
 }
 
 // Fallback методы поделиться
@@ -66,9 +92,18 @@ const fallbackShare = async (method: string): Promise<void> => {
         showMessage('Открывается WhatsApp...', 'success')
         break
 
-      case 'telegram':
-        openLink(`https://t.me/share/url?text=${encodeURIComponent(sharedData(props.sharePoint))}`)
+      case 'telegram': {
+        const url = Capacitor.isNativePlatform()
+          ? `tg://msg_url?url=${encodeURIComponent(pointMapUrl(props.sharePoint))}&text=${encodeURIComponent(shareText(props.sharePoint))}`
+          : `https://t.me/share/url?url=${encodeURIComponent(pointMapUrl(props.sharePoint))}&text=${encodeURIComponent(shareText(props.sharePoint))}`
+        await openShareLink(url)
         showMessage('Открывается Telegram...', 'success')
+        break
+      }
+
+      case 'max':
+        await openShareLink(`https://max.ru/:share?text=${encodeURIComponent(sharedData(props.sharePoint))}`)
+        showMessage('Открывается МАКС...', 'success')
         break
     }
   } catch (error) {

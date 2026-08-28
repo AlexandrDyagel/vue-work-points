@@ -12,10 +12,12 @@
     "type-check": "vue-tsc --build",
     "lint": "eslint . --fix",
     "format": "prettier --write src/",
-    "android": "npx cap sync"
+    "android": "npx cap sync",
+    "actually points json": "node fetch-points.mjs"
   },
   "dependencies": {
     "@capacitor/android": "^8.3.1",
+    "@capacitor/app-launcher": "^8.0.1",
     "@capacitor/cli": "^8.3.1",
     "@capacitor/core": "^8.3.1",
     "@capacitor/preferences": "^8.0.1",

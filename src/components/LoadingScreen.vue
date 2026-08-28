@@ -12,7 +12,7 @@ const loadingIcon = shallowRef(LoadingIcon)
 <template>
   <div
     v-if="isLoading"
-    class="fixed z-15 top-0 start-0 w-full h-full text-center content-center bg-[#242528]"
+    class="fixed z-[1000] top-0 start-0 w-full h-full text-center content-center bg-[#242528]"
   >
     <div class="flex flex-row justify-center">
       <Svg>
