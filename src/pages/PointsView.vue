@@ -41,10 +41,10 @@ const initialLoadDone = ref(false) // флаг, что первая загруз
 
 // --- Типы для группировки ---
 const typeLabels: Record<TypePoint, string> = {
-  [TypePoint.TP]: 'ТП',
-  [TypePoint.TA]: 'ТА',
-  [TypePoint.PP]: 'ПП',
-  [TypePoint.Home]: 'УЧ',
+  [TypePoint.TP]: 'Тоннель пешеходный',
+  [TypePoint.TA]: 'Тоннель автомобильный',
+  [TypePoint.PP]: 'Пешеходный путепровод',
+  [TypePoint.Home]: 'Участок',
 }
 
 /** Порядок типов для сортировки по type */

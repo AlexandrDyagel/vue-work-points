@@ -7,6 +7,7 @@ import type { PointResponse } from '@/model/PointResponse.ts'
 import { TypePoint } from '@/model/Enums.ts'
 import StepUpImg from '@/assets/images/step_up.png'
 import TunnelImg from '@/assets/images/tunnel.png'
+import WorkHomeImg from '@/assets/images/work_home.png'
 import StepDownImg from '@/assets/images/step_down.png'
 
 const props = defineProps<{
@@ -34,6 +35,9 @@ const getIcon = (typePoint: TypePoint) => {
     }
     case TypePoint.TP: {
       return StepDownImg
+    }
+    case TypePoint.Home: {
+      return WorkHomeImg
     }
   }
 }

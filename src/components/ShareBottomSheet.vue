@@ -146,7 +146,8 @@ defineExpose({
             v-for="option in shareOptions"
             :key="option.id"
             @click="fallbackShare(option.id)"
-            class="p-3 rounded-lg border border-[#4d4d4d]"
+            class="rounded-lg border border-[#4d4d4d]"
+            :class="option.icon === MaxIcon ? 'p-4' : 'p-3'"
           >
             <Svg>
               <component ref="comp" :is="option.icon"></component>

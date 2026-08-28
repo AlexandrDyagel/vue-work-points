@@ -13,6 +13,7 @@ import {
 import { useRouter } from 'vue-router'
 import DirectionButtonView from '@/components/DirectionButtonView.vue'
 import { useMiniApp } from 'vue-tg/8.0'
+import WorkHomeImg from '@/assets/images/work_home.png'
 import TunnelImg from '@/assets/images/tunnel.png'
 import StepUpImg from '@/assets/images/step_up.png'
 import StepDownImg from '@/assets/images/step_down.png'
@@ -136,6 +137,9 @@ const getIcon = (typePoint: TypePoint) => {
     }
     case TypePoint.TP: {
       return StepDownImg
+    }
+    case TypePoint.Home: {
+      return WorkHomeImg
     }
   }
 }

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { BackButton } from 'vue-tg'
 import { useRouter } from 'vue-router'
-import { nextTick, onMounted, ref, computed, type Ref, watch } from 'vue'
+import { computed, nextTick, onMounted, ref, type Ref, watch } from 'vue'
 import { usePointsStore } from '@/store/Points.ts'
 import LoadingScreen from '@/components/LoadingScreen.vue'
 import type { Marker } from 'leaflet'
@@ -10,6 +10,7 @@ import type { PointResponse } from '@/model/PointResponse.ts'
 import { TypePoint } from '@/model/Enums.ts'
 import StepUpImg from '@/assets/images/step_up.png'
 import TunnelImg from '@/assets/images/tunnel.png'
+import WorkHomeImg from '@/assets/images/work_home.png'
 import StepDownImg from '@/assets/images/step_down.png'
 
 const router = useRouter()
@@ -252,6 +253,9 @@ const getIcon = (typePoint: TypePoint) => {
     }
     case TypePoint.TP: {
       return StepDownImg
+    }
+    case TypePoint.Home: {
+      return WorkHomeImg
     }
   }
 }
