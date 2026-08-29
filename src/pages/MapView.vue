@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { BackButton } from 'vue-tg'
 import { useRouter } from 'vue-router'
-import { computed, nextTick, onMounted, ref, type Ref, watch } from 'vue'
+import { computed, nextTick, onMounted, ref, watch } from 'vue'
 import { usePointsStore } from '@/store/Points.ts'
 import LoadingScreen from '@/components/LoadingScreen.vue'
-import type { Marker } from 'leaflet'
+import * as L from 'leaflet'
+import 'leaflet/dist/leaflet.css'
 import { useCache } from '@/composables/useCache.ts'
 import type { PointResponse } from '@/model/PointResponse.ts'
 import { TypePoint } from '@/model/Enums.ts'
@@ -18,15 +19,14 @@ const pointsStore = usePointsStore()
 const { obtainCachedPoints } = useCache()
 
 const isLoadingData = ref(false)
-const map: Ref<L.Map | null> = ref(null)
-type PointMarker = Marker & { pointId?: string }
+const map = ref<L.Map | null>(null)
+type PointMarker = L.Marker & { pointId?: string }
 
 const markers = ref<PointMarker[]>([])
 
 // Состояния для фильтрации
 const selectedDirection = ref<string>('')
 const searchQuery = ref<string>('')
-const selectedPoint = ref<PointResponse | null>(null)
 
 // Получаем уникальные направления из точек
 const directions = computed(() => {
@@ -67,6 +67,11 @@ onMounted(async () => {
     await nextTick(() => {
       initMap()
     })
+
+    // Показываем область всех точек при открытии карты
+    if (pointsStore.points.length > 0) {
+      fitMapToMarkers(pointsStore.points)
+    }
   } catch (e) {
     console.error(`Ошибка в onMounted: ${e}`)
   } finally {
@@ -85,7 +90,6 @@ watch(selectedDirection, () => {
 
 // Функция для выбора точки из поиска
 const selectPointFromSearch = (point: PointResponse) => {
-  selectedPoint.value = point
   selectedDirection.value = point.direction || ''
   searchQuery.value = ''
 
@@ -126,9 +130,12 @@ const getPointCoordinates = (point: PointResponse) => {
 }
 
 const initMap = () => {
-  const leafletMap = window.L.map('map').setView([55.7558, 37.6176], 6)
+  // Защита от повторной инициализации карты
+  if (map.value) return
 
-  window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  const leafletMap = L.map('map').setView([55.7558, 37.6176], 6)
+
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '© OpenStreetMap contributors',
     maxZoom: 18
   }).addTo(leafletMap)
@@ -153,8 +160,8 @@ const createTextMarker = (lat: number, lon: number, text: string, index: number,
   const bgColor = isSelected ? '#e67e22' : '#3388ff'
   const borderColor = isSelected ? '#d35400' : '#ffffff'
 
-  return window.L.marker([lat, lon], {
-    icon: window.L.divIcon({
+  return L.marker([lat, lon], {
+    icon: L.divIcon({
       html: `
         <div class="relative flex flex-col items-center">
           <div
@@ -200,9 +207,10 @@ const addMarkersToMap = (points: PointResponse[], highlightPoint?: PointResponse
 
     const isSelected = highlightPoint?.uid === point.uid
     const marker: PointMarker = createTextMarker(coords.lat, coords.lng, point.name, index, isSelected)
-        .addTo(map.value!)
 
-      // Сохраняем ID точки на маркере для последующего поиска
+    map.value!.addLayer(marker)
+
+    // Сохраняем ID точки на маркере для последующего поиска
     marker.pointId = point.uid
 
     // Создаем попап с информацией о точке
@@ -229,7 +237,7 @@ const addMarkersToMap = (points: PointResponse[], highlightPoint?: PointResponse
 const fitMapToMarkers = (points: PointResponse[]) => {
   if (!map.value || points.length === 0) return
 
-  const bounds = window.L.latLngBounds([])
+  const bounds = L.latLngBounds([])
 
   points.forEach((point) => {
     const coords = getPointCoordinates(point)
@@ -246,7 +254,6 @@ const fitMapToMarkers = (points: PointResponse[]) => {
 // Сброс фильтра
 const clearFilters = () => {
   selectedDirection.value = ''
-  selectedPoint.value = null
   searchQuery.value = ''
   clearMarkers()
 }
@@ -268,9 +275,6 @@ const getIcon = (typePoint: TypePoint) => {
   }
 }
 
-const onChangeBlur = () => {
-  searchQuery.value = ''
-}
 </script>
 
 <template>
@@ -280,7 +284,7 @@ const onChangeBlur = () => {
   <!-- Контейнер с картой -->
   <div class="fixed inset-0 w-full h-full bg-[#242528]">
     <!-- Панель управления вверху -->
-    <div class="absolute top-4 left-4 right-4 z-[1000] bg-[#242528] rounded-xl p-3 pb-0 shadow-lg border border-black">
+    <div class="map-panel absolute left-4 right-4 z-[1000] bg-[#242528] rounded-xl p-3 pb-0 shadow-lg border border-black">
       <!-- Выбор направления -->
       <div class="flex gap-2 items-center">
         <label class="text-sm font-semibold text-gray-200 min-w-[80px]">Направление:</label>
@@ -307,10 +311,17 @@ const onChangeBlur = () => {
         <input
           v-model="searchQuery"
           type="text"
-          @blur="onChangeBlur"
           placeholder="Введите название точки..."
-          class="w-full px-3 py-2 border border-[#000] rounded-lg text-sm text-white bg-black placeholder-gray-400 transition-all focus:outline-none focus:border-gray-500 focus:ring-2 focus:ring-gray-500"
+          class="w-full px-3 py-2 pr-9 border border-[#000] rounded-lg text-sm text-white bg-black placeholder-gray-400 transition-all focus:outline-none focus:border-gray-500 focus:ring-2 focus:ring-gray-500"
         />
+        <button
+          v-if="searchQuery"
+          @click="searchQuery = ''"
+          class="absolute right-2 top-1/2 -translate-y-1/2 px-1.5 py-0.5 text-gray-400 hover:text-white text-sm"
+          aria-label="Очистить поиск"
+        >
+          ✕
+        </button>
 
         <!-- Результаты поиска -->
         <div
@@ -320,7 +331,7 @@ const onChangeBlur = () => {
           <div
             v-for="point in searchResults"
             :key="point.uid"
-            @mousedown="selectPointFromSearch(point)"
+            @click="selectPointFromSearch(point)"
             class="p-2 cursor-pointer border-b border-[#3d3e43] transition-colors hover:bg-blue-50 last:border-0"
           >
             <div class="flex flex-row justify-between">
@@ -367,22 +378,27 @@ select, button, input {
   transition: all 0.2s ease;
 }
 
+/* Отступ панели с учётом безопасной зоны (Android/iOS вырез, статус-бар) */
+.map-panel {
+  top: calc(env(safe-area-inset-top, 0px) + 16px);
+}
+
 /* Кастомный скролл для результатов поиска */
 .max-h-60::-webkit-scrollbar {
   width: 6px;
 }
 
 .max-h-60::-webkit-scrollbar-track {
-  background: #f1f1f1;
+  background: #1f2023;
   border-radius: 3px;
 }
 
 .max-h-60::-webkit-scrollbar-thumb {
-  background: #c1c1c1;
+  background: #4b4d54;
   border-radius: 3px;
 }
 
 .max-h-60::-webkit-scrollbar-thumb:hover {
-  background: #a8a8a8;
+  background: #6b6e78;
 }
 </style>
