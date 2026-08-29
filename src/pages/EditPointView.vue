@@ -48,13 +48,12 @@ onMounted(async () => {
   try {
     isLoadingData.value = true
 
-    await obtainCachedPoints().then((cachedDataPoints) => {
-      cachedDataPoints
-        .map((point) => point.direction)
-        .forEach((directionName) => {
-          directions.value.add(directionName)
-        })
-    })
+    const cachedDataPoints = await obtainCachedPoints()
+    cachedDataPoints
+      .map((point) => point.direction)
+      .forEach((directionName) => {
+        directions.value.add(directionName)
+      })
   } catch (e) {
     console.error(`Ошибка AddPointView.vue в onMounted catch: ${e}`)
   } finally {
@@ -84,10 +83,10 @@ function update() {
     )
 
     updatePoint(point.uid, pointRequest).then(
-      () => {
-        console.log('Обнавлено в БД')
-        setLastUpdateDataPoints(dateNow)
-        clearCachePoints()
+      async () => {
+        console.log('Обновлено в БД')
+        await setLastUpdateDataPoints(dateNow)
+        await clearCachePoints()
         progressUpdate.value = false
         router.back()
       },
@@ -106,9 +105,9 @@ function delPoint() {
   try {
     progressDelete.value = true
     deletePoint(point.uid).then(
-      () => {
+      async () => {
         console.log('Удалено из БД')
-        clearCachePoints()
+        await clearCachePoints()
         progressDelete.value = false
         router.back()
       },

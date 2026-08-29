@@ -34,9 +34,9 @@ ios/
 *.pdf
 
 # Firebase config
-.firebaserc
-firebase.json
-firebase/
+#.firebaserc
+#firebase.json
+#firebase/
 
 # Logs
 logs/

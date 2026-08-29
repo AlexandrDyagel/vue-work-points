@@ -16,32 +16,24 @@ export function useCache() {
 
     // Проверяем, существуют ли данные в кэше
     if (cachedData) {
-      console.log('Данные точек из хранилища')
+      console.log('Данные точек из кэша')
       return cachedData
     } else {
       // Если данных в кэше нет, делаем запрос к серверу за данными
-      // try {
-      //   const data = await getPoints()
-      //   await storage.set(LocalStorageNames.CACHE_POINTS, data)
-      //   console.log('Данные из интернета и потом из хранилища')
-      // } catch (error) {
-      //   console.error(`Ошибка error getPoints(): ${error}`)
-      //
-      //   // Если не удалось получить данные с сервера, берём их из локального файла
-      //   const dataFromJson = await getPointsFromJson()
-      //   await storage.set(LocalStorageNames.CACHE_POINTS, dataFromJson)
-      //   console.log('Данные из локального файла points.json')
-      // }
-
       try {
+        const data = await getPoints()
+        await storage.set(LocalStorageNames.CACHE_POINTS, data)
+        console.log('Данные из интернета. Сохраняется в кэш')
+        return data
+      } catch (error) {
+        console.error(`Ошибка error getPoints(): ${error}`)
+
+        // Если не удалось получить данные с сервера, берём их из локального файла
         const dataFromJson = await getPointsFromJson()
         await storage.set(LocalStorageNames.CACHE_POINTS, dataFromJson)
         console.log('Данные из локального файла points.json')
-      } catch (error) {
-        console.error(`Ошибка error getPoints(): ${error}`)
+        return dataFromJson
       }
-
-      return (await storage.get<PointResponse[]>(LocalStorageNames.CACHE_POINTS))!
     }
   }
 
@@ -76,14 +68,15 @@ export function useCache() {
     } else {
       console.log('В хранилище не существует записи о времени последнего обновления данных')
 
-      await obtainCachedPoints().then((cachedDataPoints) => {
-        const lastUpdatedAt = cachedDataPoints.sort(
-          (a, b) => Number(b.updatedAt) - Number(a.updatedAt),
-        )[0].updatedAt
+      const cachedDataPoints = await obtainCachedPoints()
+      const lastUpdatedAt = cachedDataPoints.sort(
+        (a, b) => Number(b.updatedAt) - Number(a.updatedAt),
+      )[0]?.updatedAt
 
-        storage.set(LocalStorageNames.LAST_UPDATE_TIME, lastUpdatedAt)
+      if (lastUpdatedAt) {
+        await storage.set(LocalStorageNames.LAST_UPDATE_TIME, lastUpdatedAt)
         console.log('В хранилище добавлена запись о времени последнего обновления данных')
-      })
+      }
 
       const stored = await storage.get<string>(LocalStorageNames.LAST_UPDATE_TIME)
       return lastUpdateTime.value !== stored
@@ -98,11 +91,45 @@ export function useCache() {
     await storage.remove(LocalStorageNames.LAST_UPDATE_TIME)
   }
 
+  /**
+   * Получение актуальных данных точек с сервера.
+   * При ошибке сети возвращаем данные из локального файла points.json.
+   */
+  async function refreshPoints(): Promise<PointResponse[]> {
+    try {
+      const data = await getPoints()
+      await storage.set(LocalStorageNames.CACHE_POINTS, data)
+      console.log('Данные точек обновлены из Firestore')
+      return data
+    } catch (error) {
+      console.error(`Ошибка getPoints(): ${error}`)
+
+      const dataFromJson = await getPointsFromJson()
+      await storage.set(LocalStorageNames.CACHE_POINTS, dataFromJson)
+      console.log('Данные точек загружены из локального файла points.json')
+      return dataFromJson
+    }
+  }
+
+  /**
+   * Время последнего обновления данных в БД.
+   */
+  async function getLastUpdateTime(): Promise<string | null> {
+    try {
+      return await lastUpdatedPoints()
+    } catch (error) {
+      console.error('Ошибка получения времени последнего обновления: ', error)
+      return null
+    }
+  }
+
   return {
     obtainCachedPoints,
     clearCachePoints,
     checkForUpdate,
     setLastUpdateDataPoints,
     removeLastUpdateDataPoints,
+    refreshPoints,
+    getLastUpdateTime,
   }
 }

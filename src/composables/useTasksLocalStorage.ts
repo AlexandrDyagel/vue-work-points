@@ -25,6 +25,7 @@ export function useTasksLocalStorage() {
   async function removeItems(): Promise<boolean> {
     try {
       await storage.remove(LocalStorageNames.CACHE_TASKS)
+      await storage.remove(LocalStorageNames.COMPLETED_TASKS)
       return true
     } catch (error) {
       console.error('TasksLocalStorage: ', error)

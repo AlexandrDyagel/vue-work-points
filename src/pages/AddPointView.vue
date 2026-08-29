@@ -32,15 +32,14 @@ onMounted(async () => {
   try {
     isLoadingData.value = true
 
-    await obtainCachedPoints().then((cachedDataPoints) => {
-      cachedDataPoints
-        .map((point) => point.direction)
-        .forEach((directionName) => {
-          directions.value.add(directionName)
-        })
-      directions.value.add('+')
-      direction.value = Array.from(directions.value)[0]
-    })
+    const cachedDataPoints = await obtainCachedPoints()
+    cachedDataPoints
+      .map((point) => point.direction)
+      .forEach((directionName) => {
+        directions.value.add(directionName)
+      })
+    directions.value.add('+')
+    direction.value = Array.from(directions.value)[0]
   } catch (e) {
     console.error(`Ошибка AddPointView.vue в onMounted catch: ${e}`)
   } finally {
@@ -56,7 +55,7 @@ function parseLocationString(stringLocation: string): { lat: string; lon: string
   }
 }
 
-function save() {
+async function save() {
   progress.value = true
 
   if (locToRegion.value.trim() === '') locToRegion.value = ','
@@ -80,17 +79,16 @@ function save() {
     dateNow,
   )
 
-  addPoint(point)
-    .then(() => {
-      console.log('Сохранено в БД')
-      setLastUpdateDataPoints(dateNow)
-      clearInputs()
-      clearCachePoints()
-    })
-    .catch((error) => {
-      console.error(`Ошибка error: ${error.message}`)
-      progress.value = false
-    })
+  try {
+    await addPoint(point)
+    console.log('Сохранено в БД')
+    await setLastUpdateDataPoints(dateNow)
+    clearInputs()
+    await clearCachePoints()
+  } catch (error) {
+    console.error('Ошибка при сохранении точки: ', error)
+    progress.value = false
+  }
 }
 
 function clearInputs() {
@@ -107,7 +105,10 @@ const handleFocus = () => inputTopAppBarStore.changeFocus(true)
 const handleBlur = () => inputTopAppBarStore.changeFocus(false)
 
 function addDirection(): void {
-  directions.value.add(newDirection.value)
+  if (newDirection.value.trim() === '') return
+  directions.value.add(newDirection.value.trim())
+  direction.value = newDirection.value.trim()
+  newDirection.value = ''
   isAddNewDirection.value = false
 }
 

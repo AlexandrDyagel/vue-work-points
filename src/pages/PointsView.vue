@@ -19,7 +19,13 @@ import { useLastUpdateTimeStore } from '@/store/LastUpdateTime.ts'
 const router = useRouter()
 const pointsStore = usePointsStore()
 const lastUpdateTimeStore = useLastUpdateTimeStore()
-const { obtainCachedPoints, clearCachePoints, setLastUpdateDataPoints } = useCache()
+const {
+  obtainCachedPoints,
+  setLastUpdateDataPoints,
+  checkForUpdate,
+  refreshPoints,
+  getLastUpdateTime,
+} = useCache()
 const { userSearchFilter, updateUserSearchFilter, userSortType, updateUserSortType } =
   useSearchFilter()
 const inputTopAppBarStore = useInputFocus()
@@ -38,6 +44,7 @@ const typeSearchFilter = ref<TypeSearchFilter>(TypeSearchFilter.NAME)
 const typeSort = ref<TypeSort>(TypeSort.NAME_ASC)
 const userRole = ref<UserRole>(UserRole.USER)
 const initialLoadDone = ref(false) // флаг, что первая загрузка завершена
+const hasUpdate = ref(false) // есть ли на сервере более новые данные
 
 // --- Типы для группировки ---
 const typeLabels: Record<TypePoint, string> = {
@@ -76,6 +83,11 @@ onMounted(async () => {
     }
 
     initialLoadDone.value = true
+
+    const hasUpdates = await checkForUpdate()
+    hasUpdate.value = hasUpdates
+    lastUpdateTimeStore.setLastUpdateTime(hasUpdates)
+
     console.log('Время выполнения = ', performance.now() - time)
   } catch (e) {
     console.error(`Ошибка PointsView.vue в onMounted catch: ${e}`)
@@ -170,7 +182,7 @@ const groupedByType = computed(() => {
   }
   // Сохраняем порядок из typeOrder
   const ordered: { type: TypePoint; label: string; points: PointResponse[] }[] = []
-  for (const [type, order] of Object.entries(typeOrder).sort((a, b) => a[1] - b[1])) {
+  for (const [type] of Object.entries(typeOrder).sort((a, b) => a[1] - b[1])) {
     const tp = type as TypePoint
     const pts = groups.get(tp)
     if (pts && pts.length > 0) {
@@ -230,16 +242,19 @@ const addNewPoint = () => {
 const updateDataPoints = async () => {
   try {
     isLoadingData.value = true
-    await clearCachePoints()
-    const cachedDataPoints = await obtainCachedPoints()
-    pointsStore.savePoints(cachedDataPoints)
+
+    // Получаем актуальные данные с сервера (fallback — points.json)
+    const freshPoints = await refreshPoints()
+    pointsStore.savePoints(freshPoints)
     cachedPoints.value = pointsStore.points
 
-    const lastUpdatedAt = cachedDataPoints.sort(
-      (a, b) => Number(b.updatedAt) - Number(a.updatedAt),
-    )[0].updatedAt
+    // Синхронизируем время последнего обновления
+    const dbLastUpdate = await getLastUpdateTime()
+    if (dbLastUpdate) {
+      await setLastUpdateDataPoints(dbLastUpdate)
+    }
 
-    await setLastUpdateDataPoints(lastUpdatedAt)
+    hasUpdate.value = false
     lastUpdateTimeStore.setLastUpdateTime(false)
   } catch (e) {
     console.error(`Ошибка PointsView.vue в updateDataPoints: ${e}`)
@@ -386,7 +401,7 @@ const handleShare = (point: PointResponse): void => {
 
   <!-- Кнопка обновления данных -->
   <div
-    v-if="lastUpdateTimeStore.isLastUpdateTime"
+    v-if="hasUpdate"
     @click="updateDataPoints"
     class="fixed start-0 end-0 bottom-0 mb-[80px] z-10 bg-[#5fb336] mx-4 px-3 h-[40px] rounded-xl text-center content-center cursor-pointer active:opacity-50"
   >
