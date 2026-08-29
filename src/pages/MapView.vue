@@ -19,7 +19,9 @@ const { obtainCachedPoints } = useCache()
 
 const isLoadingData = ref(false)
 const map: Ref<L.Map | null> = ref(null)
-const markers: Ref<Marker[]> = ref([])
+type PointMarker = Marker & { pointId?: string }
+
+const markers = ref<PointMarker[]>([])
 
 // Состояния для фильтрации
 const selectedDirection = ref<string>('')
@@ -98,7 +100,7 @@ const selectPointFromSearch = (point: PointResponse) => {
     if (coordinates && map.value) {
       map.value.setView([coordinates.lat, coordinates.lng], 15)
       // Находим и открываем попап выбранного маркера
-      const marker = markers.value.find(m => (m as any).pointId === point.id)
+      const marker = markers.value.find(m => m.pointId === point.uid)
       if (marker) {
         marker.openPopup()
       }
@@ -108,26 +110,25 @@ const selectPointFromSearch = (point: PointResponse) => {
 
 // Получение координат точки
 const getPointCoordinates = (point: PointResponse) => {
-  const lat = point.location?.toRegion?.latitude
-    ? Number(point.location.toRegion.latitude)
-    : point.location?.fromRegion?.latitude
-      ? Number(point.location.fromRegion.latitude)
-      : null
+  const toLat = point.location?.toRegion?.latitude ?? ''
+  const toLng = point.location?.toRegion?.longitude ?? ''
 
-  const lng = point.location?.toRegion?.longitude
-    ? Number(point.location.toRegion.longitude)
-    : point.location?.fromRegion?.longitude
-      ? Number(point.location.fromRegion.longitude)
-      : null
+  const latRaw = toLat !== '' ? toLat : (point.location?.fromRegion?.latitude ?? '')
+  const lngRaw = toLng !== '' ? toLng : (point.location?.fromRegion?.longitude ?? '')
 
-  if (!lat || !lng) return null
+  if (latRaw === '' || lngRaw === '') return null
+
+  const lat = Number(latRaw)
+  const lng = Number(lngRaw)
+
+  if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null
   return { lat, lng }
 }
 
 const initMap = () => {
-  const leafletMap = L.map('map').setView([55.7558, 37.6176], 6)
+  const leafletMap = window.L.map('map').setView([55.7558, 37.6176], 6)
 
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '© OpenStreetMap contributors',
     maxZoom: 18
   }).addTo(leafletMap)
@@ -140,13 +141,20 @@ const initMap = () => {
   }, 100)
 }
 
+// Экранирование HTML для безопасного вывода пользовательских данных
+const escapeHtml = (value: string): string => {
+  const div = document.createElement('div')
+  div.appendChild(document.createTextNode(value))
+  return div.innerHTML
+}
+
 // Функция для создания маркера с текстом и цветом
 const createTextMarker = (lat: number, lon: number, text: string, index: number, isSelected: boolean = false) => {
   const bgColor = isSelected ? '#e67e22' : '#3388ff'
   const borderColor = isSelected ? '#d35400' : '#ffffff'
 
-  return L.marker([lat, lon], {
-    icon: L.divIcon({
+  return window.L.marker([lat, lon], {
+    icon: window.L.divIcon({
       html: `
         <div class="relative flex flex-col items-center">
           <div
@@ -159,7 +167,7 @@ const createTextMarker = (lat: number, lon: number, text: string, index: number,
               box-shadow: 0 2px 4px rgba(0,0,0,0.2);
             "
           >
-            ${index + 1}. ${text}
+            ${index + 1}. ${escapeHtml(text)}
           </div>
           <div
             class="w-3 h-3 border-2 border-white rounded-full shadow-md"
@@ -190,26 +198,26 @@ const addMarkersToMap = (points: PointResponse[], highlightPoint?: PointResponse
     const coords = getPointCoordinates(point)
     if (!coords) return
 
-    const isSelected = highlightPoint?.id === point.id
-    const marker = createTextMarker(coords.lat, coords.lng, point.name, index, isSelected)
+    const isSelected = highlightPoint?.uid === point.uid
+    const marker: PointMarker = createTextMarker(coords.lat, coords.lng, point.name, index, isSelected)
         .addTo(map.value!)
 
       // Сохраняем ID точки на маркере для последующего поиска
-    ;(marker as any).pointId = point.id
+    marker.pointId = point.uid
 
     // Создаем попап с информацией о точке
     const popupDiv = document.createElement('div')
     popupDiv.className = 'p-3 min-w-[200px]'
     popupDiv.innerHTML = `
-      <h3 class="font-bold text-lg text-blue-600 mb-2">${index + 1}. ${point.name}</h3>
+      <h3 class="font-bold text-lg text-blue-600 mb-2">${index + 1}. ${escapeHtml(point.name)}</h3>
       <div class="text-gray-600 text-sm mb-1">
-        <span class="font-semibold">Направление:</span> ${point.direction || '—'}
+        <span class="font-semibold">Направление:</span> ${escapeHtml(point.direction || '—')}
       </div>
       <div class="text-gray-600 text-sm mb-1">
-        <span class="font-semibold">Адрес:</span> ${point.address || '—'}
+        <span class="font-semibold">Адрес:</span> ${escapeHtml(point.address || '—')}
       </div>
       <div class="text-gray-600 text-sm">
-        <span class="font-semibold">Тип точки:</span> ${point.type || '—'}
+        <span class="font-semibold">Тип точки:</span> ${escapeHtml(point.type || '—')}
       </div>
     `
 
@@ -221,7 +229,7 @@ const addMarkersToMap = (points: PointResponse[], highlightPoint?: PointResponse
 const fitMapToMarkers = (points: PointResponse[]) => {
   if (!map.value || points.length === 0) return
 
-  const bounds = L.latLngBounds([])
+  const bounds = window.L.latLngBounds([])
 
   points.forEach((point) => {
     const coords = getPointCoordinates(point)

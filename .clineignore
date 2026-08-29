@@ -13,8 +13,8 @@ pnpm-lock.yaml
 bun.lockb
 
 # Native platform builds (Capacitor)
-android/
-ios/
+#android/
+#ios/
 
 # Images and binary assets (AI can't process them)
 *.png

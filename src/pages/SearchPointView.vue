@@ -14,6 +14,8 @@ import { useMiniApp, useTheme } from 'vue-tg/8.0'
 import { BackButton } from 'vue-tg'
 import { useRouter } from 'vue-router'
 import formatDistance from '@/utils/format.ts'
+import { Capacitor } from '@capacitor/core'
+import { AppLauncher } from '@capacitor/app-launcher'
 
 const router = useRouter()
 const searchPointIcon = shallowRef(SearchPointIcon)
@@ -34,12 +36,32 @@ const watchId: Ref<number | null> = ref(null)
 const nearestPoint: Ref<PointResponse | null> = ref(null) // ближайшая искомая точка
 const closestPoint: Ref<PointResponse | null> = ref(null) // ближайшая точка от искомой точки
 const minDistance = ref<number>(Infinity)
-const previousDistance = ref<number>(0)
 
-const url = computed(
-  () =>
-    `https://yandex.ru/maps/?pt=${nearestPoint?.value?.location.toRegion.longitude},${nearestPoint?.value?.location.toRegion.latitude}&z=18&l=map`
-)
+const getEffectivePoint = (point: PointResponse | null): GeoPoint => {
+  if (!point) return new GeoPoint()
+
+  const region = point.location.toRegion
+  return region.latitude !== '' ? region : point.location.fromRegion
+}
+
+const url = computed(() => {
+  const point = getEffectivePoint(nearestPoint.value)
+  return `https://yandex.ru/maps/?pt=${point.longitude},${point.latitude}&z=18&l=map`
+})
+
+// Открывает карту с учётом платформы: в нативном приложении через AppLauncher,
+// в остальных случаях через Telegram WebApp openLink.
+const openMap = async (): Promise<void> => {
+  try {
+    if (Capacitor.isNativePlatform()) {
+      await AppLauncher.openUrl({ url: url.value })
+    } else {
+      openLink(url.value)
+    }
+  } catch (e) {
+    console.error('Не удалось открыть карту:', e)
+  }
+}
 
 // Опции для геолокации
 const options = {
@@ -88,10 +110,6 @@ const watchPosition = () => {
       )
 
       findNearestPoint()
-      //findClosestPoint(nearestPoint.value)
-
-      console.log('formatTime: ', formatTime(pos.timestamp))
-      console.log('Позиция обновлена:', pos)
     },
     (err) => {
       handleError(err)
@@ -107,8 +125,8 @@ const stopWatching = () => {
   if (watchId.value !== null) {
     navigator.geolocation.clearWatch(watchId.value)
     watchId.value = null
-    watching.value = false
   }
+  watching.value = false
 }
 
 // Обработка ошибок
@@ -128,11 +146,6 @@ const handleError = (err: GeolocationPositionError) => {
       break
   }
   console.error('Ошибка геолокации:', err)
-}
-
-// Форматирование времени
-const formatTime = (timestamp: number) => {
-  return new Date(timestamp).toLocaleString('ru-RU')
 }
 
 /**
@@ -166,10 +179,10 @@ const findNearestPoint = (): void => {
   }
 
   cachedPoints.value.forEach((point) => {
-    const distance = getDistance(
-      userLocation.value,
-      point.location.toRegion.latitude !== '' ? point.location.toRegion : point.location.fromRegion
-    )
+    const target = getEffectivePoint(point)
+    if (target.latitude === '' || target.longitude === '') return
+
+    const distance = getDistance(userLocation.value, target)
 
     if (distance < minDistance.value) {
       minDistance.value = distance
@@ -179,35 +192,45 @@ const findNearestPoint = (): void => {
 }
 
 const findClosestPoint = (nearPoint: PointResponse | null): void => {
-  if (nearPoint === null) return
-  let minDistance = Infinity
+  if (nearPoint === null) {
+    closestPoint.value = null
+    return
+  }
+
+  const nearCoord = getEffectivePoint(nearPoint)
+  let min = Infinity
   let tempPoint: PointResponse | null = null
 
-  if (nearPoint) {
-    cachedPoints.value.filter(point => point !== nearPoint).forEach((point) => {
-      const distance = getDistance(
-        nearPoint.location.toRegion.latitude !== '' ? nearPoint.location.toRegion : nearPoint.location.fromRegion,
-        point.location.toRegion.latitude !== '' ? point.location.toRegion : point.location.fromRegion
-      )
+  cachedPoints.value
+    .filter((point) => point !== nearPoint)
+    .forEach((point) => {
+      const target = getEffectivePoint(point)
+      if (target.latitude === '' || target.longitude === '') return
 
-      if (distance < minDistance) {
-        minDistance = distance
+      const distance = getDistance(nearCoord, target)
+      if (distance < min) {
+        min = distance
         tempPoint = point
       }
-
     })
-    if (previousDistance.value > minDistance) {
-      closestPoint.value = tempPoint
-    }
-    previousDistance.value = minDistance
-  }
+
+  closestPoint.value = tempPoint
+}
+
+// Сброс результатов поиска
+const resetSearch = () => {
+  nearestPoint.value = null
+  closestPoint.value = null
+  minDistance.value = Infinity
+  userLocation.value = new GeoPoint()
 }
 
 // Поиск точки
 const searchPoint = () => {
   console.log('Поиск точки')
-  // Здесь будет логика
-  //getCurrentPosition()
+  if (watching.value) return
+
+  resetSearch()
   watchPosition()
 }
 
@@ -242,8 +265,12 @@ onUnmounted(() => {
   headerColor.value = '#242528'
 })
 
-watch(nearestPoint, () => {
-  headerColor.value = '#16a34a'
+watch(nearestPoint, (point) => {
+  if (point) {
+    stopWatching()
+    headerColor.value = '#16a34a'
+    findClosestPoint(point)
+  }
 })
 </script>
 
@@ -254,8 +281,9 @@ watch(nearestPoint, () => {
     class="fixed overflow-auto start-0 top-0 end-0 bottom-0 flex flex-col items-center justify-center gap-6 bg-[#242528]"
   >
     <button
-      class="search-button search-btn"
+      class="search-button search-btn disabled:opacity-50"
       :class="watching ? 'search-btn-animation-search' : 'search-btn-animation'"
+      :disabled="isLoadingData || cachedPoints.length === 0"
       @click="searchPoint"
       aria-label="Начать поиск ближайшей точки"
     >
@@ -264,7 +292,13 @@ watch(nearestPoint, () => {
       </Svg>
     </button>
 
-    <div v-if="error" class="text-center px-6">
+    <p v-if="isLoadingData" class="text-sm text-white/60">Загрузка точек...</p>
+
+    <div v-else-if="cachedPoints.length === 0" class="text-center px-6">
+      <p class="text-white/60 text-sm">Нет доступных точек для поиска</p>
+    </div>
+
+    <div v-else-if="error" class="text-center px-6">
       <p class="text-red-400 text-sm mb-4">{{ error }}</p>
       <button
         class="inline-flex items-center justify-center gap-2 px-5 h-[40px] rounded-xl bg-[#3d7eff] text-white text-sm font-medium active:opacity-50"
@@ -329,7 +363,7 @@ watch(nearestPoint, () => {
     </div>
 
     <div
-      @click="openLink(url)"
+      @click="openMap"
       class="flex flex-row mb-10 items-center justify-center gap-1 start-0 end-0 bottom-0 bg-[#5fb336] mx-4 px-3 h-[40px] rounded-xl cursor-pointer active:opacity-50"
     >
       <Svg>
@@ -337,10 +371,17 @@ watch(nearestPoint, () => {
       </Svg>
       <span class="text-sm font-medium">На карте</span>
     </div>
-    <div>
+    <div class="mb-10">
       <div v-if="closestPoint" class="point-name align-start">След. {{ closestPoint?.name.trim() }}</div>
       <div v-else class="point-name align-start">След. определяем...</div>
     </div>
+    <button
+      class="inline-flex items-center justify-center gap-2 px-5 h-[40px] rounded-xl bg-[#3d7eff] text-white text-sm font-medium active:opacity-50"
+      @click="searchPoint"
+      aria-label="Найти заново"
+    >
+      Найти заново
+    </button>
 
   </div>
 </template>
@@ -466,15 +507,4 @@ watch(nearestPoint, () => {
   animation: pulse-search 2s infinite;
 }
 
-@keyframes decline-pulse {
-  0%,
-  100% {
-    transform: scale(1);
-    box-shadow: 0 4px 20px rgba(239, 68, 68, 0.4);
-  }
-  50% {
-    transform: scale(1.05);
-    box-shadow: 0 6px 25px rgba(239, 68, 68, 0.6);
-  }
-}
 </style>
