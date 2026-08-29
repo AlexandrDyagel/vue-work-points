@@ -1,17 +1,20 @@
 <script setup lang="ts">
 import { BackButton } from 'vue-tg'
 import { useRouter } from 'vue-router'
-import { nextTick, onMounted, onUnmounted, ref, type Ref } from 'vue'
+import { nextTick, onMounted, onUnmounted, ref } from 'vue'
 import { PointResponse } from '@/model/PointResponse.ts'
 import { useTasksLocalStorage } from '@/composables/useTasksLocalStorage.ts'
 import { useMiniApp } from 'vue-tg/8.0'
 import LoadingScreen from '@/components/LoadingScreen.vue'
-import type { Marker, Polyline } from 'leaflet'
 import { TypePoint } from '@/model/Enums.ts'
 import { useCache } from '@/composables/useCache.ts'
 import { useTaskPointsStore } from '@/store/TaskPoints.ts'
 import { useOptimalRoute } from '@/composables/useOptimalRoute.ts'
 import { usePointsStore } from '@/store/Points.ts'
+import * as L from 'leaflet'
+import 'leaflet/dist/leaflet.css'
+import { Capacitor } from '@capacitor/core'
+import { AppLauncher } from '@capacitor/app-launcher'
 
 const router = useRouter()
 const pointsStore = usePointsStore()
@@ -32,12 +35,13 @@ const {
 const { openLink } = useMiniApp()
 
 const isLoadingData = ref(false)
-const taskItems: Ref<PointResponse[]> = ref([])
+const taskItems = ref<PointResponse[]>([])
 const completedTaskIds = ref<string[]>([])
-const map: Ref<L.Map | null> = ref(null)
-const selectedPoint: Ref<PointResponse | null> = ref(null)
+const map = ref<L.Map | null>(null)
+// Маркеры точек на карте
+const markers = ref<L.Marker[]>([])
 // Хранилище для линий маршрутов
-const routePolylines: Ref<Polyline[]> = ref([])
+const routePolylines = ref<L.Polyline[]>([])
 // Состояние видимости линий
 const isRoutesVisible = ref(true)
 
@@ -55,41 +59,93 @@ const routeColors = [
   '#33FF83'  // Салатовый
 ]
 
-onMounted(async () => {
-    try {
-      isLoadingData.value = true
-      startPointId.value = 'o7YHGcpPla26GOV7bXhp' // uid Переходы. Тоннели
+// Открывает внешнюю ссылку с учётом платформы
+const openExternalLink = async (url: string): Promise<void> => {
+  try {
+    if (Capacitor.isNativePlatform()) {
+      await AppLauncher.openUrl({ url })
+    } else {
+      openLink(url)
+    }
+  } catch (e) {
+    console.error('Не удалось открыть ссылку:', e)
+  }
+}
 
-      if (pointsStore.points.length !== 0) {
+// Экранирование HTML для безопасного вывода пользовательских данных
+const escapeHtml = (value: string): string => {
+  const div = document.createElement('div')
+  div.appendChild(document.createTextNode(value))
+  return div.innerHTML
+}
+
+// Получение координат точки (с fallback toRegion -> fromRegion)
+const getPointCoordinates = (point: PointResponse) => {
+  const toLat = point.location?.toRegion?.latitude ?? ''
+  const toLng = point.location?.toRegion?.longitude ?? ''
+
+  const latRaw = toLat !== '' ? toLat : (point.location?.fromRegion?.latitude ?? '')
+  const lngRaw = toLng !== '' ? toLng : (point.location?.fromRegion?.longitude ?? '')
+
+  if (latRaw === '' || lngRaw === '') return null
+
+  const lat = Number(latRaw)
+  const lng = Number(lngRaw)
+
+  if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null
+  return { lat, lng }
+}
+
+// Построение URL для маршрута и точки
+const buildPointUrls = (point: PointResponse) => {
+  const coords = getPointCoordinates(point)
+  const lat = coords?.lat ?? 0
+  const lng = coords?.lng ?? 0
+
+  return {
+    urlRoute: `https://yandex.ru/maps/?rtext=~${lat},${lng}&rtt=auto`,
+    urlPoint: `https://yandex.ru/maps/?pt=${lng},${lat}&z=18&l=map`
+  }
+}
+
+onMounted(async () => {
+  try {
+    isLoadingData.value = true
+    startPointId.value = 'o7YHGcpPla26GOV7bXhp' // uid Переходы. Тоннели
+
+    if (pointsStore.points.length !== 0) {
+      points.value.unshift(
+        pointsStore.points.filter((point) => point.name === 'Переходы. Тоннели')[0])
+    } else {
+      await obtainCachedPoints().then((cachedDataPoints) => {
+        pointsStore.savePoints(cachedDataPoints)
         points.value.unshift(
           pointsStore.points.filter((point) => point.name === 'Переходы. Тоннели')[0])
-      } else {
-        await obtainCachedPoints().then((cachedDataPoints) => {
-          pointsStore.savePoints(cachedDataPoints)
-          points.value.unshift(
-            pointsStore.points.filter((point) => point.name === 'Переходы. Тоннели')[0])
-        })
-      }
-
-      const cachedPoints = await tasksLocalStorage.getItems()
-      completedTaskIds.value = await getCompletedTasks()
-      points.value.push(...cachedPoints)
-      taskPointsStore.savePoints(cachedPoints)
-
-      await init()
-
-      await nextTick(async () => {
-        initMap()
       })
-    } catch (e) {
-      console.error(`Ошибка TaskMapView.vue в onMounted catch: ${e}`)
-    } finally {
-      isLoadingData.value = false
     }
+
+    const cachedPoints = await tasksLocalStorage.getItems()
+    completedTaskIds.value = await getCompletedTasks()
+    points.value.push(...cachedPoints)
+    taskItems.value = cachedPoints
+    taskPointsStore.savePoints(cachedPoints)
+
+    await init()
+
+    await nextTick(async () => {
+      initMap()
+    })
+  } catch (e) {
+    console.error(`Ошибка TaskMapView.vue в onMounted catch: ${e}`)
+  } finally {
+    isLoadingData.value = false
   }
-)
+})
 
 const initMap = () => {
+  // Защита от повторной инициализации карты
+  if (map.value) return
+
   // Создаем карту с центром в Москве
   const leafletMap = L.map('map').setView([55.7558, 37.6176], 6)
 
@@ -111,29 +167,22 @@ const initMap = () => {
   fitMapToMarkers()
 }
 
-// Новая функция для переключения видимости линий
+// Переключение видимости линий
 const toggleRoutesVisibility = () => {
   isRoutesVisible.value = !isRoutesVisible.value
 
-  routePolylines.value.forEach(polyline => {
-    if (isRoutesVisible.value) {
-      // Показываем линии
-      polyline.setStyle({ opacity: 0.9 })
-      // Если нужно вернуть исходный цвет (на случай, если он был изменен)
-      // polyline.setStyle({ color: polyline.options.color })
-    } else {
-      // Скрываем линии
-      polyline.setStyle({ opacity: 0 })
-    }
+  routePolylines.value.forEach((polyline) => {
+    polyline.setStyle({ opacity: isRoutesVisible.value ? 0.9 : 0 })
   })
 }
 
-// Новая функция для отрисовки маршрутов между точками
+// Отрисовка маршрутов между точками
 const drawRoutes = () => {
-  if (!map.value || optimalRoute.value.length < 2) return
+  const leafletMap = map.value
+  if (!leafletMap || optimalRoute.value.length < 2) return
 
   // Очищаем предыдущие линии
-  routePolylines.value.forEach(polyline => {
+  routePolylines.value.forEach((polyline) => {
     polyline.remove()
   })
   routePolylines.value = []
@@ -143,26 +192,14 @@ const drawRoutes = () => {
     const currentPoint = optimalRoute.value[i]
     const nextPoint = optimalRoute.value[i + 1]
 
-    // Получаем координаты текущей точки
-    const currentLat = currentPoint.location.toRegion.latitude
-      ? Number(currentPoint.location.toRegion.latitude)
-      : Number(currentPoint.location.fromRegion.latitude)
-    const currentLng = currentPoint.location.toRegion.longitude
-      ? Number(currentPoint.location.toRegion.longitude)
-      : Number(currentPoint.location.fromRegion.longitude)
-
-    // Получаем координаты следующей точки
-    const nextLat = nextPoint.location.toRegion.latitude
-      ? Number(nextPoint.location.toRegion.latitude)
-      : Number(nextPoint.location.fromRegion.latitude)
-    const nextLng = nextPoint.location.toRegion.longitude
-      ? Number(nextPoint.location.toRegion.longitude)
-      : Number(nextPoint.location.fromRegion.longitude)
+    const currentCoords = getPointCoordinates(currentPoint)
+    const nextCoords = getPointCoordinates(nextPoint)
+    if (!currentCoords || !nextCoords) continue
 
     // Создаем линию между точками
     const polyline = L.polyline([
-      [currentLat, currentLng],
-      [nextLat, nextLng]
+      [currentCoords.lat, currentCoords.lng],
+      [nextCoords.lat, nextCoords.lng]
     ], {
       color: routeColors[i % routeColors.length],
       weight: 4,
@@ -170,19 +207,21 @@ const drawRoutes = () => {
       smoothFactor: 1,
       lineCap: 'round',
       lineJoin: 'round'
-    }).addTo(map.value)
+    })
+
+    leafletMap.addLayer(polyline)
 
     // Добавляем всплывающую подсказку с информацией о сегменте
     const distance = calculateDistance(
-      currentLat, currentLng,
-      nextLat, nextLng
+      currentCoords.lat, currentCoords.lng,
+      nextCoords.lat, nextCoords.lng
     )
 
     polyline.bindPopup(`
       <div class="p-2">
         <h4 class="font-bold text-sm mb-1">Сегмент ${i + 1}</h4>
-        <p class="text-xs">От: ${currentPoint.name}</p>
-        <p class="text-xs">До: ${nextPoint.name}</p>
+        <p class="text-xs">От: ${escapeHtml(currentPoint.name)}</p>
+        <p class="text-xs">До: ${escapeHtml(nextPoint.name)}</p>
         <p class="text-xs font-bold mt-1">Расстояние: ${distance.toFixed(2)} км</p>
       </div>
     `)
@@ -191,7 +230,7 @@ const drawRoutes = () => {
   }
 }
 
-// Вспомогательная функция для расчета расстояния между точками (формула гаверсинуса)
+// Расчет расстояния между точками (формула гаверсинуса)
 const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: number): number => {
   const R = 6371 // Радиус Земли в километрах
   const dLat = (lat2 - lat1) * Math.PI / 180
@@ -219,9 +258,9 @@ const createTextMarker = (typePoint: TypePoint, lat: number, lon: number, text: 
         align-items: center;
       ">
         <div
-        class="truncate rounded border-1 text-[10px] font-bold px-1 py-0.5 mb-1"
+        class="truncate rounded border text-[10px] font-bold px-1 py-0.5 mb-1"
         style="background: ${color}; text-decoration: ${textDecoration};">
-        ${text}
+        ${escapeHtml(text)}
         </div>
         <div style="
           width: 10px;
@@ -240,114 +279,108 @@ const createTextMarker = (typePoint: TypePoint, lat: number, lon: number, text: 
   })
 }
 
+const clearMarkers = () => {
+  markers.value.forEach((marker) => {
+    marker.remove()
+  })
+  markers.value = []
+}
+
 const addMarkersToMap = () => {
-  if (!map.value) return
+  const leafletMap = map.value
+  if (!leafletMap) return
 
   optimalRoute.value.forEach((point, index) => {
-    let marker: Marker
-    let urlRoute: string
-    let urlPoint: string
-    if (point.location.toRegion.latitude && point.location.toRegion.longitude) {
-      marker = createTextMarker(
-        point.type,
-        Number(point.location.toRegion.latitude),
-        Number(point.location.toRegion.longitude),
-        `${index + 1}. ${point.name}`,
-        completedTaskIds.value.includes(point.uid)
-      ).addTo(map.value)
-      urlRoute = `https://yandex.ru/maps/?rtext=~${point.location.toRegion.latitude},${point.location.toRegion.longitude}&rtt=auto`
-      urlPoint = `https://yandex.ru/maps/?pt=${point.location.toRegion.longitude},${point.location.toRegion.latitude}&z=18&l=map`
-    } else {
-      marker = createTextMarker(
-        point.type,
-        Number(point.location.fromRegion.latitude),
-        Number(point.location.fromRegion.longitude),
-        `${index + 1}. ${point.name}`,
-        completedTaskIds.value.includes(point.uid)
-      ).addTo(map.value)
-      urlRoute = `https://yandex.ru/maps/?rtext=~${point.location.fromRegion.latitude},${point.location.fromRegion.longitude}&rtt=auto`
-      urlPoint = `https://yandex.ru/maps/?pt=${point.location.fromRegion.longitude},${point.location.fromRegion.latitude}&z=18&l=map`
-    }
+    const coords = getPointCoordinates(point)
+    if (!coords) return
+
+    const marker = createTextMarker(
+      point.type,
+      coords.lat,
+      coords.lng,
+      `${index + 1}. ${point.name}`,
+      completedTaskIds.value.includes(point.uid)
+    )
+
+    leafletMap.addLayer(marker)
+
+    const { urlRoute, urlPoint } = buildPointUrls(point)
 
     const popupDiv = document.createElement('div')
     popupDiv.className = 'p-2'
 
     popupDiv.innerHTML = `
-                          <h3 class="font-bold text-lg text-blue-600 mb-2">${index + 1}. ${point.name}</h3>
-                          <div class="text-gray-600 text-sm mb-1">${point.direction}</div>
-                          <div class="text-gray-600 text-sm mb-2">${point.address}</div>
-                          <div class="flex gap-2 items-center">
-                          <div class="inline-flex gap-2 items-center justify-center">
-                          <button
-                            class="route-btn px-2 py-1 rounded text-[#ffffff] bg-[#3d7eff] active:bg-[#3c3c3c]">
-                            Маршрут</button>
-                            <button
-                            class="point-btn px-2 py-1 rounded text-[#ffffff] bg-[#3d7eff] active:bg-[#3c3c3c]">
-                            Место</button>
-                            ${point.type !== TypePoint.Home ? `<button
-                            class="delete-btn px-2 py-1 rounded text-[#ffffff] bg-[#5e0808] active:bg-[#3c3c3c]">
-                            Удалить</button>` : ''}
-                          </div>
-                          </div>
-                        `
+      <h3 class="font-bold text-lg text-blue-600 mb-2">${index + 1}. ${escapeHtml(point.name)}</h3>
+      <div class="text-gray-600 text-sm mb-1">${escapeHtml(point.direction)}</div>
+      <div class="text-gray-600 text-sm mb-2">${escapeHtml(point.address)}</div>
+      <div class="flex gap-2 items-center">
+        <div class="inline-flex gap-2 items-center justify-center">
+          <button
+            class="route-btn px-2 py-1 rounded text-[#ffffff] bg-[#3d7eff] active:bg-[#3c3c3c]">
+            Маршрут</button>
+          <button
+            class="point-btn px-2 py-1 rounded text-[#ffffff] bg-[#3d7eff] active:bg-[#3c3c3c]">
+            Место</button>
+          ${point.type !== TypePoint.Home && point.uid !== startPointId.value ? `<button
+            class="delete-btn px-2 py-1 rounded text-[#ffffff] bg-[#5e0808] active:bg-[#3c3c3c]">
+            Удалить</button>` : ''}
+        </div>
+      </div>
+    `
 
     popupDiv.querySelector('.route-btn')?.addEventListener('click', () => {
-      openLink(urlRoute)
+      openExternalLink(urlRoute)
     })
     popupDiv.querySelector('.point-btn')?.addEventListener('click', () => {
-      openLink(urlPoint)
+      openExternalLink(urlPoint)
     })
     popupDiv.querySelector('.delete-btn')?.addEventListener('click', async () => {
-      if (selectedPoint.value && taskItems.value.includes(selectedPoint.value)) {
-        taskItems.value.splice(taskItems.value.indexOf(selectedPoint.value), 1)
-        taskItems.value.splice(taskItems.value.findIndex(() => selectedPoint.value?.name === 'Переходы. Тоннели'), 1)
-        await tasksLocalStorage.removeItems()
-        await tasksLocalStorage.setItems(taskItems.value)
-        taskPointsStore.savePoints(taskItems.value)
-        marker.closePopup()
-        marker.onRemove(map.value)
+      await removePoint(point.uid)
 
-        // Перерисовываем маршруты после удаления точки
+      taskItems.value = taskItems.value.filter((item) => item.uid !== point.uid)
+      await tasksLocalStorage.setItems(taskItems.value)
+      taskPointsStore.savePoints(taskItems.value)
+
+      marker.closePopup()
+
+      // Дожидаемся пересчёта маршрута и перерисовываем карту
+      setTimeout(() => {
+        clearMarkers()
+        addMarkersToMap()
         drawRoutes()
-      }
+        fitMapToMarkers()
+      }, 50)
     })
 
     marker.bindPopup(popupDiv)
-
-    marker.on('click', () => {
-      selectedPoint.value = point
-    })
+    markers.value.push(marker)
   })
 }
 
 const fitMapToMarkers = () => {
-  if (!map.value || optimalRoute.value.length === 0) return
+  const leafletMap = map.value
+  if (!leafletMap || optimalRoute.value.length === 0) return
 
-  const group = L.featureGroup()
+  const bounds = L.latLngBounds([])
+
   optimalRoute.value.forEach((point) => {
-    if (point.location.toRegion.latitude && point.location.toRegion.longitude) {
-      L.marker([
-        Number(point.location.toRegion.latitude),
-        Number(point.location.toRegion.longitude)
-      ]).addTo(group)
-    } else {
-      L.marker([
-        Number(point.location.fromRegion.latitude),
-        Number(point.location.fromRegion.longitude)
-      ]).addTo(group)
+    const coords = getPointCoordinates(point)
+    if (coords) {
+      bounds.extend([coords.lat, coords.lng])
     }
   })
 
-  map.value.fitBounds(group.getBounds().pad(0.1))
+  if (!bounds.isValid()) return
+
+  leafletMap.fitBounds(bounds.pad(0.1))
 }
 
 onUnmounted(() => {
   // Очищаем линии при размонтировании компонента
-  routePolylines.value.forEach(polyline => {
+  routePolylines.value.forEach((polyline) => {
     polyline.remove()
   })
 })
-
 </script>
 
 <template>
@@ -359,8 +392,9 @@ onUnmounted(() => {
       <!-- Кнопка переключения видимости маршрутов -->
       <button
         @click="toggleRoutesVisibility"
-        class="fixed top-4 right-4 z-20 px-4 py-2 rounded-lg text-white font-medium shadow-lg transition-all duration-200"
+        class="fixed right-4 z-20 px-4 py-2 rounded-lg text-white font-medium shadow-lg transition-all duration-200"
         :class="isRoutesVisible ? 'bg-blue-600 hover:bg-blue-700' : 'bg-gray-600 hover:bg-gray-700'"
+        style="top: calc(env(safe-area-inset-top, 0px) + 16px)"
       >
         <span v-if="isRoutesVisible">🔍 Скрыть маршруты</span>
         <span v-else>🗺️ Показать маршруты</span>
@@ -374,7 +408,7 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
-/* Добавляем небольшую анимацию для кнопки */
+/* Анимация для кнопки */
 button {
   transition: all 0.2s ease;
   backdrop-filter: blur(8px);
