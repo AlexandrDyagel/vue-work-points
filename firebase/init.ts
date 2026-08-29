@@ -1,4 +1,4 @@
-import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.5.0/firebase-app.js'
+import { initializeApp } from 'firebase/app'
 import {
   collection,
   deleteDoc,
@@ -10,12 +10,13 @@ import {
   query,
   orderBy,
   limit,
-} from 'https://www.gstatic.com/firebasejs/11.5.0/firebase-firestore.js'
+  type QueryDocumentSnapshot,
+} from 'firebase/firestore'
 import { PointResponse } from '@/model/PointResponse.ts'
 import type { PointRequest } from '@/model/PointRequest.ts'
 import { GeoPoint } from '@/model/GeoPoint.ts'
 import { Location } from '@/model/Location.ts'
-import { FirestoreCollectionNames } from '@/model/Enums.ts'
+import { FirestoreCollectionNames, TypePoint } from '@/model/Enums.ts'
 
 const firebaseConfig = {
   apiKey: 'AIzaSyAU1dbTQNeoTvXX-399VjvYXs0DHK-pKuc',
@@ -26,40 +27,82 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig)
 const db = getFirestore(app)
 
-async function getPoints() {
+/**
+ * Сериализует вложенную структуру Location в plain-объект для Firestore.
+ */
+function serializeLocation(location: Location) {
+  return {
+    toRegion: {
+      latitude: location.toRegion.latitude,
+      longitude: location.toRegion.longitude,
+    },
+    fromRegion: {
+      latitude: location.fromRegion.latitude,
+      longitude: location.fromRegion.longitude,
+    },
+  }
+}
+
+/**
+ * Сериализует PointRequest в plain-объект для Firestore.
+ * Заменяет уязвимую конструкцию JSON.parse(JSON.stringify(...)).
+ */
+function serializePoint(point: PointRequest) {
+  return {
+    type: point.type,
+    name: point.name,
+    direction: point.direction,
+    address: point.address,
+    location: serializeLocation(point.location),
+    createdAt: point.createdAt,
+    updatedAt: point.updatedAt,
+  }
+}
+
+/**
+ * Преобразует документ Firestore в PointResponse с проверкой на отсутствующие поля.
+ */
+function mapDocToPoint(snapshotDoc: QueryDocumentSnapshot): PointResponse {
+  const data = snapshotDoc.data()
+
+  return new PointResponse(
+    snapshotDoc.id,
+    (data.type as TypePoint) ?? TypePoint.TP,
+    data.name ?? '',
+    data.direction ?? '',
+    data.address ?? '',
+    new Location(
+      new GeoPoint(
+        data.location?.toRegion?.latitude ?? '',
+        data.location?.toRegion?.longitude ?? '',
+      ),
+      new GeoPoint(
+        data.location?.fromRegion?.latitude ?? '',
+        data.location?.fromRegion?.longitude ?? '',
+      ),
+    ),
+    data.createdAt ?? '',
+    data.updatedAt ?? '',
+  )
+}
+
+async function getPoints(): Promise<PointResponse[]> {
   const pointsCol = collection(db, FirestoreCollectionNames.POINTS)
   const pointSnapshot = await getDocs(pointsCol)
 
-  return pointSnapshot.docs.map(doc => new PointResponse(
-    doc.id,
-    doc.data().type,
-    doc.data().name,
-    doc.data().direction,
-    doc.data().address,
-    new Location(
-      new GeoPoint(
-        doc.data().location.toRegion.latitude,
-        doc.data().location.toRegion.longitude
-      ),
-      new GeoPoint(
-        doc.data().location.fromRegion.latitude,
-        doc.data().location.fromRegion.longitude
-      )
-    ),
-    doc.data().createdAt,
-    doc.data().updatedAt
-  ))
+  return pointSnapshot.docs.map(mapDocToPoint)
 }
 
-async function addPoint(point: PointRequest | null) {
-  if (point === null) return
+async function addPoint(point: PointRequest | null): Promise<void> {
+  if (!point) return
+
   const pointsCol = doc(collection(db, FirestoreCollectionNames.POINTS))
-  await setDoc(pointsCol, JSON.parse(JSON.stringify(point)))
+  await setDoc(pointsCol, serializePoint(point))
 }
 
-async function updatePoint(id: string, point: PointRequest) {
+async function updatePoint(id: string, point: PointRequest): Promise<void> {
   const pointDocRef = doc(db, FirestoreCollectionNames.POINTS, id)
-  await updateDoc(pointDocRef, JSON.parse(JSON.stringify(point)))
+  await updateDoc(pointDocRef, serializePoint(point))
 }
 
 // Последнее обновление данных
@@ -71,22 +114,11 @@ async function lastUpdatedPoints(): Promise<string> {
   )
   const querySnapshot = await getDocs(q)
 
-  return querySnapshot.docs[0].data().updatedAt
+  return querySnapshot.docs[0]?.data()?.updatedAt ?? ''
 }
 
-/*async function getPoint(id: string) {
-  const pointsColRef = collection(db, 'points')
-  const q = query(pointsColRef, where('documentId', '==', id))
-  const querySnapshot = await getDocs(q)
-
-  return {
-    documentId: querySnapshot.docs[0].id,
-    data: querySnapshot.docs[0].data()
-  }
-}*/
-
-async function deletePoint(id: string) {
-  await deleteDoc(doc(db, 'points', id))
+async function deletePoint(id: string): Promise<void> {
+  await deleteDoc(doc(db, FirestoreCollectionNames.POINTS, id))
 }
 
 export { getPoints, addPoint, updatePoint, deletePoint, lastUpdatedPoints }

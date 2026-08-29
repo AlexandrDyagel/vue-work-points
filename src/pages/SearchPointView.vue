@@ -280,6 +280,10 @@ watch(nearestPoint, (point) => {
     v-if="!nearestPoint"
     class="fixed overflow-auto start-0 top-0 end-0 bottom-0 flex flex-col items-center justify-center gap-6 bg-[#242528]"
   >
+    <p class="hint-text text-center text-sm text-white/90 px-6 max-w-[280px]">
+      Отслеживание ближайшей точки в реальном времени
+    </p>
+
     <button
       class="search-button search-btn disabled:opacity-50"
       :class="watching ? 'search-btn-animation-search' : 'search-btn-animation'"
@@ -471,6 +475,21 @@ watch(nearestPoint, (point) => {
 
 .search-button:active {
   transform: scale(0.95);
+}
+
+/* Свечение поясняющего текста */
+@keyframes hint-glow {
+  0%,
+  100% {
+    text-shadow: 0 0 6px rgba(16, 185, 129, 0.5), 0 0 12px rgba(16, 185, 129, 0.25);
+  }
+  50% {
+    text-shadow: 0 0 12px rgba(16, 185, 129, 0.85), 0 0 24px rgba(16, 185, 129, 0.45);
+  }
+}
+
+.hint-text {
+  animation: hint-glow 2s ease-in-out infinite;
 }
 
 /* Анимация пульсации для кнопок */
