@@ -1,3 +1,5 @@
+import type * as L from 'leaflet'
+
 // Интерфейс для точки маршрута
 export interface RoutePoint {
   lat: number

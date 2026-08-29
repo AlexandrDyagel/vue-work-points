@@ -7,6 +7,8 @@ import type {
 } from '@/model/MapInterfaces.ts'
 import { RoadGraph } from '@/model/RoadGraph.ts'
 import { ref } from 'vue'
+import * as L from 'leaflet'
+import 'leaflet/dist/leaflet.css'
 
 export const useRealRouteMap = () => {
   // Реактивные переменные с типизацией
@@ -121,19 +123,21 @@ export const useRealRouteMap = () => {
 
   // Инициализация карты
   const initMap = (): void => {
-    if (!window.L || !mapContainer.value) return
+    if (!mapContainer.value) return
 
-    map.value = window.L.map(mapContainer.value).setView([55.7558, 37.6173], 12)
+    map.value = L.map(mapContainer.value).setView([55.7558, 37.6173], 12)
 
-    window.L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© OpenStreetMap contributors',
-    }).addTo(map.value)
+    map.value.addLayer(
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors',
+      })
+    )
 
     // Добавляем маркеры
     points.value.forEach((point: RoutePoint, index: number) => {
-      window.L.marker([point.lat, point.lng])
-        .addTo(map.value!)
-        .bindPopup(`${index + 1}. ${point.name}`)
+      map.value!.addLayer(
+        L.marker([point.lat, point.lng]).bindPopup(`${index + 1}. ${point.name}`)
+      )
     })
 
     // Автоматически загружаем дорожную сеть для текущего вида
@@ -158,7 +162,7 @@ export const useRealRouteMap = () => {
 
     // Очищаем предыдущие маршруты
     map.value.eachLayer((layer: L.Layer) => {
-      if (layer instanceof window.L.Polyline && !('_url' in layer)) {
+      if (layer instanceof L.Polyline && !('_url' in layer)) {
         map.value!.removeLayer(layer)
       }
     })
@@ -173,11 +177,13 @@ export const useRealRouteMap = () => {
       const routeCoordinates = await buildRealRoute(startPoint, endPoint)
 
       if (routeCoordinates && routeCoordinates.length > 0) {
-        const polyline = window.L.polyline(routeCoordinates, {
+        const polyline = L.polyline(routeCoordinates, {
           color: color,
           weight: 4,
           opacity: 0.8,
-        }).addTo(map.value)
+        })
+
+        map.value.addLayer(polyline)
 
         polyline.bindPopup(
           `Реальный маршрут ${i + 1}: ${startPoint.name} → ${endPoint.name}<br>Точек: ${routeCoordinates.length}`,
@@ -223,9 +229,9 @@ export const useRealRouteMap = () => {
     points.value.push(newPoint)
 
     if (map.value) {
-      window.L.marker([newPoint.lat, newPoint.lng])
-        .addTo(map.value)
-        .bindPopup(`${points.value.length}. ${newPoint.name}`)
+      map.value.addLayer(
+        L.marker([newPoint.lat, newPoint.lng]).bindPopup(`${points.value.length}. ${newPoint.name}`)
+      )
     }
   }
 
@@ -235,15 +241,15 @@ export const useRealRouteMap = () => {
       points.value.pop()
       if (map.value) {
         map.value.eachLayer((layer: L.Layer) => {
-          if (layer instanceof window.L.Marker) {
+          if (layer instanceof L.Marker) {
             map.value!.removeLayer(layer)
           }
         })
 
         points.value.forEach((point: RoutePoint, index: number) => {
-          window.L.marker([point.lat, point.lng])
-            .addTo(map.value!)
-            .bindPopup(`${index + 1}. ${point.name}`)
+          map.value!.addLayer(
+            L.marker([point.lat, point.lng]).bindPopup(`${index + 1}. ${point.name}`)
+          )
         })
       }
     }
