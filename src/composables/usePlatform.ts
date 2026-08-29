@@ -20,8 +20,8 @@ export function usePlatform() {
       if (platform === 'android' || platform == 'ios') return false
       console.log('Запущено в обычном веб-браузере')
       const osPlatform = navigator?.userAgentData.platform
-      if (osPlatform === 'Android' || osPlatform === 'iOS') return false
-      return true
+      return !(osPlatform === 'Android' || osPlatform === 'iOS')
+
     }
   }
 

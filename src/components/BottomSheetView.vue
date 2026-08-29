@@ -18,10 +18,18 @@ const closeSheet = () => {
   document.body.style.overflow = ''
 }
 
+// Извлечение координаты Y из события мыши или касания
+const getClientY = (e: MouseEvent | TouchEvent): number => {
+  if ('touches' in e) {
+    return e.touches[0].clientY
+  }
+  return (e as MouseEvent).clientY
+}
+
 // Начало перетаскивания
-const startDrag = (e) => {
+const startDrag = (e: MouseEvent | TouchEvent) => {
   isDragging.value = true
-  startY.value = e.type === 'mousedown' ? e.clientY : e.touches[0].clientY
+  startY.value = getClientY(e)
   currentY.value = startY.value
 
   // Добавляем обработчики для движения и отпускания
@@ -32,10 +40,10 @@ const startDrag = (e) => {
 }
 
 // Перетаскивание
-const onDrag = (e) => {
+const onDrag = (e: MouseEvent | TouchEvent) => {
   if (!isDragging.value) return
 
-  const y = e.type === 'mousemove' ? e.clientY : e.touches[0].clientY
+  const y = getClientY(e)
   const deltaY = y - startY.value
 
   // Ограничиваем движение вверх
