@@ -16,13 +16,9 @@ export function usePlatform() {
     if (Capacitor.isNativePlatform()) {
       console.log(`Запущено на нативной платформе: ${platform}`)
       return true
-    } else {
-      if (platform === 'android' || platform == 'ios') return false
-      console.log('Запущено в обычном веб-браузере')
-      const osPlatform = navigator?.userAgentData.platform
-      return !(osPlatform === 'Android' || osPlatform === 'iOS')
-
     }
+    console.log('Запущено в обычном веб-браузере')
+    return false
   }
 
   /**
@@ -30,7 +26,10 @@ export function usePlatform() {
    * Telegram WebApp устанавливает window.Telegram.WebApp.
    */
   const isTelegram = (): boolean => {
-    return osPlatform === 'Android' && osPlatform === 'iOS'
+    if (typeof window === 'undefined') return false
+
+    const telegram = (window as { Telegram?: { WebApp?: { initData?: string } } }).Telegram
+    return Boolean(telegram?.WebApp?.initData)
   }
 
   return {

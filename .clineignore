@@ -13,8 +13,8 @@ pnpm-lock.yaml
 bun.lockb
 
 # Native platform builds (Capacitor)
-#android/
-#ios/
+android/
+ios/
 
 # Images and binary assets (AI can't process them)
 *.png
@@ -34,9 +34,9 @@ bun.lockb
 *.pdf
 
 # Firebase config
-#.firebaserc
-#firebase.json
-#firebase/
+.firebaserc
+firebase.json
+firebase/
 
 # Logs
 logs/
