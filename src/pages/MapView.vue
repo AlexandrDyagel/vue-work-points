@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { BackButton } from 'vue-tg'
+import { useMiniApp } from 'vue-tg/8.0'
 import { useRouter } from 'vue-router'
 import { computed, nextTick, onMounted, ref } from 'vue'
 import { usePointsStore } from '@/store/Points.ts'
@@ -9,6 +10,8 @@ import 'leaflet/dist/leaflet.css'
 import { useCache } from '@/composables/useCache.ts'
 import type { PointResponse } from '@/model/PointResponse.ts'
 import { TypePoint } from '@/model/Enums.ts'
+import { Capacitor } from '@capacitor/core'
+import { AppLauncher } from '@capacitor/app-launcher'
 import StepUpImg from '@/assets/images/step_up.png'
 import TunnelImg from '@/assets/images/tunnel.png'
 import WorkHomeImg from '@/assets/images/work_home.png'
@@ -17,6 +20,7 @@ import StepDownImg from '@/assets/images/step_down.png'
 const router = useRouter()
 const pointsStore = usePointsStore()
 const { obtainCachedPoints } = useCache()
+const { openLink } = useMiniApp()
 
 const isLoadingData = ref(false)
 const map = ref<L.Map | null>(null)
@@ -129,6 +133,31 @@ const getPointCoordinates = (point: PointResponse) => {
   return { lat, lng }
 }
 
+// Открывает внешнюю ссылку с учётом платформы
+const openExternalLink = async (url: string): Promise<void> => {
+  try {
+    if (Capacitor.isNativePlatform()) {
+      await AppLauncher.openUrl({ url })
+    } else {
+      openLink(url)
+    }
+  } catch (e) {
+    console.error('Не удалось открыть ссылку:', e)
+  }
+}
+
+// Построение URL для маршрута и точки
+const buildPointUrls = (point: PointResponse) => {
+  const coords = getPointCoordinates(point)
+  const lat = coords?.lat ?? 0
+  const lng = coords?.lng ?? 0
+
+  return {
+    urlRoute: `https://yandex.ru/maps/?rtext=~${lat},${lng}&rtt=auto`,
+    urlPoint: `https://yandex.ru/maps/?pt=${lng},${lat}&z=18&l=map`
+  }
+}
+
 const initMap = () => {
   // Защита от повторной инициализации карты
   if (map.value) return
@@ -213,6 +242,8 @@ const addMarkersToMap = (points: PointResponse[], highlightUid?: string) => {
     // Сохраняем ID точки на маркере для последующего поиска
     marker.pointId = point.uid
 
+    const { urlRoute, urlPoint } = buildPointUrls(point)
+
     // Создаем попап с информацией о точке
     const popupDiv = document.createElement('div')
     popupDiv.className = 'p-3 min-w-[200px]'
@@ -224,10 +255,24 @@ const addMarkersToMap = (points: PointResponse[], highlightUid?: string) => {
       <div class="text-gray-600 text-sm mb-1">
         <span class="font-semibold">Адрес:</span> ${escapeHtml(point.address || '—')}
       </div>
-      <div class="text-gray-600 text-sm">
-        <span class="font-semibold">Тип точки:</span> ${escapeHtml(point.type || '—')}
+      <div class="flex gap-2 items-center">
+        <div class="inline-flex gap-2 items-center justify-center">
+          <button
+            class="route-btn px-2 py-1 rounded text-[#ffffff] bg-[#3d7eff] active:bg-[#3c3c3c]">
+            Маршрут</button>
+          <button
+            class="point-btn px-2 py-1 rounded text-[#ffffff] bg-[#3d7eff] active:bg-[#3c3c3c]">
+            Место</button>
+        </div>
       </div>
     `
+
+    popupDiv.querySelector('.route-btn')?.addEventListener('click', () => {
+      openExternalLink(urlRoute)
+    })
+    popupDiv.querySelector('.point-btn')?.addEventListener('click', () => {
+      openExternalLink(urlPoint)
+    })
 
     marker.bindPopup(popupDiv)
     markers.value.push(marker)
