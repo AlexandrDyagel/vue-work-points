@@ -19,7 +19,7 @@ import { AppLauncher } from '@capacitor/app-launcher'
 const router = useRouter()
 const pointsStore = usePointsStore()
 const tasksLocalStorage = useTasksLocalStorage()
-const { getCompletedTasks } = tasksLocalStorage
+const { getCompletedTasks, setCompletedTask } = tasksLocalStorage
 const taskPointsStore = useTaskPointsStore()
 const { obtainCachedPoints } = useCache()
 const {
@@ -338,6 +338,8 @@ const addMarkersToMap = () => {
       await removePoint(point.uid)
 
       taskItems.value = taskItems.value.filter((item) => item.uid !== point.uid)
+      completedTaskIds.value = completedTaskIds.value.filter((uid) => uid !== point.uid)
+      await setCompletedTask(point.uid, false)
       await tasksLocalStorage.setItems(taskItems.value)
       taskPointsStore.savePoints(taskItems.value)
 

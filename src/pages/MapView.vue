@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { BackButton } from 'vue-tg'
 import { useRouter } from 'vue-router'
-import { computed, nextTick, onMounted, ref, watch } from 'vue'
+import { computed, nextTick, onMounted, ref } from 'vue'
 import { usePointsStore } from '@/store/Points.ts'
 import LoadingScreen from '@/components/LoadingScreen.vue'
 import * as L from 'leaflet'
@@ -79,14 +79,14 @@ onMounted(async () => {
   }
 })
 
-// Следим за изменением направления
-watch(selectedDirection, () => {
+// Смена направления через выпадающий список (только пользовательский ввод)
+const onDirectionChange = () => {
   clearMarkers()
   if (selectedDirection.value) {
     addMarkersToMap(filteredPoints.value)
     fitMapToMarkers(filteredPoints.value)
   }
-})
+}
 
 // Функция для выбора точки из поиска
 const selectPointFromSearch = (point: PointResponse) => {
@@ -95,7 +95,7 @@ const selectPointFromSearch = (point: PointResponse) => {
 
   // Очищаем маркеры и добавляем новые с выделенной точкой
   clearMarkers()
-  addMarkersToMap(filteredPoints.value, point)
+  addMarkersToMap(filteredPoints.value, point.uid)
   fitMapToMarkers(filteredPoints.value)
 
   // Открываем попап выбранной точки
@@ -198,14 +198,14 @@ const clearMarkers = () => {
   markers.value = []
 }
 
-const addMarkersToMap = (points: PointResponse[], highlightPoint?: PointResponse) => {
+const addMarkersToMap = (points: PointResponse[], highlightUid?: string) => {
   if (!map.value || points.length === 0) return
 
   points.forEach((point, index) => {
     const coords = getPointCoordinates(point)
     if (!coords) return
 
-    const isSelected = highlightPoint?.uid === point.uid
+    const isSelected = highlightUid !== undefined && highlightUid === point.uid
     const marker: PointMarker = createTextMarker(coords.lat, coords.lng, point.name, index, isSelected)
 
     map.value!.addLayer(marker)
@@ -290,6 +290,7 @@ const getIcon = (typePoint: TypePoint) => {
         <label class="text-sm font-semibold text-gray-200 min-w-[80px]">Направление:</label>
         <select
           v-model="selectedDirection"
+          @change="onDirectionChange"
           class="flex-1 px-3 py-2 border border-[#000] rounded-lg text-sm text-white bg-black cursor-pointer transition-all focus:outline-none focus:border-gray-500 focus:ring-2 focus:ring-gray-500"
         >
           <option value="">Выберите направление</option>
