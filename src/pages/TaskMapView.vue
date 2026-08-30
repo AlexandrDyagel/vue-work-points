@@ -15,6 +15,10 @@ import * as L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import { Capacitor } from '@capacitor/core'
 import { AppLauncher } from '@capacitor/app-launcher'
+import StepUpImg from '@/assets/images/step_up.png'
+import TunnelImg from '@/assets/images/tunnel.png'
+import WorkHomeImg from '@/assets/images/work_home.png'
+import StepDownImg from '@/assets/images/step_down.png'
 
 const router = useRouter()
 const pointsStore = usePointsStore()
@@ -77,6 +81,23 @@ const escapeHtml = (value: string): string => {
   const div = document.createElement('div')
   div.appendChild(document.createTextNode(value))
   return div.innerHTML
+}
+
+const getIcon = (typePoint: TypePoint) => {
+  switch (typePoint) {
+    case TypePoint.PP: {
+      return StepUpImg
+    }
+    case TypePoint.TA: {
+      return TunnelImg
+    }
+    case TypePoint.TP: {
+      return StepDownImg
+    }
+    case TypePoint.Home: {
+      return WorkHomeImg
+    }
+  }
 }
 
 // Получение координат точки (с fallback toRegion -> fromRegion)
@@ -243,14 +264,13 @@ const calculateDistance = (lat1: number, lon1: number, lat2: number, lon2: numbe
   return R * c
 }
 
-// Функция для создания текстовой метки
-const createTextMarker = (typePoint: TypePoint, lat: number, lon: number, text: string, isCompleted = false) => {
+// Функция для создания иконки текстовой метки
+const createTextIcon = (typePoint: TypePoint, text: string, isCompleted = false): L.DivIcon => {
   const textDecoration = isCompleted ? 'line-through' : 'none'
   const color = isCompleted ? '#5fb336' : (typePoint !== TypePoint.Home ? '#3388ff' : '#5e0808')
 
-  return L.marker([lat, lon], {
-    icon: L.divIcon({
-      html: `
+  return L.divIcon({
+    html: `
       <div style="
         position: relative;
         display: flex;
@@ -272,10 +292,16 @@ const createTextMarker = (typePoint: TypePoint, lat: number, lon: number, text: 
         "></div>
       </div>
     `,
-      className: '',
-      iconSize: [150, 30],
-      iconAnchor: [75, 30]
-    })
+    className: '',
+    iconSize: [150, 30],
+    iconAnchor: [75, 30]
+  })
+}
+
+// Функция для создания текстовой метки
+const createTextMarker = (typePoint: TypePoint, lat: number, lon: number, text: string, isCompleted = false) => {
+  return L.marker([lat, lon], {
+    icon: createTextIcon(typePoint, text, isCompleted)
   })
 }
 
@@ -305,14 +331,22 @@ const addMarkersToMap = () => {
     leafletMap.addLayer(marker)
 
     const { urlRoute, urlPoint } = buildPointUrls(point)
+    const isCompleted = completedTaskIds.value.includes(point.uid)
 
     const popupDiv = document.createElement('div')
     popupDiv.className = 'p-2'
 
     popupDiv.innerHTML = `
-      <h3 class="font-bold text-lg text-blue-600 mb-2">${index + 1}. ${escapeHtml(point.name)}</h3>
-      <div class="text-gray-600 text-sm mb-1">${escapeHtml(point.direction)}</div>
-      <div class="text-gray-600 text-sm mb-2">${escapeHtml(point.address)}</div>
+      <div class="flex flex-row justify-between gap-2">
+        <div class="min-w-0">
+          <h3 class="font-bold text-lg text-blue-600 mb-2">${index + 1}. ${escapeHtml(point.name)}</h3>
+          <div class="text-gray-600 text-sm mb-1">${escapeHtml(point.direction)}</div>
+          <div class="text-gray-600 text-sm mb-2">${escapeHtml(point.address)}</div>
+        </div>
+        <div class="w-12 h-12 shrink-0">
+          <img src="${getIcon(point.type) ?? ''}" class="rounded-sm w-full h-full object-cover" alt="" />
+        </div>
+      </div>
       <div class="flex gap-2 items-center">
         <div class="inline-flex gap-2 items-center justify-center">
           <button
@@ -326,6 +360,11 @@ const addMarkersToMap = () => {
             Удалить</button>` : ''}
         </div>
       </div>
+      <div class="flex gap-2 items-center mt-2">
+        <button
+          class="status-btn px-2 py-1 rounded text-[#ffffff] active:bg-[#3c3c3c] ${isCompleted ? 'bg-[#5fb336]' : 'bg-[#e67e22]'}">
+          ${isCompleted ? 'Выполнено' : 'В работе'}</button>
+      </div>
     `
 
     popupDiv.querySelector('.route-btn')?.addEventListener('click', () => {
@@ -333,6 +372,33 @@ const addMarkersToMap = () => {
     })
     popupDiv.querySelector('.point-btn')?.addEventListener('click', () => {
       openExternalLink(urlPoint)
+    })
+    popupDiv.querySelector('.status-btn')?.addEventListener('click', () => {
+      const wasCompleted = completedTaskIds.value.includes(point.uid)
+
+      if (wasCompleted) {
+        completedTaskIds.value = completedTaskIds.value.filter((uid) => uid !== point.uid)
+      } else {
+        completedTaskIds.value = [...completedTaskIds.value, point.uid]
+      }
+
+      setCompletedTask(point.uid, !wasCompleted)
+
+      const statusBtn = popupDiv.querySelector('.status-btn')
+      if (statusBtn) {
+        statusBtn.textContent = wasCompleted ? 'В работе' : 'Выполнено'
+        statusBtn.classList.toggle('bg-[#e67e22]', wasCompleted)
+        statusBtn.classList.toggle('bg-[#5fb336]', !wasCompleted)
+      }
+
+      // Обновляем внешний вид маркера в соответствии с новым статусом
+      marker.setIcon(
+        createTextIcon(
+          point.type,
+          `${index + 1}. ${point.name}`,
+          !wasCompleted
+        )
+      )
     })
     popupDiv.querySelector('.delete-btn')?.addEventListener('click', async () => {
       await removePoint(point.uid)

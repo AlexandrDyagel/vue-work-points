@@ -248,12 +248,19 @@ const addMarkersToMap = (points: PointResponse[], highlightUid?: string) => {
     const popupDiv = document.createElement('div')
     popupDiv.className = 'p-3 min-w-[200px]'
     popupDiv.innerHTML = `
-      <h3 class="font-bold text-lg text-blue-600 mb-2">${index + 1}. ${escapeHtml(point.name)}</h3>
-      <div class="text-gray-600 text-sm mb-1">
-        <span class="font-semibold">Направление:</span> ${escapeHtml(point.direction || '—')}
-      </div>
-      <div class="text-gray-600 text-sm mb-1">
-        <span class="font-semibold">Адрес:</span> ${escapeHtml(point.address || '—')}
+      <div class="flex flex-row justify-between gap-2">
+        <div class="min-w-0">
+          <h3 class="font-bold text-lg text-blue-600 mb-2">${index + 1}. ${escapeHtml(point.name)}</h3>
+          <div class="text-gray-600 text-sm mb-1">
+            <span class="font-semibold">Направление:</span> ${escapeHtml(point.direction || '—')}
+          </div>
+          <div class="text-gray-600 text-sm mb-1">
+            <span class="font-semibold">Адрес:</span> ${escapeHtml(point.address || '—')}
+          </div>
+        </div>
+        <div class="w-12 h-12 shrink-0">
+          <img src="${getIcon(point.type) ?? ''}" class="rounded-sm w-full h-full object-cover" alt="" />
+        </div>
       </div>
       <div class="flex gap-2 items-center">
         <div class="inline-flex gap-2 items-center justify-center">
