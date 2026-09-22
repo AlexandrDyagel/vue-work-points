@@ -1,12 +1,28 @@
 <script setup lang="ts">
 import { PointResponse } from '@/model/PointResponse.ts'
-import { computed, ref, shallowRef } from 'vue'
+import { TaskTag } from '@/model/Enums.ts'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, shallowRef, watch } from 'vue'
 import CheckCircleIcon from '@/components/icons/CheckCircleIcon.vue'
+import { useNoteEditor } from '@/store/NoteEditor.ts'
+
+interface TagOption {
+  value: TaskTag
+  label: string
+  activeClass: string
+}
+
+const tagOptions: TagOption[] = [
+  { value: TaskTag.LIGHTING, label: 'Освещение', activeClass: 'bg-amber-500 border-amber-500 text-black' },
+  { value: TaskTag.CAMERAS, label: 'Камеры', activeClass: 'bg-blue-500 border-blue-500 text-white' },
+  { value: TaskTag.OTHER, label: 'Другое', activeClass: 'bg-purple-500 border-purple-500 text-white' },
+]
 
 const props = defineProps<{
   index: number
   taskItems: PointResponse[]
   isCompleted?: boolean
+  tag?: TaskTag
+  note?: string
 }>()
 
 const point = ref(props.taskItems[props.index])
@@ -16,6 +32,9 @@ const checkCircleIcon = shallowRef(CheckCircleIcon)
 const emit = defineEmits<{
   delete: [index: number]
   toggleCompleted: [completed: boolean]
+  selectTag: [tag: TaskTag]
+  updateNote: [note: string]
+  deleteNote: []
 }>()
 
 // Событие удаления элемента
@@ -28,54 +47,227 @@ const toggleCompleted = () => {
   emit('toggleCompleted', !props.isCompleted)
 }
 
+// Событие выбора тэга задачи
+const onSelectTag = (tag: TaskTag) => {
+  emit('selectTag', tag)
+}
+
+// --- Заметка ---
+const isEditingNote = ref(false)
+const noteDraft = ref('')
+const noteTextareaRef = ref<HTMLTextAreaElement | null>(null)
+const noteEditorRef = ref<HTMLElement | null>(null)
+const noteButtonRef = ref<HTMLElement | null>(null)
+const showNoteExitConfirm = ref(false)
+
+const noteEditorStore = useNoteEditor()
+
+watch(isEditingNote, (editing) => {
+  noteEditorStore.setEditing(point.value.uid, editing)
+})
+
+// Флаг подавления ближайшего document-клика после открытия редактора
+let suppressNextDocumentClick = false
+
+const openNoteEditor = async () => {
+  if (!isEditingNote.value) {
+    noteDraft.value = props.note ?? ''
+    isEditingNote.value = true
+    suppressNextDocumentClick = true
+  }
+  await nextTick()
+  noteTextareaRef.value?.focus()
+}
+
+const cancelNoteEditor = () => {
+  isEditingNote.value = false
+  noteDraft.value = ''
+}
+
+const saveNote = () => {
+  const trimmed = noteDraft.value.trim()
+  if (trimmed) {
+    emit('updateNote', trimmed)
+  } else {
+    emit('deleteNote')
+  }
+  isEditingNote.value = false
+  noteDraft.value = ''
+}
+
+const deleteNote = () => {
+  emit('deleteNote')
+  isEditingNote.value = false
+  noteDraft.value = ''
+}
+
+// Были ли изменения в тексте заметки относительно сохранённого значения
+const hasNoteChanges = () => noteDraft.value !== (props.note ?? '')
+
+// Попытка закрыть редактор при клике вне него
+const attemptCloseEditor = () => {
+  if (hasNoteChanges()) {
+    showNoteExitConfirm.value = true
+  } else {
+    cancelNoteEditor()
+  }
+}
+
+const confirmSaveNote = () => {
+  showNoteExitConfirm.value = false
+  saveNote()
+}
+
+const confirmDiscardNote = () => {
+  showNoteExitConfirm.value = false
+  cancelNoteEditor()
+}
+
+const onDocumentClick = (event: MouseEvent) => {
+  if (suppressNextDocumentClick) {
+    suppressNextDocumentClick = false
+    return
+  }
+  if (!isEditingNote.value || showNoteExitConfirm.value) return
+  const target = event.target as Node
+  if (noteEditorRef.value?.contains(target)) return
+  if (noteButtonRef.value?.contains(target)) return
+  attemptCloseEditor()
+}
+
+onMounted(() => {
+  document.addEventListener('click', onDocumentClick)
+})
+
+onBeforeUnmount(() => {
+  document.removeEventListener('click', onDocumentClick)
+  if (isEditingNote.value) noteEditorStore.setEditing(point.value.uid, false)
+})
+
 const isCompleted = computed(() => props.isCompleted ?? false)
 
 const path = (index: number): string => {
   if (index === 0 && props.taskItems.length !== 1) {
-    return 'absolute left-10 top-0 bottom-0 w-1 bg-blue-500 translate-y-1/2'
+    return 'absolute left-8 top-0 bottom-0 w-1 bg-blue-500 translate-y-1/2'
   } else if (index === 0 && props.taskItems.length === 1) {
-    return 'absolute left-10 top-0 bottom-0 w-1'
+    return 'absolute left-8 top-0 bottom-0 w-1'
   } else if (index === props.taskItems.length - 1) {
-    return 'absolute left-10 top-0 bottom-0 w-1 bg-blue-500 -translate-y-1/2'
+    return 'absolute left-8 top-0 bottom-0 w-1 bg-blue-500 -translate-y-1/2'
   } else {
-    return 'absolute left-10 top-0 bottom-0 w-1 bg-blue-500'
+    return 'absolute left-8 top-0 bottom-0 w-1 bg-blue-500'
   }
 }
 </script>
 
 <template>
   <div class="relative">
-    <div class="flex flex-row justify-between items-center relative py-5 px-6">
+    <div class="flex flex-row justify-between items-center relative py-5 px-4">
       <!-- Дорожка -->
       <div :class="path(index)"></div>
 
       <!-- Точка на дорожке -->
       <div
-        class="absolute left-8 top-1/2 transform -translate-y-1/2 w-5 h-5 rounded-full bg-blue-500 border-4 border-white z-10"
+        class="absolute left-6 top-1/2 transform -translate-y-1/2 w-5 h-5 rounded-full bg-blue-500 border-4 border-white z-10"
         :class="{ 'animate-pulse-custom': index === 0 }"
         style="box-shadow: 0 0 0 2px #3b82f6"
       ></div>
 
       <!-- Информация о точке point -->
-      <div class="ml-10">
-        <div class="font-bold text-[#F0F0F0]">{{ point.name }}</div>
-        <div class="text-sm text-[#ff5b4d]">{{ point.direction }}</div>
-        <div class="text-xs text-[#999]">{{ point.address }}</div>
-      </div>
+      <div class="ml-10 flex-1 min-w-0">
+        <div class="w-full flex flex-row justify-between gap-2">
+          <div class="min-w-0">
+            <div class="font-bold text-[#F0F0F0]">{{ point.name }}</div>
+            <div class="text-sm text-[#ff5b4d]">{{ point.direction }}</div>
+            <div class="text-xs text-[#999]">{{ point.address }}</div>
+          </div>
 
-      <div class="relative z-[70] flex flex-row items-center gap-3">
-        <div
-          class="cursor-pointer"
-          :class="isCompleted ? 'text-[#5fb336]' : 'text-[#61646b]'"
-          @mousedown.prevent
-          @click="toggleCompleted"
-        >
-          <component :is="checkCircleIcon"></component>
+          <!-- Кнопки действий над заданием -->
+          <div class="relative z-[70] flex flex-row items-center gap-2 shrink-0">
+            <div
+              ref="noteButtonRef"
+              class="cursor-pointer"
+              :class="note ? 'text-[#3d7eff]' : 'text-[#61646b]'"
+              @mousedown.prevent
+              @click="openNoteEditor"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 -960 960 960" fill="currentColor">
+                <path d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h400l240 240v400q0 33-23.5 56.5T760-120H200Zm360-520v-200H200v560h560v-360H560Zm-280 400h400v-80H280v80Zm0-160h400v-80H280v80Zm-80-320v560-560Z"/>
+              </svg>
+            </div>
+            <div
+              class="cursor-pointer"
+              :class="isCompleted ? 'text-[#5fb336]' : 'text-[#61646b]'"
+              @mousedown.prevent
+              @click="toggleCompleted"
+            >
+              <component :is="checkCircleIcon"></component>
+            </div>
+
+            <svg @mousedown.prevent @click="deleteItem" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-400 active:text-red-500 cursor-pointer" viewBox="0 -960 960 960" fill="currentColor">
+              <path d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520ZM360-280h80v-360h-80v360Zm160 0h80v-360h-80v360ZM280-720v520-520Z"/>
+            </svg>
+          </div>
         </div>
 
-        <svg @mousedown.prevent @click="deleteItem" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-400 active:text-red-500 cursor-pointer" viewBox="0 -960 960 960" fill="currentColor">
-          <path d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520ZM360-280h80v-360h-80v360Zm160 0h80v-360h-80v360ZM280-720v520-520Z"/>
-        </svg>
+        <!-- Тэги задачи -->
+        <div class="flex flex-wrap items-center gap-1.5 mt-2">
+          <button
+            v-for="tagOption in tagOptions"
+            :key="tagOption.value"
+            class="rounded-full border px-2.5 py-0.5 text-xs font-medium transition-colors cursor-pointer"
+            :class="tag === tagOption.value ? tagOption.activeClass : 'border-[#3d3e43] text-gray-400'"
+            @mousedown.prevent
+            @click="onSelectTag(tagOption.value)"
+          >
+            {{ tagOption.label }}
+          </button>
+        </div>
+
+        <!-- Заметка -->
+        <div
+          v-if="note && !isEditingNote"
+          class="mt-2 flex items-start gap-1.5 text-xs text-[#c9c9d1]"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0 mt-px text-[#61646b]" viewBox="0 -960 960 960" fill="currentColor">
+            <path d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h400l240 240v400q0 33-23.5 56.5T760-120H200Zm360-520v-200H200v560h560v-360H560Zm-280 400h400v-80H280v80Zm0-160h400v-80H280v80Zm-80-320v560-560Z"/>
+          </svg>
+          <span class="break-words whitespace-pre-wrap">{{ note }}</span>
+        </div>
+
+        <!-- Редактор заметки -->
+        <div v-if="isEditingNote" ref="noteEditorRef" class="mt-2">
+          <textarea
+            ref="noteTextareaRef"
+            v-model="noteDraft"
+            rows="2"
+            placeholder="Введите заметку..."
+            class="w-full bg-[#2a2a2e] text-white border border-[#444] rounded-lg px-3 py-2 text-sm outline-none focus:border-[#3d7eff] transition-colors resize-none"
+          ></textarea>
+          <div class="flex items-center gap-3 mt-1.5">
+            <button
+              class="text-xs font-medium text-[#3d7eff] cursor-pointer"
+              @mousedown.prevent
+              @click="saveNote"
+            >
+              Сохранить
+            </button>
+            <button
+              v-if="note"
+              class="text-xs font-medium text-red-400 cursor-pointer"
+              @mousedown.prevent
+              @click="deleteNote"
+            >
+              Удалить
+            </button>
+            <button
+              class="text-xs font-medium text-gray-400 cursor-pointer"
+              @mousedown.prevent
+              @click="cancelNoteEditor"
+            >
+              Отмена
+            </button>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -87,6 +279,35 @@ const path = (index: number): string => {
       <span class="text-2xl font-bold text-[#5fb336]">Выполнено</span>
     </div>
   </div>
+
+  <!-- Подтверждение закрытия редактора заметки с несохранёнными изменениями -->
+  <Teleport to="body">
+    <Transition name="note-modal">
+      <div v-if="showNoteExitConfirm" class="fixed inset-0 z-[9999]">
+        <div class="absolute inset-0 bg-black/60" @click="confirmDiscardNote"></div>
+
+        <div
+          class="note-modal-content absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-[360px] bg-[#1e1e21] rounded-2xl p-6 shadow-2xl border border-[#333]"
+        >
+          <h2 class="text-lg font-bold text-white mb-2 text-center">Сохранить изменения?</h2>
+          <p class="text-gray-400 text-sm text-center mb-5">В заметке есть несохранённые изменения.</p>
+
+          <button
+            @click="confirmSaveNote"
+            class="w-full bg-[#3d7eff] hover:bg-blue-600 text-white px-4 py-2.5 rounded-xl font-medium transition-colors mb-2"
+          >
+            Сохранить
+          </button>
+          <button
+            @click="confirmDiscardNote"
+            class="w-full bg-transparent text-gray-400 hover:text-white px-4 py-2 rounded-xl text-sm transition-colors"
+          >
+            Отмена
+          </button>
+        </div>
+      </div>
+    </Transition>
+  </Teleport>
 </template>
 
 <style scoped>
@@ -104,5 +325,22 @@ const path = (index: number): string => {
 
 .animate-pulse-custom {
   animation: pulse 2s infinite;
+}
+
+.note-modal-enter-active,
+.note-modal-leave-active {
+  transition: opacity 0.2s ease;
+}
+.note-modal-enter-active .note-modal-content,
+.note-modal-leave-active .note-modal-content {
+  transition: scale 0.2s ease;
+}
+.note-modal-enter-from,
+.note-modal-leave-to {
+  opacity: 0;
+}
+.note-modal-enter-from .note-modal-content,
+.note-modal-leave-to .note-modal-content {
+  scale: 0.95;
 }
 </style>

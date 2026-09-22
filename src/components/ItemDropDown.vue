@@ -44,9 +44,8 @@ const getIcon = (typePoint: TypePoint) => {
 </script>
 
 <template>
-  <div class="flex flex-row justify-between p-2">
+  <div class="flex flex-row justify-between p-2" @mousedown="onClick">
     <div
-      @mousedown="onClick"
       class="flex gap-2 items-center cursor-pointer transition-colors hover:bg-blue-50 last:border-0"
     >
       <Svg :class="isAddedTaskList ? 'text-[#5fb336]' : 'text-[#3B82F6]'">

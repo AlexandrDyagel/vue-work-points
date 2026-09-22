@@ -10,6 +10,7 @@ import { Routes } from '@/model/Enums.ts'
 import RoundedBottomMenu from '@/components/RoundedBottomMenu.vue'
 import { useCache } from '@/composables/useCache.ts'
 import { useLastUpdateTimeStore } from '@/store/LastUpdateTime.ts'
+import { useNoteEditor } from '@/store/NoteEditor.ts'
 import LoadingScreen from '@/components/LoadingScreen.vue'
 
 const { clearUserRole } = useUserRole()
@@ -26,6 +27,7 @@ const theme = useTheme()
 const viewport = useViewport()
 
 const inputTopAppBarStore = useInputFocus()
+const noteEditorStore = useNoteEditor()
 
 onMounted(async () => {
   try {
@@ -61,7 +63,7 @@ onMounted(async () => {
   </main>
 
   <nav>
-    <RoundedBottomMenu v-if="!inputTopAppBarStore.isFocused" />
+    <RoundedBottomMenu v-if="!inputTopAppBarStore.isFocused && !noteEditorStore.isEditing" />
   </nav>
 
   <SettingsButton @click="router.push(Routes.TgSettingApp)" />

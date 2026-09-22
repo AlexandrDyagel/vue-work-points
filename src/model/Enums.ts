@@ -5,6 +5,12 @@ export enum TypePoint {
   Home = 'уч',
 }
 
+export enum TaskTag {
+  LIGHTING = 'lighting',
+  CAMERAS = 'cameras',
+  OTHER = 'other',
+}
+
 export enum Routes {
   Home = '/',
   Points = '/points',
@@ -39,6 +45,8 @@ export enum LocalStorageNames {
   LAST_UPDATE_TIME = 'last_update_time',
   CACHE_TASKS = 'cache_tasks',
   COMPLETED_TASKS = 'completed_tasks',
+  TASK_TAGS = 'task_tags',
+  TASK_NOTES = 'task_notes',
   ADMIN_DEVICE = 'admin_device',
   SORT_TYPE = 'sort_type',
 }
