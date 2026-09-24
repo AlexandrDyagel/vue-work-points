@@ -23,7 +23,11 @@ body,
   /* Позиция снакбара: над кнопкой «На карте» */
   --snackbar-offset: calc(var(--bottom-nav-offset) + 56px);
 
-  /* Высота закреплённой снизу панели поиска */
-  --search-panel-offset: calc(80px + var(--safe-bottom));
+  /* Высота закреплённой снизу панели поиска (поле + выбор поля поиска) */
+  --search-panel-offset: calc(104px + var(--safe-bottom));
+
+  /* Отступ списка при открытом поиске: панель + запас, чтобы любую карточку
+     можно было прокрутить выше панели целиком */
+  --search-panel-list-offset: calc(var(--search-panel-offset) + 56px);
 }
 

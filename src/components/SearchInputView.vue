@@ -4,6 +4,14 @@ import { useInputFocus } from '@/store/TopAppBar.ts'
 
 const inputFocusTaskStore = useInputFocus()
 
+const props = withDefaults(
+  defineProps<{
+    /** Подсказка в поле: зависит от выбранного поля поиска */
+    placeholder?: string
+  }>(),
+  { placeholder: 'Введите название точки...' },
+)
+
 const inputString = ref('')
 const isFocused = ref(false)
 const inputRef = ref<HTMLInputElement | null>(null)
@@ -38,6 +46,11 @@ const finishEditing = () => inputRef.value?.blur()
 const focus = () => inputRef.value?.focus()
 const blur = () => inputRef.value?.blur()
 
+/** Очистить поле поиска (после выбора точки из подсказок) */
+const clear = () => {
+  inputString.value = ''
+}
+
 onBeforeUnmount(() => {
   if (timeoutId) clearTimeout(timeoutId)
 })
@@ -45,6 +58,7 @@ onBeforeUnmount(() => {
 defineExpose({
   focus,
   blur,
+  clear,
 })
 </script>
 
@@ -57,7 +71,7 @@ defineExpose({
       @blur="handleBlur"
       @input="onInput"
       class="bg-black w-full text-white shadow-xl start-4 end-4 top-4 rounded-xl border border-[#000] text-sm p-2.5 focus:outline-none"
-      placeholder="Введите название точки..."
+      :placeholder="props.placeholder"
       aria-label="Поиск точки для добавления в задания"
     />
 

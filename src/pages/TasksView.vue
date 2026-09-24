@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import { BackButton } from 'vue-tg'
 import { useRouter } from 'vue-router'
-import { computed, onBeforeUnmount, onMounted, type Ref, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, type Ref, ref, watch } from 'vue'
 import { PointResponse } from '@/model/PointResponse.ts'
 import { useCache } from '@/composables/useCache.ts'
+import { useSearchFilter } from '@/composables/useSearchFilter.ts'
 import SearchInputView from '@/components/SearchInputView.vue'
 import { useInputFocus } from '@/store/TopAppBar.ts'
-import { Routes as Route, TaskTag } from '@/model/Enums.ts'
+import { Routes as Route, TaskTag, TypeSearchFilter } from '@/model/Enums.ts'
 import ItemTaskView from '@/components/ItemTaskView.vue'
 import TaskSkeletonCard from '@/components/TaskSkeletonCard.vue'
 import { useTasksLocalStorage } from '@/composables/useTasksLocalStorage.ts'
@@ -31,10 +32,10 @@ const {
 const inputFocus = useInputFocus()
 const noteEditorStore = useNoteEditor()
 const { obtainCachedPoints } = useCache()
+const { userSearchFilter, updateUserSearchFilter } = useSearchFilter()
 const taskPointsStore = useTaskPointsStore()
 
 const isLoadingData = ref(false)
-const lastItemRef = ref()
 const taskItems: Ref<PointResponse[]> = ref([])
 const completedTaskIds = ref<string[]>([])
 const taskTags = ref<Record<string, TaskTag>>({})
@@ -53,6 +54,12 @@ const isSearchFocused = computed(() => inputFocus.isFocused)
 
 /** Ссылка на поле поиска: нужна, чтобы вернуть шапку наверх («Готово») */
 const searchInputRef = ref<InstanceType<typeof SearchInputView> | null>(null)
+
+/** Контейнер списка заданий: нужен, чтобы найти карточку по uid */
+const listRef = ref<HTMLElement | null>(null)
+
+/** Шапка/панель поиска: по её реальной высоте считаем видимую часть списка */
+const headerRef = ref<HTMLElement | null>(null)
 
 /**
  * Скелетоны и оверлей загрузки показываем только при затянувшейся загрузке:
@@ -96,6 +103,7 @@ watch(isLoadingData, (loading) => {
  */
 const flashUid = ref<string | null>(null)
 let flashTimer: ReturnType<typeof setTimeout> | null = null
+let alignTimer: ReturnType<typeof setTimeout> | null = null
 
 const flashTask = (uid: string) => {
   flashUid.value = uid
@@ -137,16 +145,75 @@ const undoDelete = ref<{
 } | null>(null)
 let undoTimer: ReturnType<typeof setTimeout> | null = null
 
-const search = () => {
-  filteredPoints.value = cachedPoints.value.filter((point) =>
-    point.name.toLowerCase().includes(queryString.value.toLowerCase().trim()),
-  )
+// --- Поиск точек для добавления в задания ---
 
-  if (queryString.value === '') filteredPoints.value.splice(0, filteredPoints.value.length)
+/** Минимальная длина запроса: короче — поиск не запускаем */
+const MIN_SEARCH_LENGTH = 2
+
+/** Поле поиска: по названию / направлению / адресу (как на странице точек) */
+const searchFilter = ref<TypeSearchFilter>(TypeSearchFilter.NAME)
+
+const searchFilterOptions: { value: TypeSearchFilter; label: string }[] = [
+  { value: TypeSearchFilter.NAME, label: 'Название' },
+  { value: TypeSearchFilter.DIRECTION, label: 'Направление' },
+  { value: TypeSearchFilter.ADDRESS, label: 'Адрес' },
+]
+
+/** uid заданий, уже добавленных в список: для перехода к карточке вместо повторного добавления */
+const addedTaskUids = computed(() => new Set(taskItems.value.map((item) => item.uid)))
+
+/** Запрос достаточной длины — только тогда показываем результаты */
+const hasSearchQuery = computed(() => queryString.value.trim().length >= MIN_SEARCH_LENGTH)
+
+/** Подсказка в поле поиска зависит от выбранного поля */
+const searchPlaceholder = computed(() => {
+  switch (searchFilter.value) {
+    case TypeSearchFilter.DIRECTION:
+      return 'Поиск по направлению...'
+    case TypeSearchFilter.ADDRESS:
+      return 'Поиск по адресу...'
+    default:
+      return 'Поиск по названию...'
+  }
+})
+
+/** Значение точки, по которому идёт поиск */
+const searchableValue = (point: PointResponse): string => {
+  switch (searchFilter.value) {
+    case TypeSearchFilter.DIRECTION:
+      return point.direction
+    case TypeSearchFilter.ADDRESS:
+      return point.address
+    default:
+      return point.name
+  }
+}
+
+const search = () => {
+  const query = queryString.value.trim().toLowerCase()
+
+  // Короткий запрос не ищем: иначе в подсказках оказывается почти весь список точек
+  if (query.length < MIN_SEARCH_LENGTH) {
+    filteredPoints.value = []
+    return
+  }
+
+  filteredPoints.value = cachedPoints.value.filter((point) =>
+    searchableValue(point).toLowerCase().includes(query),
+  )
 }
 
 const handleFilterChange = (inputString: string) => {
   queryString.value = inputString
+}
+
+// Переключение поля поиска (название / направление / адрес)
+const setSearchFilter = async (filter: TypeSearchFilter) => {
+  if (searchFilter.value === filter) return
+
+  searchFilter.value = filter
+  await updateUserSearchFilter(filter)
+  search()
 }
 
 // --- Фотографии заданий ---
@@ -352,7 +419,6 @@ const onDeleteAllConfirm = async (confirmed: boolean) => {
   completedTaskIds.value = []
   taskTags.value = {}
   taskNotes.value = {}
-  lastItemRef.value = null
 
   // Освобождаем объектные ссылки фотографий; их хранилище очистит removeItems()
   Object.values(taskPhotos.value).forEach(revokePhotoUrls)
@@ -362,24 +428,81 @@ const onDeleteAllConfirm = async (confirmed: boolean) => {
   taskPointsStore.savePoints([])
 }
 
-// Нажатие на элемент выпадающего списка найденных элементов point
+/** Зазор между карточкой и панелью поиска */
+const PANEL_GAP = 12
+
+/** Высота панели, закреплённой снизу (0, если поиск не активен) */
+const bottomPanelHeight = () =>
+  isSearchFocused.value ? (headerRef.value?.getBoundingClientRect().height ?? 0) : 0
+
+/**
+ * Прокрутка так, чтобы карточка была видна целиком.
+ * При активном поиске панель снизу закрывает нижнюю часть списка,
+ * поэтому карточку поднимаем выше панели, а не просто центрируем.
+ */
+const alignCardInList = (card: HTMLElement, behavior: ScrollBehavior = 'smooth') => {
+  const container = listRef.value
+  if (!container) return
+
+  const panelHeight = bottomPanelHeight()
+
+  // Панель поиска не мешает — центрируем карточку
+  if (!panelHeight) {
+    card.scrollIntoView({ behavior, block: 'center' })
+    return
+  }
+
+  const containerRect = container.getBoundingClientRect()
+  const cardRect = card.getBoundingClientRect()
+  const visibleBottom = containerRect.bottom - panelHeight
+  const delta = cardRect.bottom - visibleBottom + PANEL_GAP
+
+  // Карточка уже целиком выше панели
+  if (delta <= 0) return
+
+  container.scrollTo({ top: container.scrollTop + delta, behavior })
+}
+
+/** Плавная прокрутка к карточке задания с подсветкой */
+const scrollToTask = async (uid: string) => {
+  await nextTick()
+
+  const card = listRef.value?.querySelector<HTMLElement>(`[data-task-uid="${uid}"]`)
+  if (!card) return
+
+  flashTask(uid)
+  alignCardInList(card)
+
+  // После анимации и пересчёта высоты (клавиатура, отступы) позиция может «уехать» —
+  // проверяем ещё раз, иначе карточка остаётся наполовину скрытой панелью
+  if (alignTimer) clearTimeout(alignTimer)
+  alignTimer = setTimeout(() => {
+    alignTimer = null
+    alignCardInList(card)
+  }, 500)
+}
+
+// Нажатие на элемент выпадающего списка найденных точек
 const clickFilteredItem = async (point: PointResponse) => {
   if (!point) return
+
+  // Точка уже добавлена: не дублируем, а показываем её карточку в списке
+  if (addedTaskUids.value.has(point.uid)) {
+    searchInputRef.value?.clear()
+    searchInputRef.value?.blur()
+    await scrollToTask(point.uid)
+    return
+  }
 
   taskItems.value.push(point)
   await tasksLocalStorage.setItems(taskItems.value)
   taskPointsStore.savePoints(taskItems.value)
 
-  // Подсвечиваем новую карточку, чтобы было видно, что именно добавилось
-  flashTask(point.uid)
-
-  // Пока открыт поиск, список перекрыт нижней панелью и клавиатурой:
-  // не скроллим — пользователь, скорее всего, добавляет ещё точки
-  if (!isSearchFocused.value && lastItemRef.value) {
-    lastItemRef.value.$el.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
-  }
-
+  // Поле не теряет фокус, поэтому панель поиска остаётся снизу и можно
+  // добавлять точки подряд; список плавно прокручивается к новой карточке
+  searchInputRef.value?.clear()
   queryString.value = ''
+  await scrollToTask(point.uid)
 }
 
 // Потеря фокуса input
@@ -393,6 +516,7 @@ watch(queryString, () => search())
 onMounted(async () => {
   try {
     isLoadingData.value = true
+    searchFilter.value = await userSearchFilter()
     taskItems.value = await tasksLocalStorage.getItems()
     completedTaskIds.value = await getCompletedTasks()
     taskTags.value = await getTaskTags()
@@ -432,14 +556,9 @@ onBeforeUnmount(() => {
   if (skeletonTimer) clearTimeout(skeletonTimer)
   if (slowLoadingTimer) clearTimeout(slowLoadingTimer)
   if (flashTimer) clearTimeout(flashTimer)
+  if (alignTimer) clearTimeout(alignTimer)
   Object.values(taskPhotos.value).forEach(revokePhotoUrls)
 })
-
-function isAddedTaskList(item: PointResponse): boolean {
-  if (taskItems.value.length !== 0) {
-    return taskItems.value.map((item) => item.name).includes(item.name)
-  } else return false
-}
 </script>
 
 <template>
@@ -530,7 +649,8 @@ function isAddedTaskList(item: PointResponse): boolean {
       поэтому фокус и каретка в поле поиска сохраняются.
     -->
     <header
-      class="z-50 bg-[#242528]"
+      ref="headerRef"
+      class="z-[110] bg-[#242528]"
       :class="
         isSearchFocused
           ? 'fixed start-0 end-0 bottom-0 border-t border-[#3d3e43] pb-[var(--safe-bottom)]'
@@ -572,23 +692,43 @@ function isAddedTaskList(item: PointResponse): boolean {
 
       <!-- Поиск точки: подсказки открываются вверх, когда поле закреплено снизу -->
       <div class="relative z-[100]">
+        <!-- Поле поиска: название / направление / адрес -->
+        <div v-if="isSearchFocused" class="flex items-center gap-1.5 px-4 pt-4">
+          <button
+            v-for="option in searchFilterOptions"
+            :key="option.value"
+            type="button"
+            class="px-2.5 py-1 rounded-full border text-[10px] font-medium transition-colors cursor-pointer"
+            :class="
+              searchFilter === option.value
+                ? 'bg-[#3d7eff] border-[#3d7eff] text-white'
+                : 'border-[#3d3e43] text-[#999] active:opacity-70'
+            "
+            @mousedown.prevent
+            @click="setSearchFilter(option.value)"
+          >
+            {{ option.label }}
+          </button>
+        </div>
+
         <SearchInputView
           ref="searchInputRef"
+          :placeholder="searchPlaceholder"
           @focus-blur="handleInputFocusBlur"
           @filter-changed="handleFilterChange"
         />
 
-        <!-- Результаты поиска -->
+        <!-- Результаты поиска (запрос не короче 2 символов) -->
         <div
           v-if="filteredPoints.length > 0"
           class="absolute z-[100] start-6 end-6 bg-black border border-gray-500 rounded-lg shadow-lg max-h-60 overflow-y-auto"
-          :class="isSearchFocused ? 'bottom-full mb-[-16px]' : 'top-full mt-[-16px]'"
+          :class="isSearchFocused ? 'bottom-full' : 'top-full mt-[-16px]'"
         >
           <ItemDropDown
             v-for="[index, point] of filteredPoints.entries()"
             :key="point.uid"
             :dataPoint="point"
-            :is-added-task-list="isAddedTaskList(point)"
+            :is-added-task-list="addedTaskUids.has(point.uid)"
             :class="{ 'border-b-[1px] border-[#3d3e43]': index !== filteredPoints.length - 1 }"
             @on-click="clickFilteredItem(point)"
           >
@@ -597,18 +737,28 @@ function isAddedTaskList(item: PointResponse): boolean {
 
         <!-- Ничего не найдено -->
         <div
-          v-if="queryString && filteredPoints.length === 0"
+          v-else-if="hasSearchQuery"
           class="absolute z-[100] start-6 end-6 bg-black border border-gray-500 rounded-lg shadow-lg p-2 text-center text-sm text-gray-200"
-          :class="isSearchFocused ? 'bottom-full mb-[-16px]' : 'top-full mt-[-16px]'"
+          :class="isSearchFocused ? 'bottom-full' : 'top-full mt-[-16px]'"
         >
           Точки не найдены
+        </div>
+
+        <!-- Слишком короткий запрос: подсказываем, сколько символов нужно -->
+        <div
+          v-else-if="queryString.trim().length > 0"
+          class="absolute z-[100] start-6 end-6 bg-black border border-gray-500 rounded-lg shadow-lg p-2 text-center text-xs text-[#999]"
+          :class="isSearchFocused ? 'bottom-full' : 'top-full mt-[-16px]'"
+        >
+          Введите минимум {{ MIN_SEARCH_LENGTH }} символа
         </div>
       </div>
     </header>
     <!-- Скроллируемый список заданий -->
     <div
+      ref="listRef"
       class="flex-1 min-h-0 overflow-y-auto overscroll-contain"
-      :class="isSearchFocused ? 'pb-[var(--search-panel-offset)]' : 'pb-[var(--content-bottom-offset)]'"
+      :class="isSearchFocused ? 'pb-[var(--search-panel-list-offset)]' : 'pb-[var(--content-bottom-offset)]'"
     >
       <!-- Скелетоны: только если загрузка длится дольше 200 мс -->
       <div v-if="showListSkeleton" class="pt-2" aria-hidden="true">
@@ -639,6 +789,7 @@ function isAddedTaskList(item: PointResponse): boolean {
         <div
           v-for="[index, point] of taskItems.entries()"
           :key="point.uid"
+          :data-task-uid="point.uid"
           class="rounded-xl transition-colors duration-300"
           :class="flashUid === point.uid ? 'bg-[#3d7eff]/10 ring-2 ring-[#3d7eff] animate-pulse' : ''"
         >
@@ -656,11 +807,6 @@ function isAddedTaskList(item: PointResponse): boolean {
             @delete-note="deleteTaskNote(point.uid)"
             @add-photos="addTaskPhotos(point.uid, $event)"
             @remove-photo="removeTaskPhoto(point.uid, $event)"
-            :ref="
-              (el) => {
-                if (index === taskItems.length - 1) lastItemRef = el
-              }
-            "
           />
         </div>
       </div>
