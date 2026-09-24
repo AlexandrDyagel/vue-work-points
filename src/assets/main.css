@@ -8,3 +8,22 @@ body,
   color: white;
   font-family: 'Yandex Sans Text', Arial, Helvetica, sans-serif;
 }
+
+/* Отступы с учётом безопасных зон (жесты Android, вырезы экрана) */
+:root {
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+
+  /* Нижнее меню приложения (RoundedBottomMenu) + безопасная зона */
+  --bottom-nav-offset: calc(76px + var(--safe-bottom));
+
+  /* Отступ контента снизу: меню + место под кнопку «На карте» */
+  --content-bottom-offset: calc(var(--bottom-nav-offset) + 64px);
+
+  /* Позиция снакбара: над кнопкой «На карте» */
+  --snackbar-offset: calc(var(--bottom-nav-offset) + 56px);
+
+  /* Высота закреплённой снизу панели поиска */
+  --search-panel-offset: calc(80px + var(--safe-bottom));
+}
+

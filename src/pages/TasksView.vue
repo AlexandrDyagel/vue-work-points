@@ -8,6 +8,7 @@ import SearchInputView from '@/components/SearchInputView.vue'
 import { useInputFocus } from '@/store/TopAppBar.ts'
 import { Routes as Route, TaskTag } from '@/model/Enums.ts'
 import ItemTaskView from '@/components/ItemTaskView.vue'
+import TaskSkeletonCard from '@/components/TaskSkeletonCard.vue'
 import { useTasksLocalStorage } from '@/composables/useTasksLocalStorage.ts'
 import LoadingScreen from '@/components/LoadingScreen.vue'
 import ItemDropDown from '@/components/ItemDropDown.vue'
@@ -44,6 +45,66 @@ const cachedPoints = ref<PointResponse[]>([])
 
 /** Прикреплённые к заданиям фотографии: uid задания → фотографии для отображения */
 const taskPhotos = ref<Record<string, TaskPhotoView[]>>({})
+
+// --- Каркас страницы: поиск, загрузка, подсветка нового задания ---
+
+/** Поиск в фокусе: шапка превращается в нижнюю панель над клавиатурой */
+const isSearchFocused = computed(() => inputFocus.isFocused)
+
+/** Ссылка на поле поиска: нужна, чтобы вернуть шапку наверх («Готово») */
+const searchInputRef = ref<InstanceType<typeof SearchInputView> | null>(null)
+
+/**
+ * Скелетоны и оверлей загрузки показываем только при затянувшейся загрузке:
+ * чтение из локального хранилища занимает миллисекунды, и мигание
+ * плейсхолдеров выглядит хуже, чем сразу появившийся список.
+ */
+const showListSkeleton = ref(false)
+const isSlowLoading = ref(false)
+let skeletonTimer: ReturnType<typeof setTimeout> | null = null
+let slowLoadingTimer: ReturnType<typeof setTimeout> | null = null
+
+watch(isLoadingData, (loading) => {
+  if (skeletonTimer) {
+    clearTimeout(skeletonTimer)
+    skeletonTimer = null
+  }
+  if (slowLoadingTimer) {
+    clearTimeout(slowLoadingTimer)
+    slowLoadingTimer = null
+  }
+
+  if (!loading) {
+    showListSkeleton.value = false
+    isSlowLoading.value = false
+    return
+  }
+
+  skeletonTimer = setTimeout(() => {
+    showListSkeleton.value = true
+  }, 200)
+
+  slowLoadingTimer = setTimeout(() => {
+    isSlowLoading.value = true
+  }, 900)
+})
+
+/**
+ * Задание, которое только что добавили: короткая подсветка карточки.
+ * Длительность больше цикла animate-pulse (2 с), чтобы после анимации
+ * появления auto-animate мигание успело быть заметным.
+ */
+const flashUid = ref<string | null>(null)
+let flashTimer: ReturnType<typeof setTimeout> | null = null
+
+const flashTask = (uid: string) => {
+  flashUid.value = uid
+  if (flashTimer) clearTimeout(flashTimer)
+  flashTimer = setTimeout(() => {
+    flashUid.value = null
+    flashTimer = null
+  }, 2000)
+}
 
 const isVisibleTaskMapButton = computed(
   () => taskItems.value.length !== 0 && !inputFocus.isFocused && !noteEditorStore.isEditing,
@@ -303,17 +364,22 @@ const onDeleteAllConfirm = async (confirmed: boolean) => {
 
 // Нажатие на элемент выпадающего списка найденных элементов point
 const clickFilteredItem = async (point: PointResponse) => {
-  if (point) {
-    taskItems.value.push(point)
-    await tasksLocalStorage.setItems(taskItems.value)
-    taskPointsStore.savePoints(taskItems.value)
+  if (!point) return
 
-    if (lastItemRef.value) {
-      lastItemRef.value.$el.scrollIntoView({ behavior: 'smooth', block: 'end' })
-    }
+  taskItems.value.push(point)
+  await tasksLocalStorage.setItems(taskItems.value)
+  taskPointsStore.savePoints(taskItems.value)
 
-    queryString.value = ''
-  } else return
+  // Подсвечиваем новую карточку, чтобы было видно, что именно добавилось
+  flashTask(point.uid)
+
+  // Пока открыт поиск, список перекрыт нижней панелью и клавиатурой:
+  // не скроллим — пользователь, скорее всего, добавляет ещё точки
+  if (!isSearchFocused.value && lastItemRef.value) {
+    lastItemRef.value.$el.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+  }
+
+  queryString.value = ''
 }
 
 // Потеря фокуса input
@@ -363,6 +429,9 @@ onMounted(async () => {
 
 onBeforeUnmount(() => {
   if (undoTimer) clearTimeout(undoTimer)
+  if (skeletonTimer) clearTimeout(skeletonTimer)
+  if (slowLoadingTimer) clearTimeout(slowLoadingTimer)
+  if (flashTimer) clearTimeout(flashTimer)
   Object.values(taskPhotos.value).forEach(revokePhotoUrls)
 })
 
@@ -434,123 +503,179 @@ function isAddedTaskList(item: PointResponse): boolean {
     </Transition>
   </Teleport>
 
-  <!-- Снакбар отмены удаления -->
+  <!-- Снакбар отмены удаления (над кнопкой «На карте») -->
   <Teleport to="body">
     <Transition name="snackbar">
       <div
         v-if="undoDelete"
-        class="fixed left-1/2 -translate-x-1/2 bottom-[124px] z-[120] flex items-center gap-3 justify-between bg-[#1e1e21] border border-[#333] text-sm rounded-xl px-4 py-3 shadow-2xl min-w-[90%]"
+        role="status"
+        aria-live="polite"
+        class="fixed start-4 end-4 bottom-[var(--snackbar-offset)] z-[120] flex items-center gap-3 justify-between bg-[#1e1e21] border border-[#333] text-sm rounded-xl px-4 py-3 shadow-2xl cursor-pointer active:opacity-80"
+        @click="undoDeleteItem"
       >
-        <span class="text-gray-300">Задание удалено</span>
-        <button class="text-[#3d7eff] font-medium cursor-pointer shrink-0" @click="undoDeleteItem">Отменить</button>
+        <span class="text-gray-300 truncate">Задание «{{ undoDelete.point.name }}» удалено</span>
+        <span class="text-[#3d7eff] font-medium shrink-0">Отменить</span>
       </div>
     </Transition>
   </Teleport>
 
-  <LoadingScreen :is-loading="isLoadingData" />
-  <div class="fixed top-0 start-0 end-0 z-50 bg-[#242528] border-b-[1px] border-[#3d3e43]">
-    <div class="relative mt-4 px-4">
-      <p class="text-center text-[#ccc] text-2xl"><strong>Мои задания ({{ taskPointsStore.points.length }})</strong></p>
-      <button
-        v-if="taskItems.length !== 0"
-        class="absolute top-1/2 -translate-y-1/2 right-4 text-red-400 active:text-red-500 cursor-pointer"
-        aria-label="Удалить все задания"
-        @click="deleteAllTasks"
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 -960 960 960" fill="currentColor">
-          <path d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520ZM360-280h80v-360h-80v360Zm160 0h80v-360h-80v360ZM280-720v520-520Z"/>
-        </svg>
-      </button>
-    </div>
+  <!-- Оверлей загрузки: только при реально долгой загрузке (иначе — скелетоны) -->
+  <LoadingScreen :is-loading="isSlowLoading" />
 
-    <!-- Прогресс выполнения -->
-    <div v-if="taskItems.length !== 0" class="px-4 mt-2">
-      <div class="flex items-center justify-between text-xs text-[#999] mb-1">
-        <span>Выполнено {{ completedCount }} из {{ taskItems.length }}</span>
-        <span>{{ progressPercent }}%</span>
-      </div>
-      <div class="h-1.5 w-full rounded-full bg-[#3d3e43] overflow-hidden">
-        <div
-          class="h-full bg-[#5fb336] rounded-full transition-all duration-300"
-          :style="{ width: progressPercent + '%' }"
-        ></div>
-      </div>
-    </div>
-
-    <!-- Поиск точки -->
-    <div class="relative mb-3">
-      <SearchInputView @focus-blur="handleInputFocusBlur" @filter-changed="handleFilterChange" />
-
-      <!-- Результаты поиска -->
-      <div
-        v-if="filteredPoints.length > 0"
-        class="absolute top-full left-6 right-6 mt-[-16px] bg-black border border-gray-500 rounded-lg shadow-lg max-h-60 overflow-y-auto z-[50]"
-      >
-        <ItemDropDown
-          v-for="[index, point] of filteredPoints.entries()"
-          :key="point.uid"
-          :dataPoint="point"
-          :is-added-task-list="isAddedTaskList(point)"
-          :class="{ 'border-b-[1px] border-[#3d3e43]': index !== filteredPoints.length - 1 }"
-          @on-click="clickFilteredItem(point)"
-        >
-        </ItemDropDown>
-    </div>
-      <div
-        v-if="queryString && filteredPoints.length === 0"
-        class="absolute top-full left-6 right-6 mt-[-16px] bg-black border border-gray-500 rounded-lg shadow-lg p-2 text-center text-sm text-gray-200 z-[55]"
-      >
-        Точки не найдены
-      </div>
-    </div>
-  </div>
-  <div class="fixed overflow-auto start-0 top-[162px] end-0 bottom-0 w-full bg-[#242528]">
-    <div
-      v-if="taskItems.length === 0"
-      class="absolute inset-0 pb-[70px] flex flex-col items-center justify-center gap-3 text-center px-8"
+  <!-- Каркас страницы: шапка не скроллится, список скроллится -->
+  <div class="fixed inset-0 flex flex-col bg-[#242528]">
+    <!--
+      Шапка. При фокусе поиска становится нижней панелью над клавиатурой,
+      а заголовок и прогресс скрываются. DOM-порядок не меняется,
+      поэтому фокус и каретка в поле поиска сохраняются.
+    -->
+    <header
+      class="z-50 bg-[#242528]"
+      :class="
+        isSearchFocused
+          ? 'fixed start-0 end-0 bottom-0 border-t border-[#3d3e43] pb-[var(--safe-bottom)]'
+          : 'shrink-0 border-b border-[#3d3e43] pt-[var(--safe-top)]'
+      "
     >
-      <div class="w-16 h-16 rounded-full bg-[#2a2a2e] flex items-center justify-center">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-[#3d7eff]" viewBox="0 -960 960 960" fill="currentColor">
-          <path d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h168q13-36 43.5-58t68.5-22q38 0 68.5 22t43.5 58h168q33 0 56.5 23.5T840-760v560q0 33-23.5 56.5T760-120H200Zm0-80h560v-560H200v560Zm80-80h280v-80H280v80Zm0-160h400v-80H280v80Zm0-160h400v-80H280v80Zm200-190q13 0 21.5-8.5T510-820q0-13-8.5-21.5T480-850q-13 0-21.5 8.5T450-820q0 13 8.5 21.5T480-790ZM200-200v-560 560Z"/>
-        </svg>
-      </div>
-      <p class="text-xl text-[#F0F0F0] font-medium">Нет заданий</p>
-      <p class="text-sm text-[#999] max-w-[260px]">Добавьте точки через поиск сверху, чтобы построить маршрут</p>
-    </div>
-    <!-- добавленные элементы в список -->
-    <div v-auto-animate>
-      <ItemTaskView
-        v-for="[index, point] of taskItems.entries()"
-        :key="point.uid"
-        :index="index"
-        :task-items="taskItems"
-        :is-completed="completedTaskIds.includes(point.uid)"
-        :tag="taskTags[point.uid]"
-        :note="taskNotes[point.uid]"
-        :photos="taskPhotos[point.uid]"
-        @delete="requestDeleteTaskItem"
-        @toggle-completed="toggleTaskCompleted(point.uid, $event)"
-        @select-tag="toggleTaskTag(point.uid, $event)"
-        @update-note="saveTaskNote(point.uid, $event)"
-        @delete-note="deleteTaskNote(point.uid)"
-        @add-photos="addTaskPhotos(point.uid, $event)"
-        @remove-photo="removeTaskPhoto(point.uid, $event)"
-        :ref="
-          (el) => {
-            if (index === taskItems.length - 1) lastItemRef = el
-          }
-        "
-      />
-    </div>
-    <div v-if="isVisibleTaskMapButton" class="bottom-0 start-0 end-0 h-[130px]"></div>
+      <!-- Заголовок -->
+      <div v-show="!isSearchFocused" class="relative mt-4 px-4">
+        <p class="text-center text-[#ccc] text-2xl">
+          <strong>Мои задания ({{ taskPointsStore.points.length }})</strong>
+        </p>
 
+        <button
+          v-if="taskItems.length !== 0"
+          type="button"
+          class="absolute top-1/2 -translate-y-1/2 end-4 text-red-400 active:text-red-500 cursor-pointer"
+          aria-label="Удалить все задания"
+          @click="deleteAllTasks"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 -960 960 960" fill="currentColor">
+            <path d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520ZM360-280h80v-360h-80v360Zm160 0h80v-360h-80v360ZM280-720v520-520Z"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Прогресс выполнения -->
+      <div v-show="!isSearchFocused && taskItems.length !== 0" class="px-4 mt-2">
+        <div class="flex items-center justify-between text-xs text-[#999] mb-1">
+          <span>Выполнено {{ completedCount }} из {{ taskItems.length }}</span>
+          <span>{{ progressPercent }}%</span>
+        </div>
+        <div class="h-1.5 w-full rounded-full bg-[#3d3e43] overflow-hidden">
+          <div
+            class="h-full bg-[#5fb336] rounded-full transition-all duration-300"
+            :style="{ width: progressPercent + '%' }"
+          ></div>
+        </div>
+      </div>
+
+      <!-- Поиск точки: подсказки открываются вверх, когда поле закреплено снизу -->
+      <div class="relative z-[100]">
+        <SearchInputView
+          ref="searchInputRef"
+          @focus-blur="handleInputFocusBlur"
+          @filter-changed="handleFilterChange"
+        />
+
+        <!-- Результаты поиска -->
+        <div
+          v-if="filteredPoints.length > 0"
+          class="absolute z-[100] start-6 end-6 bg-black border border-gray-500 rounded-lg shadow-lg max-h-60 overflow-y-auto"
+          :class="isSearchFocused ? 'bottom-full mb-[-16px]' : 'top-full mt-[-16px]'"
+        >
+          <ItemDropDown
+            v-for="[index, point] of filteredPoints.entries()"
+            :key="point.uid"
+            :dataPoint="point"
+            :is-added-task-list="isAddedTaskList(point)"
+            :class="{ 'border-b-[1px] border-[#3d3e43]': index !== filteredPoints.length - 1 }"
+            @on-click="clickFilteredItem(point)"
+          >
+          </ItemDropDown>
+        </div>
+
+        <!-- Ничего не найдено -->
+        <div
+          v-if="queryString && filteredPoints.length === 0"
+          class="absolute z-[100] start-6 end-6 bg-black border border-gray-500 rounded-lg shadow-lg p-2 text-center text-sm text-gray-200"
+          :class="isSearchFocused ? 'bottom-full mb-[-16px]' : 'top-full mt-[-16px]'"
+        >
+          Точки не найдены
+        </div>
+      </div>
+    </header>
+    <!-- Скроллируемый список заданий -->
     <div
+      class="flex-1 min-h-0 overflow-y-auto overscroll-contain"
+      :class="isSearchFocused ? 'pb-[var(--search-panel-offset)]' : 'pb-[var(--content-bottom-offset)]'"
+    >
+      <!-- Скелетоны: только если загрузка длится дольше 200 мс -->
+      <div v-if="showListSkeleton" class="pt-2" aria-hidden="true">
+        <TaskSkeletonCard v-for="n in 3" :key="`skeleton-${n}`" />
+      </div>
+
+      <!-- Пустое состояние (показывается только после загрузки) -->
+      <div
+        v-else-if="!isLoadingData && taskItems.length === 0"
+        class="min-h-full flex flex-col items-center justify-center gap-3 text-center px-8 py-16"
+      >
+        <div class="w-16 h-16 rounded-full bg-[#2a2a2e] flex items-center justify-center">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-[#3d7eff]" viewBox="0 -960 960 960" fill="currentColor">
+            <path d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h168q13-36 43.5-58t68.5-22q38 0 68.5 22t43.5 58h168q33 0 56.5 23.5T840-760v560q0 33-23.5 56.5T760-120H200Zm0-80h560v-560H200v560Zm80-80h280v-80H280v80Zm0-160h400v-80H280v80Zm0-160h400v-80H280v80Zm200-190q13 0 21.5-8.5T510-820q0-13-8.5-21.5T480-850q-13 0-21.5 8.5T450-820q0 13 8.5 21.5T480-790ZM200-200v-560 560Z"/>
+          </svg>
+        </div>
+        <p class="text-xl text-[#F0F0F0] font-medium">Нет заданий</p>
+        <p class="text-sm text-[#999] max-w-[260px]">Добавьте точки через поиск сверху, чтобы построить маршрут</p>
+      </div>
+      <!-- Добавленные элементы в список -->
+      <div v-else v-auto-animate>
+        <!--
+          Обёртка нужна по двум причинам: ItemTaskView имеет несколько корневых
+          узлов (карточка + Teleport + просмотрщик фото), поэтому :class на него
+          не попадает, а класс подсветки должен быть на прямом потомке
+          v-auto-animate — именно его анимирует библиотека при вставке.
+        -->
+        <div
+          v-for="[index, point] of taskItems.entries()"
+          :key="point.uid"
+          class="rounded-xl transition-colors duration-300"
+          :class="flashUid === point.uid ? 'bg-[#3d7eff]/10 ring-2 ring-[#3d7eff] animate-pulse' : ''"
+        >
+          <ItemTaskView
+            :index="index"
+            :task-items="taskItems"
+            :is-completed="completedTaskIds.includes(point.uid)"
+            :tag="taskTags[point.uid]"
+            :note="taskNotes[point.uid]"
+            :photos="taskPhotos[point.uid]"
+            @delete="requestDeleteTaskItem"
+            @toggle-completed="toggleTaskCompleted(point.uid, $event)"
+            @select-tag="toggleTaskTag(point.uid, $event)"
+            @update-note="saveTaskNote(point.uid, $event)"
+            @delete-note="deleteTaskNote(point.uid)"
+            @add-photos="addTaskPhotos(point.uid, $event)"
+            @remove-photo="removeTaskPhoto(point.uid, $event)"
+            :ref="
+              (el) => {
+                if (index === taskItems.length - 1) lastItemRef = el
+              }
+            "
+          />
+        </div>
+      </div>
+    </div>
+
+    <!-- Кнопка «На карте»: отступ считается от нижнего меню + safe-area -->
+    <button
       v-if="isVisibleTaskMapButton"
+      type="button"
+      class="fixed start-0 end-0 bottom-[var(--bottom-nav-offset)] z-100 mx-4 h-11 rounded-xl bg-[#3d7eff] flex items-center justify-center transition-colors active:opacity-50 cursor-pointer"
+      aria-label="Открыть маршрут на карте"
       @click="router.push(Route.TaskMap)"
-      class="fixed start-0 end-0 bottom-0 mb-[76px] z-100 bg-[#3d7eff] mx-4 px-3 h-[40px] rounded-xl text-center content-center cursor-pointer active:opacity-50"
     >
       <span class="text-sm font-medium">На карте</span>
-    </div>
+    </button>
   </div>
 </template>
 
