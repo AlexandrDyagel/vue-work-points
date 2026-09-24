@@ -11,6 +11,7 @@ import { useCache } from '@/composables/useCache.ts'
 import { useTaskPointsStore } from '@/store/TaskPoints.ts'
 import { useOptimalRoute } from '@/composables/useOptimalRoute.ts'
 import { usePointsStore } from '@/store/Points.ts'
+import { ROUTE_START_POINT_UID } from '@/model/Route.ts'
 import * as L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import { Capacitor } from '@capacitor/core'
@@ -167,7 +168,7 @@ const buildPointUrls = (point: PointResponse) => {
 onMounted(async () => {
   try {
     isLoadingData.value = true
-    startPointId.value = 'o7YHGcpPla26GOV7bXhp' // uid Переходы. Тоннели
+    startPointId.value = ROUTE_START_POINT_UID // uid Переходы. Тоннели
 
     if (pointsStore.points.length !== 0) {
       points.value.unshift(

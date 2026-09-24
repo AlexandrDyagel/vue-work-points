@@ -11,6 +11,16 @@ export enum TaskTag {
   OTHER = 'other',
 }
 
+/** Порядок заданий в списке */
+export enum TaskListSort {
+  /** Как добавлено (порядок в списке) */
+  ADDED = 'added',
+  /** По названию (А → Я) */
+  NAME_ASC = 'name_asc',
+  /** По названию (Я → А) */
+  NAME_DESC = 'name_desc',
+}
+
 export enum Routes {
   Home = '/',
   Points = '/points',
@@ -47,6 +57,8 @@ export enum LocalStorageNames {
   COMPLETED_TASKS = 'completed_tasks',
   TASK_TAGS = 'task_tags',
   TASK_NOTES = 'task_notes',
+  /** Настройки отображения списка заданий (порядок, группировка, компактный вид) */
+  TASKS_VIEW = 'tasks_view',
   /** Резервное хранилище фотографий заданий (основное — IndexedDB) */
   TASK_PHOTOS = 'task_photos',
   ADMIN_DEVICE = 'admin_device',

@@ -22,21 +22,25 @@ const tagOptions: TagOption[] = [
 ]
 
 const props = defineProps<{
+  /** Точка-задание */
+  point: PointResponse
+  /** Позиция в отображаемом списке (для таймлайна) */
   index: number
-  taskItems: PointResponse[]
+  /** Сколько карточек в отображаемом списке */
+  total: number
   isCompleted?: boolean
   tag?: TaskTag
   note?: string
   /** Прикреплённые к заданию фотографии */
   photos?: TaskPhotoView[]
+  /** Компактный вид: вместо тегов, фото и заметки — короткая сводка */
+  compact?: boolean
 }>()
-
-const point = ref(props.taskItems[props.index])
 
 const checkCircleIcon = shallowRef(CheckCircleIcon)
 
 const emit = defineEmits<{
-  delete: [index: number]
+  delete: []
   toggleCompleted: [completed: boolean]
   selectTag: [tag: TaskTag]
   updateNote: [note: string]
@@ -47,7 +51,7 @@ const emit = defineEmits<{
 
 // Событие удаления элемента
 const deleteItem = () => {
-  emit('delete', props.index)
+  emit('delete')
 }
 
 // Событие переключения статуса «выполнено»
@@ -71,7 +75,7 @@ const showNoteExitConfirm = ref(false)
 const noteEditorStore = useNoteEditor()
 
 watch(isEditingNote, (editing) => {
-  noteEditorStore.setEditing(point.value.uid, editing)
+  noteEditorStore.setEditing(props.point.uid, editing)
 })
 
 // Флаг подавления ближайшего document-клика после открытия редактора
@@ -149,7 +153,7 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   document.removeEventListener('click', onDocumentClick)
-  if (isEditingNote.value) noteEditorStore.setEditing(point.value.uid, false)
+  if (isEditingNote.value) noteEditorStore.setEditing(props.point.uid, false)
 })
 
 const isCompleted = computed(() => props.isCompleted ?? false)
@@ -162,6 +166,25 @@ const photoCount = computed(() => props.photos?.length ?? 0)
 
 // Стабильный список для дочерних компонентов (без создания нового массива при каждом рендере)
 const photoList = computed(() => props.photos ?? [])
+
+// --- Компактный вид ---
+
+/** Подпись выбранного тега (для сводки в компактном режиме) */
+const activeTagOption = computed(() => tagOptions.find((option) => option.value === props.tag))
+
+/** Цвет маркера тега в компактном режиме */
+const tagDotClass = computed(() => {
+  switch (props.tag) {
+    case TaskTag.LIGHTING:
+      return 'bg-amber-500'
+    case TaskTag.CAMERAS:
+      return 'bg-blue-500'
+    case TaskTag.OTHER:
+      return 'bg-purple-500'
+    default:
+      return 'bg-[#61646b]'
+  }
+})
 
 // Кнопка в строке действий: открываем просмотрщик либо выбор фотографий
 const handlePhotoButton = () => {
@@ -183,11 +206,11 @@ const onRemovePhoto = (id: string) => {
 }
 
 const path = (index: number): string => {
-  if (index === 0 && props.taskItems.length !== 1) {
+  if (index === 0 && props.total !== 1) {
     return 'absolute left-8 top-0 bottom-0 w-1 bg-blue-500 translate-y-1/2'
-  } else if (index === 0 && props.taskItems.length === 1) {
+  } else if (index === 0 && props.total === 1) {
     return 'absolute left-8 top-0 bottom-0 w-1'
-  } else if (index === props.taskItems.length - 1) {
+  } else if (index === props.total - 1) {
     return 'absolute left-8 top-0 bottom-0 w-1 bg-blue-500 -translate-y-1/2'
   } else {
     return 'absolute left-8 top-0 bottom-0 w-1 bg-blue-500'
@@ -213,8 +236,29 @@ const path = (index: number): string => {
         <div class="w-full flex flex-row justify-between gap-2">
           <div class="min-w-0">
             <div class="font-bold text-[#F0F0F0]">{{ point.name }}</div>
-            <div class="text-sm text-[#ff5b4d]">{{ point.direction }}</div>
-            <div class="text-xs text-[#999]">{{ point.address }}</div>
+            <div class="text-sm text-[#ff5b4d]" :class="compact ? 'truncate' : ''">{{ point.direction }}</div>
+            <div v-if="!compact" class="text-xs text-[#999]">{{ point.address }}</div>
+
+            <!-- Компактный вид: адрес, тег, фото и заметка одной строкой -->
+            <div v-else class="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[11px] text-[#999]">
+              <span class="truncate max-w-[200px]">{{ point.address }}</span>
+
+              <span v-if="tag" class="inline-flex items-center gap-1">
+                <span class="w-2 h-2 rounded-full" :class="tagDotClass"></span>
+                {{ activeTagOption?.label }}
+              </span>
+
+              <span v-if="photoCount" class="inline-flex items-center gap-0.5">
+                <PhotoIcon class="h-3 w-3" />{{ photoCount }}
+              </span>
+
+              <span v-if="note" class="inline-flex items-center gap-1">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 -960 960 960" fill="currentColor">
+                  <path d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h400l240 240v400q0 33-23.5 56.5T760-120H200Zm360-520v-200H200v560h560v-360H560Z"/>
+                </svg>
+                Заметка
+              </span>
+            </div>
           </div>
 
           <!-- Кнопки действий над заданием -->
@@ -262,8 +306,8 @@ const path = (index: number): string => {
           </div>
         </div>
 
-        <!-- Тэги задачи -->
-        <div class="flex flex-wrap items-center gap-1.5 mt-2">
+        <!-- Тэги задачи (в компактном виде скрыты — тег показан в сводке) -->
+        <div v-if="!compact" class="flex flex-wrap items-center gap-1.5 mt-2">
           <button
             v-for="tagOption in tagOptions"
             :key="tagOption.value"
@@ -276,18 +320,21 @@ const path = (index: number): string => {
           </button>
         </div>
 
-        <!-- Фотографии задания -->
-        <TaskPhotoGallery
-          ref="galleryRef"
-          :photos="photos"
-          @add="onAddPhotos"
-          @remove="onRemovePhoto"
-          @open="viewerIndex = $event"
-        />
+        <!-- Фотографии задания. В компактном виде скрыты, но остаются смонтированными,
+             чтобы кнопка фото в строке действий продолжала работать -->
+        <div v-show="!compact">
+          <TaskPhotoGallery
+            ref="galleryRef"
+            :photos="photos"
+            @add="onAddPhotos"
+            @remove="onRemovePhoto"
+            @open="viewerIndex = $event"
+          />
+        </div>
 
         <!-- Заметка -->
         <div
-          v-if="note && !isEditingNote"
+          v-if="!compact && note && !isEditingNote"
           class="mt-2 flex items-start gap-1.5 text-xs text-[#c9c9d1]"
         >
           <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 shrink-0 mt-px text-[#61646b]" viewBox="0 -960 960 960" fill="currentColor">

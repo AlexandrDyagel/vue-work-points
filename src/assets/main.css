@@ -23,6 +23,9 @@ body,
   /* Позиция снакбара: над кнопкой «На карте» */
   --snackbar-offset: calc(var(--bottom-nav-offset) + 56px);
 
+  /* Позиция коротких сообщений (выше снакбара, чтобы не перекрывались) */
+  --toast-offset: calc(var(--snackbar-offset) + 64px);
+
   /* Высота закреплённой снизу панели поиска (поле + выбор поля поиска) */
   --search-panel-offset: calc(104px + var(--safe-bottom));
 

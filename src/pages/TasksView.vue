@@ -2,21 +2,36 @@
 import { BackButton } from 'vue-tg'
 import { useRouter } from 'vue-router'
 import { computed, nextTick, onBeforeUnmount, onMounted, type Ref, ref, watch } from 'vue'
+import { AdjustmentsHorizontalIcon } from '@heroicons/vue/24/outline'
 import { PointResponse } from '@/model/PointResponse.ts'
 import { useCache } from '@/composables/useCache.ts'
 import { useSearchFilter } from '@/composables/useSearchFilter.ts'
+import { useTasksViewSettings } from '@/composables/useTasksViewSettings.ts'
+import { useOptimalRoute } from '@/composables/useOptimalRoute.ts'
 import SearchInputView from '@/components/SearchInputView.vue'
 import { useInputFocus } from '@/store/TopAppBar.ts'
-import { Routes as Route, TaskTag, TypeSearchFilter } from '@/model/Enums.ts'
+import { Routes as Route, TaskListSort, TaskTag, TypeSearchFilter } from '@/model/Enums.ts'
 import ItemTaskView from '@/components/ItemTaskView.vue'
 import TaskSkeletonCard from '@/components/TaskSkeletonCard.vue'
+import BottomSheetView from '@/components/BottomSheetView.vue'
+import TaskListViewSheet from '@/components/TaskListViewSheet.vue'
 import { useTasksLocalStorage } from '@/composables/useTasksLocalStorage.ts'
 import LoadingScreen from '@/components/LoadingScreen.vue'
 import ItemDropDown from '@/components/ItemDropDown.vue'
 import { useTaskPointsStore } from '@/store/TaskPoints.ts'
 import { useNoteEditor } from '@/store/NoteEditor.ts'
 import type { TaskPhoto, TaskPhotoView } from '@/model/TaskPhoto.ts'
+import { ROUTE_START_POINT_UID } from '@/model/Route.ts'
 import { addPhoto, deletePhoto, deletePhotosByUid, getAllPhotos } from '@/utils/photoStorage.ts'
+
+/** Группа заданий для отображения (при группировке по направлению) */
+interface TaskGroup {
+  key: string
+  label: string
+  points: PointResponse[]
+  /** Индекс первой карточки группы в общем порядке отображения */
+  startIndex: number
+}
 
 const router = useRouter()
 const tasksLocalStorage = useTasksLocalStorage()
@@ -33,6 +48,13 @@ const inputFocus = useInputFocus()
 const noteEditorStore = useNoteEditor()
 const { obtainCachedPoints } = useCache()
 const { userSearchFilter, updateUserSearchFilter } = useSearchFilter()
+const { getSettings: getViewSettings, saveSettings: saveViewSettings } = useTasksViewSettings()
+const {
+  points: routePoints,
+  startPointId,
+  optimalRoute,
+  init: initOptimalRoute,
+} = useOptimalRoute()
 const taskPointsStore = useTaskPointsStore()
 
 const isLoadingData = ref(false)
@@ -350,10 +372,11 @@ const undoDeleteItem = async () => {
 }
 
 // Запрос подтверждения удаления одного задания
-const requestDeleteTaskItem = (index: number) => {
-  const item = taskItems.value[index]
-  if (!item) return
-  deleteTaskConfirm.value = { index, name: item.name }
+// (порядок отображения может отличаться от порядка хранения — ищем по uid)
+const requestDeleteTaskItem = (point: PointResponse) => {
+  const index = taskItems.value.findIndex((item) => item.uid === point.uid)
+  if (index === -1) return
+  deleteTaskConfirm.value = { index, name: point.name }
 }
 
 const confirmDeleteTaskItem = async () => {
@@ -482,6 +505,146 @@ const scrollToTask = async (uid: string) => {
   }, 500)
 }
 
+// --- Вид списка: порядок, группировка по направлению, компактный режим ---
+
+const listSort = ref<TaskListSort>(TaskListSort.ADDED)
+const groupByDirection = ref(false)
+const isCompactView = ref(false)
+const viewSheetRef = ref<InstanceType<typeof BottomSheetView> | null>(null)
+const isReorderingByRoute = ref(false)
+const listMessage = ref('')
+let listMessageTimer: ReturnType<typeof setTimeout> | null = null
+
+/** Задания в порядке отображения (с учётом выбранного порядка) */
+const displayedTasks = computed(() => {
+  if (listSort.value === TaskListSort.ADDED) return taskItems.value
+
+  const sorted = [...taskItems.value]
+  if (listSort.value === TaskListSort.NAME_ASC) {
+    sorted.sort((first, second) => first.name.localeCompare(second.name, 'ru'))
+  } else {
+    sorted.sort((first, second) => second.name.localeCompare(first.name, 'ru'))
+  }
+  return sorted
+})
+
+/** Группы заданий: одна общая или по направлениям (сначала собираем одно направление рядом) */
+const displayedGroups = computed((): TaskGroup[] => {
+  const tasks = [...displayedTasks.value]
+
+  if (!groupByDirection.value) {
+    return [{ key: 'all', label: '', points: tasks, startIndex: 0 }]
+  }
+
+  tasks.sort((first, second) => (first.direction ?? '').localeCompare(second.direction ?? '', 'ru'))
+
+  const groups: TaskGroup[] = []
+  let startIndex = 0
+
+  tasks.forEach((task) => {
+    const direction = task.direction?.trim() || 'Без направления'
+    const lastGroup = groups[groups.length - 1]
+
+    if (lastGroup && lastGroup.key === direction) {
+      lastGroup.points.push(task)
+    } else {
+      groups.push({ key: direction, label: direction, points: [task], startIndex })
+    }
+
+    startIndex += 1
+  })
+
+  return groups
+})
+
+/** Короткое сообщение о результате действия (маршрут, ошибки) */
+const showListMessage = (text: string, duration = 3200) => {
+  listMessage.value = text
+  if (listMessageTimer) clearTimeout(listMessageTimer)
+  listMessageTimer = setTimeout(() => {
+    listMessage.value = ''
+    listMessageTimer = null
+  }, duration)
+}
+
+const persistViewSettings = () =>
+  saveViewSettings({
+    sort: listSort.value,
+    groupByDirection: groupByDirection.value,
+    compact: isCompactView.value,
+  })
+
+const setListSort = (value: TaskListSort) => {
+  listSort.value = value
+  void persistViewSettings()
+}
+
+const setGroupByDirection = (value: boolean) => {
+  groupByDirection.value = value
+  void persistViewSettings()
+}
+
+const setCompactView = (value: boolean) => {
+  isCompactView.value = value
+  void persistViewSettings()
+}
+
+const openViewSheet = () => viewSheetRef.value?.openSheet()
+const closeViewSheet = () => viewSheetRef.value?.closeSheet()
+
+/**
+ * Упорядочивает задания по кратчайшему маршруту.
+ * Стартовая точка — первое задание в списке (как и на карте маршрута).
+ */
+const applyRouteOrder = async () => {
+  if (taskItems.value.length < 2) {
+    showListMessage('Для маршрута нужно минимум 2 задания')
+    return
+  }
+
+  isReorderingByRoute.value = true
+
+  try {
+    routePoints.value = [...taskItems.value]
+
+    // Старт — как на карте маршрута: базовая точка, если она есть среди заданий
+    const routeStartTask = taskItems.value.find((task) => task.uid === ROUTE_START_POINT_UID)
+    startPointId.value = (routeStartTask ?? taskItems.value[0]).uid
+    await initOptimalRoute()
+
+    const orderedRoute = optimalRoute.value
+    if (orderedRoute.length !== taskItems.value.length) {
+      showListMessage('Не удалось построить маршрут: проверьте координаты точек')
+      return
+    }
+
+    const orderByUid = new Map(orderedRoute.map((point, index) => [point.uid, index]))
+    taskItems.value = [...taskItems.value].sort(
+      (first, second) => (orderByUid.get(first.uid) ?? 0) - (orderByUid.get(second.uid) ?? 0),
+    )
+
+    // Порядок списка теперь совпадает с маршрутом — показываем «как добавлено»
+    const sortedByRoute = listSort.value !== TaskListSort.ADDED
+    listSort.value = TaskListSort.ADDED
+
+    await tasksLocalStorage.setItems(taskItems.value)
+    taskPointsStore.savePoints(taskItems.value)
+
+    showListMessage(
+      sortedByRoute
+        ? 'Порядок заданий обновлён по маршруту, порядок списка — «как добавлено»'
+        : 'Порядок заданий обновлён по маршруту',
+    )
+  } catch (e) {
+    console.error(`Ошибка построения маршрута в TasksView.vue: ${e}`)
+    showListMessage('Не удалось построить маршрут')
+  } finally {
+    isReorderingByRoute.value = false
+    await persistViewSettings()
+    closeViewSheet()
+  }
+}
+
 // Нажатие на элемент выпадающего списка найденных точек
 const clickFilteredItem = async (point: PointResponse) => {
   if (!point) return
@@ -517,6 +680,12 @@ onMounted(async () => {
   try {
     isLoadingData.value = true
     searchFilter.value = await userSearchFilter()
+
+    const viewSettings = await getViewSettings()
+    listSort.value = viewSettings.sort
+    groupByDirection.value = viewSettings.groupByDirection
+    isCompactView.value = viewSettings.compact
+
     taskItems.value = await tasksLocalStorage.getItems()
     completedTaskIds.value = await getCompletedTasks()
     taskTags.value = await getTaskTags()
@@ -557,6 +726,7 @@ onBeforeUnmount(() => {
   if (slowLoadingTimer) clearTimeout(slowLoadingTimer)
   if (flashTimer) clearTimeout(flashTimer)
   if (alignTimer) clearTimeout(alignTimer)
+  if (listMessageTimer) clearTimeout(listMessageTimer)
   Object.values(taskPhotos.value).forEach(revokePhotoUrls)
 })
 </script>
@@ -638,6 +808,20 @@ onBeforeUnmount(() => {
     </Transition>
   </Teleport>
 
+  <!-- Короткое сообщение о результате действия (например, пересчёт порядка по маршруту) -->
+  <Teleport to="body">
+    <Transition name="snackbar">
+      <div
+        v-if="listMessage"
+        role="status"
+        aria-live="polite"
+        class="fixed start-4 end-4 bottom-[var(--toast-offset)] z-[120] rounded-xl border border-[#333] bg-[#1e1e21] px-4 py-3 text-center text-sm text-gray-300 shadow-2xl"
+      >
+        {{ listMessage }}
+      </div>
+    </Transition>
+  </Teleport>
+
   <!-- Оверлей загрузки: только при реально долгой загрузке (иначе — скелетоны) -->
   <LoadingScreen :is-loading="isSlowLoading" />
 
@@ -662,6 +846,17 @@ onBeforeUnmount(() => {
         <p class="text-center text-[#ccc] text-2xl">
           <strong>Мои задания ({{ taskPointsStore.points.length }})</strong>
         </p>
+
+        <!-- Вид списка: порядок, группировка по направлению, компактный режим, маршрут -->
+        <button
+          v-if="taskItems.length !== 0"
+          type="button"
+          class="absolute top-1/2 -translate-y-1/2 start-4 text-[#999] active:text-[#ccc] cursor-pointer"
+          aria-label="Вид списка"
+          @click="openViewSheet"
+        >
+          <AdjustmentsHorizontalIcon class="h-5 w-5" />
+        </button>
 
         <button
           v-if="taskItems.length !== 0"
@@ -778,37 +973,49 @@ onBeforeUnmount(() => {
         <p class="text-xl text-[#F0F0F0] font-medium">Нет заданий</p>
         <p class="text-sm text-[#999] max-w-[260px]">Добавьте точки через поиск сверху, чтобы построить маршрут</p>
       </div>
-      <!-- Добавленные элементы в список -->
+      <!-- Добавленные элементы в список (с учётом выбранного порядка и группировки) -->
       <div v-else v-auto-animate>
-        <!--
-          Обёртка нужна по двум причинам: ItemTaskView имеет несколько корневых
-          узлов (карточка + Teleport + просмотрщик фото), поэтому :class на него
-          не попадает, а класс подсветки должен быть на прямом потомке
-          v-auto-animate — именно его анимирует библиотека при вставке.
-        -->
-        <div
-          v-for="[index, point] of taskItems.entries()"
-          :key="point.uid"
-          :data-task-uid="point.uid"
-          class="rounded-xl transition-colors duration-300"
-          :class="flashUid === point.uid ? 'bg-[#3d7eff]/10 ring-2 ring-[#3d7eff] animate-pulse' : ''"
-        >
-          <ItemTaskView
-            :index="index"
-            :task-items="taskItems"
-            :is-completed="completedTaskIds.includes(point.uid)"
-            :tag="taskTags[point.uid]"
-            :note="taskNotes[point.uid]"
-            :photos="taskPhotos[point.uid]"
-            @delete="requestDeleteTaskItem"
-            @toggle-completed="toggleTaskCompleted(point.uid, $event)"
-            @select-tag="toggleTaskTag(point.uid, $event)"
-            @update-note="saveTaskNote(point.uid, $event)"
-            @delete-note="deleteTaskNote(point.uid)"
-            @add-photos="addTaskPhotos(point.uid, $event)"
-            @remove-photo="removeTaskPhoto(point.uid, $event)"
-          />
-        </div>
+        <template v-for="group in displayedGroups" :key="group.key">
+          <!-- Заголовок группы направлений -->
+          <div
+            v-if="groupByDirection"
+            class="mx-4 mt-3 mb-1 inline-block rounded-lg bg-[#2a2a2e] px-3 py-1 text-[10px] font-semibold uppercase tracking-wider text-[#9aa0a6]"
+          >
+            {{ group.label }} — {{ group.points.length }}
+          </div>
+
+          <!--
+            Обёртка нужна по двум причинам: ItemTaskView имеет несколько корневых
+            узлов (карточка + Teleport + просмотрщик фото), поэтому :class на него
+            не попадает, а класс подсветки должен быть на прямом потомке
+            v-auto-animate — именно его анимирует библиотека при вставке.
+          -->
+          <div
+            v-for="(task, groupIndex) in group.points"
+            :key="task.uid"
+            :data-task-uid="task.uid"
+            class="rounded-xl transition-colors duration-300"
+            :class="flashUid === task.uid ? 'bg-[#3d7eff]/10 ring-2 ring-[#3d7eff] animate-pulse' : ''"
+          >
+            <ItemTaskView
+              :point="task"
+              :index="group.startIndex + groupIndex"
+              :total="displayedTasks.length"
+              :is-completed="completedTaskIds.includes(task.uid)"
+              :tag="taskTags[task.uid]"
+              :note="taskNotes[task.uid]"
+              :photos="taskPhotos[task.uid]"
+              :compact="isCompactView"
+              @delete="requestDeleteTaskItem(task)"
+              @toggle-completed="toggleTaskCompleted(task.uid, $event)"
+              @select-tag="toggleTaskTag(task.uid, $event)"
+              @update-note="saveTaskNote(task.uid, $event)"
+              @delete-note="deleteTaskNote(task.uid)"
+              @add-photos="addTaskPhotos(task.uid, $event)"
+              @remove-photo="removeTaskPhoto(task.uid, $event)"
+            />
+          </div>
+        </template>
       </div>
     </div>
 
@@ -823,6 +1030,21 @@ onBeforeUnmount(() => {
       <span class="text-sm font-medium">На карте</span>
     </button>
   </div>
+
+  <!-- Вид списка: порядок, группировка по направлению, компактный режим, порядок по маршруту -->
+  <BottomSheetView ref="viewSheetRef">
+    <TaskListViewSheet
+      :sort="listSort"
+      :group-by-direction="groupByDirection"
+      :compact="isCompactView"
+      :is-reordering="isReorderingByRoute"
+      :can-reorder-by-route="taskItems.length >= 2"
+      @update:sort="setListSort"
+      @update:group-by-direction="setGroupByDirection"
+      @update:compact="setCompactView"
+      @apply-route-order="applyRouteOrder"
+    />
+  </BottomSheetView>
 </template>
 
 <style scoped>
