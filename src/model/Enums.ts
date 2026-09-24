@@ -47,6 +47,8 @@ export enum LocalStorageNames {
   COMPLETED_TASKS = 'completed_tasks',
   TASK_TAGS = 'task_tags',
   TASK_NOTES = 'task_notes',
+  /** Резервное хранилище фотографий заданий (основное — IndexedDB) */
+  TASK_PHOTOS = 'task_photos',
   ADMIN_DEVICE = 'admin_device',
   SORT_TYPE = 'sort_type',
 }

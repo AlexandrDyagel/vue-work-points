@@ -1,6 +1,7 @@
 import { LocalStorageNames, TaskTag } from '@/model/Enums.ts'
 import { PointResponse } from '@/model/PointResponse.ts'
 import { storage } from '@/utils/storage.ts'
+import { clearPhotos } from '@/utils/photoStorage.ts'
 
 export function useTasksLocalStorage() {
   const getItems = async (): Promise<PointResponse[]> => {
@@ -28,6 +29,7 @@ export function useTasksLocalStorage() {
       await storage.remove(LocalStorageNames.COMPLETED_TASKS)
       await storage.remove(LocalStorageNames.TASK_TAGS)
       await storage.remove(LocalStorageNames.TASK_NOTES)
+      await clearPhotos()
       return true
     } catch (error) {
       console.error('TasksLocalStorage: ', error)

@@ -13,6 +13,8 @@ import LoadingScreen from '@/components/LoadingScreen.vue'
 import ItemDropDown from '@/components/ItemDropDown.vue'
 import { useTaskPointsStore } from '@/store/TaskPoints.ts'
 import { useNoteEditor } from '@/store/NoteEditor.ts'
+import type { TaskPhoto, TaskPhotoView } from '@/model/TaskPhoto.ts'
+import { addPhoto, deletePhoto, deletePhotosByUid, getAllPhotos } from '@/utils/photoStorage.ts'
 
 const router = useRouter()
 const tasksLocalStorage = useTasksLocalStorage()
@@ -39,6 +41,9 @@ const taskNotes = ref<Record<string, string>>({})
 const queryString = ref('')
 const filteredPoints = ref([] as PointResponse[])
 const cachedPoints = ref<PointResponse[]>([])
+
+/** Прикреплённые к заданиям фотографии: uid задания → фотографии для отображения */
+const taskPhotos = ref<Record<string, TaskPhotoView[]>>({})
 
 const isVisibleTaskMapButton = computed(
   () => taskItems.value.length !== 0 && !inputFocus.isFocused && !noteEditorStore.isEditing,
@@ -83,10 +88,73 @@ const handleFilterChange = (inputString: string) => {
   queryString.value = inputString
 }
 
+// --- Фотографии заданий ---
+
+// Подготовка фотографии к отображению (objectURL нужно освобождать вручную)
+const toPhotoView = (photo: TaskPhoto): TaskPhotoView => ({
+  id: photo.id,
+  createdAt: photo.createdAt,
+  url: URL.createObjectURL(photo.blob),
+})
+
+// Освобождение объектных ссылок (вызывается при удалении фотографий и размонтировании)
+const revokePhotoUrls = (photos: TaskPhotoView[]) => {
+  photos.forEach((photo) => URL.revokeObjectURL(photo.url))
+}
+
+// Добавление фотографий к заданию (сжатие уже выполнено в галерее задания)
+const addTaskPhotos = async (uid: string, blobs: Blob[]) => {
+  if (!blobs.length) return
+
+  try {
+    const addedPhotos: TaskPhotoView[] = []
+    for (const blob of blobs) {
+      addedPhotos.push(toPhotoView(await addPhoto(uid, blob)))
+    }
+    taskPhotos.value = {
+      ...taskPhotos.value,
+      [uid]: [...(taskPhotos.value[uid] ?? []), ...addedPhotos],
+    }
+  } catch (e) {
+    console.error(`Ошибка добавления фотографий задания в TasksView.vue: ${e}`)
+  }
+}
+
+// Удаление одной фотографии задания
+const removeTaskPhoto = async (uid: string, photoId: string) => {
+  const photos = taskPhotos.value[uid] ?? []
+  revokePhotoUrls(photos.filter((photo) => photo.id === photoId))
+  taskPhotos.value = { ...taskPhotos.value, [uid]: photos.filter((photo) => photo.id !== photoId) }
+
+  try {
+    await deletePhoto(photoId)
+  } catch (e) {
+    console.error(`Ошибка удаления фотографии задания в TasksView.vue: ${e}`)
+  }
+}
+
+// Полное удаление фотографий задания (когда удаление задания уже нельзя отменить)
+const purgeTaskPhotos = async (uid: string) => {
+  revokePhotoUrls(taskPhotos.value[uid] ?? [])
+
+  const restPhotos = { ...taskPhotos.value }
+  delete restPhotos[uid]
+  taskPhotos.value = restPhotos
+
+  try {
+    await deletePhotosByUid(uid)
+  } catch (e) {
+    console.error(`Ошибка очистки фотографий задания в TasksView.vue: ${e}`)
+  }
+}
+
 // Удаление элемента-задачи из массива добавленных задач
 const deleteTaskItem = async (index: number) => {
   const removed = taskItems.value[index]
   if (!removed) return
+
+  // Предыдущее удаление стало окончательным — освобождаем его фотографии
+  if (undoDelete.value) await purgeTaskPhotos(undoDelete.value.point.uid)
 
   // Фиксируем снимок для возможной отмены удаления
   const completed = completedTaskIds.value.includes(removed.uid)
@@ -109,11 +177,14 @@ const deleteTaskItem = async (index: number) => {
   taskPointsStore.savePoints(taskItems.value)
 
   // Показываем снакбар с возможностью отмены
+  const removedUid = removed.uid
   undoDelete.value = { point: removed, index, completed, tag, note }
   if (undoTimer) clearTimeout(undoTimer)
   undoTimer = setTimeout(() => {
     undoDelete.value = null
     undoTimer = null
+    // Отмены не произошло — фотографии задания удаляем окончательно
+    void purgeTaskPhotos(removedUid)
   }, 4000)
 }
 
@@ -221,6 +292,11 @@ const onDeleteAllConfirm = async (confirmed: boolean) => {
   taskTags.value = {}
   taskNotes.value = {}
   lastItemRef.value = null
+
+  // Освобождаем объектные ссылки фотографий; их хранилище очистит removeItems()
+  Object.values(taskPhotos.value).forEach(revokePhotoUrls)
+  taskPhotos.value = {}
+
   await removeItems()
   taskPointsStore.savePoints([])
 }
@@ -257,6 +333,24 @@ onMounted(async () => {
     taskNotes.value = await getTaskNotes()
     taskPointsStore.savePoints(taskItems.value)
 
+    // Загружаем фотографии заданий и удаляем те, чьи задания уже убраны из списка
+    const storedPhotos = await getAllPhotos()
+    const existingUids = new Set(taskItems.value.map((item) => item.uid))
+    const groupedPhotos: Record<string, TaskPhotoView[]> = {}
+    const orphanUids = new Set<string>()
+
+    storedPhotos.forEach((photo) => {
+      if (!existingUids.has(photo.uid)) {
+        orphanUids.add(photo.uid)
+        return
+      }
+      if (!groupedPhotos[photo.uid]) groupedPhotos[photo.uid] = []
+      groupedPhotos[photo.uid].push(toPhotoView(photo))
+    })
+
+    taskPhotos.value = groupedPhotos
+    await Promise.all(Array.from(orphanUids).map((uid) => deletePhotosByUid(uid)))
+
     await obtainCachedPoints().then((cachedDataPoints) => {
       cachedPoints.value = cachedDataPoints
     })
@@ -269,6 +363,7 @@ onMounted(async () => {
 
 onBeforeUnmount(() => {
   if (undoTimer) clearTimeout(undoTimer)
+  Object.values(taskPhotos.value).forEach(revokePhotoUrls)
 })
 
 function isAddedTaskList(item: PointResponse): boolean {
@@ -432,11 +527,14 @@ function isAddedTaskList(item: PointResponse): boolean {
         :is-completed="completedTaskIds.includes(point.uid)"
         :tag="taskTags[point.uid]"
         :note="taskNotes[point.uid]"
+        :photos="taskPhotos[point.uid]"
         @delete="requestDeleteTaskItem"
         @toggle-completed="toggleTaskCompleted(point.uid, $event)"
         @select-tag="toggleTaskTag(point.uid, $event)"
         @update-note="saveTaskNote(point.uid, $event)"
         @delete-note="deleteTaskNote(point.uid)"
+        @add-photos="addTaskPhotos(point.uid, $event)"
+        @remove-photo="removeTaskPhoto(point.uid, $event)"
         :ref="
           (el) => {
             if (index === taskItems.length - 1) lastItemRef = el

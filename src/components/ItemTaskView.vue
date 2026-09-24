@@ -2,8 +2,12 @@
 import { PointResponse } from '@/model/PointResponse.ts'
 import { TaskTag } from '@/model/Enums.ts'
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, shallowRef, watch } from 'vue'
+import { PhotoIcon } from '@heroicons/vue/24/outline'
 import CheckCircleIcon from '@/components/icons/CheckCircleIcon.vue'
 import { useNoteEditor } from '@/store/NoteEditor.ts'
+import type { TaskPhotoView } from '@/model/TaskPhoto.ts'
+import TaskPhotoGallery from '@/components/TaskPhotoGallery.vue'
+import PhotoViewer from '@/components/PhotoViewer.vue'
 
 interface TagOption {
   value: TaskTag
@@ -23,6 +27,8 @@ const props = defineProps<{
   isCompleted?: boolean
   tag?: TaskTag
   note?: string
+  /** Прикреплённые к заданию фотографии */
+  photos?: TaskPhotoView[]
 }>()
 
 const point = ref(props.taskItems[props.index])
@@ -35,6 +41,8 @@ const emit = defineEmits<{
   selectTag: [tag: TaskTag]
   updateNote: [note: string]
   deleteNote: []
+  addPhotos: [blobs: Blob[]]
+  removePhoto: [id: string]
 }>()
 
 // Событие удаления элемента
@@ -146,6 +154,34 @@ onBeforeUnmount(() => {
 
 const isCompleted = computed(() => props.isCompleted ?? false)
 
+// --- Фотографии задания ---
+const galleryRef = ref<InstanceType<typeof TaskPhotoGallery> | null>(null)
+const viewerIndex = ref<number | null>(null)
+
+const photoCount = computed(() => props.photos?.length ?? 0)
+
+// Стабильный список для дочерних компонентов (без создания нового массива при каждом рендере)
+const photoList = computed(() => props.photos ?? [])
+
+// Кнопка в строке действий: открываем просмотрщик либо выбор фотографий
+const handlePhotoButton = () => {
+  if (photoCount.value === 0) {
+    galleryRef.value?.openGallery()
+    return
+  }
+  viewerIndex.value = 0
+}
+
+// Пользователь выбрал фотографии — передаём их наверх для сохранения
+const onAddPhotos = (blobs: Blob[]) => {
+  emit('addPhotos', blobs)
+}
+
+// Пользователь удалил фотографию — передаём id наверх
+const onRemovePhoto = (id: string) => {
+  emit('removePhoto', id)
+}
+
 const path = (index: number): string => {
   if (index === 0 && props.taskItems.length !== 1) {
     return 'absolute left-8 top-0 bottom-0 w-1 bg-blue-500 translate-y-1/2'
@@ -183,6 +219,23 @@ const path = (index: number): string => {
 
           <!-- Кнопки действий над заданием -->
           <div class="relative z-[70] flex flex-row items-center gap-2 shrink-0">
+            <!-- Фотографии задания -->
+            <div
+              class="relative cursor-pointer"
+              :class="photoCount ? 'text-[#3d7eff]' : 'text-[#61646b]'"
+              :aria-label="`Фотографии задания: ${photoCount}`"
+              @mousedown.prevent
+              @click="handlePhotoButton"
+            >
+              <PhotoIcon class="h-5 w-5" />
+              <span
+                v-if="photoCount"
+                class="absolute -top-1.5 -right-2 min-w-[14px] px-1 rounded-full bg-[#3d7eff] text-white text-[9px] font-bold leading-[14px] text-center"
+              >
+                {{ photoCount }}
+              </span>
+            </div>
+
             <div
               ref="noteButtonRef"
               class="cursor-pointer"
@@ -222,6 +275,15 @@ const path = (index: number): string => {
             {{ tagOption.label }}
           </button>
         </div>
+
+        <!-- Фотографии задания -->
+        <TaskPhotoGallery
+          ref="galleryRef"
+          :photos="photos"
+          @add="onAddPhotos"
+          @remove="onRemovePhoto"
+          @open="viewerIndex = $event"
+        />
 
         <!-- Заметка -->
         <div
@@ -308,6 +370,15 @@ const path = (index: number): string => {
       </div>
     </Transition>
   </Teleport>
+
+  <!-- Полноэкранный просмотр фотографий задания -->
+  <PhotoViewer
+    :photos="photoList"
+    :index="viewerIndex"
+    @close="viewerIndex = null"
+    @remove="onRemovePhoto"
+    @update:index="viewerIndex = $event"
+  />
 </template>
 
 <style scoped>
