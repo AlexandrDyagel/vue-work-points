@@ -106,11 +106,25 @@ function watchTracks(target: MediaStream): void {
   })
 }
 
+/**
+ * Какое разрешение просим у камеры по большей стороне (пиксели).
+ *
+ * Ограничение мягкое (`ideal`): если такого режима нет, устройство отдаёт
+ * ближайший подходящий, а не отказывает в доступе. Оригинал снимка сохраняется
+ * в память устройства, поэтому просим максимум, который камера может дать
+ * (уменьшения при съёмке нет — см. опцию `preserveSize` в `grabVideoFrame`).
+ */
+const PREFERRED_FRAME_SIZE = 4096
+
 function requestStream(facing: CameraFacing): Promise<MediaStream> {
   if (!supportsLiveCamera()) return Promise.reject(new Error('getUserMedia недоступен'))
 
   return navigator.mediaDevices.getUserMedia({
-    video: { facingMode: { ideal: facing } },
+    video: {
+      facingMode: { ideal: facing },
+      width: { ideal: PREFERRED_FRAME_SIZE },
+      height: { ideal: PREFERRED_FRAME_SIZE },
+    },
     audio: false,
   })
 }

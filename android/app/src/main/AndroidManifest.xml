@@ -15,6 +15,16 @@
     <!-- Съёмка фото камерой устройства (нужно для input[type=file][capture] в нативной сборке) -->
     <uses-permission android:name="android.permission.CAMERA" />
 
+    <!-- Сохранение снимков в общую память устройства. Начиная с Android 11 приложение
+         пишет свои файлы в «Документы» без разрешений, поэтому они запрашиваются
+         только на Android 10 и старше (плагин Filesystem делает это самостоятельно) -->
+    <uses-permission
+        android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32" />
+    <uses-permission
+        android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        android:maxSdkVersion="29" />
+
     <!-- Камера не обязательна: приложение работает и без неё -->
     <uses-feature
         android:name="android.hardware.camera"

@@ -6,6 +6,7 @@ import { useUserRole } from '@/composables/useUserRole.ts'
 import { useTasksLocalStorage } from '@/composables/useTasksLocalStorage.ts'
 import { useSearchFilter } from '@/composables/useSearchFilter.ts'
 import { usePlatform } from '@/composables/usePlatform.ts'
+import { usePhotoSaveSettings } from '@/composables/usePhotoSaveSettings.ts'
 import {
   Environment,
   LocalStorageNames,
@@ -15,6 +16,7 @@ import {
 } from '@/model/Enums.ts'
 import { DEV_VERSION, ENVIRONMENT } from '@/main.ts'
 import { storage } from '@/utils/storage.ts'
+import { PHOTO_SAVE_FOLDER } from '@/utils/photoSave.ts'
 
 const router = useRouter()
 const { clearCachePoints, checkForUpdate, setLastUpdateDataPoints, removeLastUpdateDataPoints } =
@@ -23,6 +25,12 @@ const { tryActivateAdmin, deactivateAdmin, getUserRole } = useUserRole()
 const { removeItems: clearCacheTasks } = useTasksLocalStorage()
 const { updateUserSearchFilter, updateUserSortType } = useSearchFilter()
 const { isNative } = usePlatform()
+const {
+  settings: photoSaveSettings,
+  ensureSettings: ensurePhotoSaveSettings,
+  setSaveToDevice: setPhotoSaveToDevice,
+  resetSettings: resetPhotoSaveSettings,
+} = usePhotoSaveSettings()
 
 // --- Состояние ---
 const currentRole = ref<UserRole | null>(null)
@@ -64,6 +72,7 @@ onMounted(async () => {
   currentRole.value = await getUserRole()
   await loadCurrentSettings()
   await loadLastSyncDate()
+  await ensurePhotoSaveSettings()
 })
 
 async function loadCurrentSettings() {
@@ -181,6 +190,18 @@ async function handleFilterChange(filterType: TypeSearchFilter) {
   currentSearchFilter.value = filterType
   await updateUserSearchFilter(filterType)
   showToast('✅ Фильтр сохранён')
+}
+
+// --- Сохранение снимков камеры в память устройства ---
+
+/**
+ * Переключатель «сохранять снимки в память устройства».
+ * Решение применяется сразу: следующий снимок камеры уже учитывает новый выбор.
+ */
+async function handlePhotoSaveToggle() {
+  const next = !photoSaveSettings.value.saveToDevice
+  await setPhotoSaveToDevice(next)
+  showToast(next ? '📷 Снимки сохраняются в память устройства' : '📷 Снимки не сохраняются')
 }
 
 // --- Админ: долгое нажатие ---
@@ -337,6 +358,7 @@ async function handleFullReset() {
   currentSortType.value = TypeSort.NAME_ASC
   currentSearchFilter.value = TypeSearchFilter.NAME
   lastSyncDate.value = null
+  await resetPhotoSaveSettings()
   showToast('🔄 Все настройки сброшены')
 }
 
@@ -479,7 +501,43 @@ const envLabel = computed(() => {
       </div>
     </section>
 
-    <!-- ==================== СЕКЦИЯ 3: Админ-панель (только для ADMIN) ==================== -->
+    <!-- ==================== СЕКЦИЯ 3: Фотографии ==================== -->
+    <section class="mx-4 mt-6">
+      <h2 class="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-3 px-1">
+        📷 Фотографии
+      </h2>
+
+      <div class="bg-[#2a2a2e] rounded-2xl overflow-hidden">
+        <!-- Сохранять снимок камеры в память устройства -->
+        <button
+          type="button"
+          class="w-full flex items-center justify-between gap-3 px-4 py-3.5 text-left cursor-pointer active:bg-[#3a3a3e] transition-colors"
+          @click="handlePhotoSaveToggle"
+        >
+          <span class="text-sm text-gray-300">Сохранять снимки в память устройства</span>
+          <span
+            class="shrink-0 w-11 h-6 rounded-full relative transition-colors"
+            :class="photoSaveSettings.saveToDevice ? 'bg-[#5fb336]' : 'bg-[#4a4a4f]'"
+          >
+            <span
+              class="absolute top-0.5 w-5 h-5 rounded-full bg-white transition-all"
+              :class="photoSaveSettings.saveToDevice ? 'start-[22px]' : 'start-0.5'"
+            ></span>
+          </span>
+        </button>
+      </div>
+
+      <p class="mt-2 text-[11px] text-[#61646b] leading-snug">
+        Каждый снимок камеры дополнительно сохраняется в память устройства
+        <span class="text-gray-400">в полном разрешении камеры</span>: на Android — в папку
+        <span class="text-gray-400">{{ PHOTO_SAVE_FOLDER }}</span> (она видна в галерее как
+        «Картинки / {{ PHOTO_SAVE_FOLDER }}», файлы начинаются с того же имени), в браузере — в
+        загрузки, в Telegram Mini App — через окно «Поделиться». Фотографии заданий при этом
+        сохраняются как обычно. Выключите переключатель, если снимки в галерее не нужны.
+      </p>
+    </section>
+
+    <!-- ==================== СЕКЦИЯ 4: Админ-панель (только для ADMIN) ==================== -->
     <section v-if="currentRole === UserRole.ADMIN" class="mx-4 mt-6">
       <h2 class="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-3 px-1">
         👑 Админ-панель
@@ -532,7 +590,7 @@ const envLabel = computed(() => {
       </div>
     </section>
 
-    <!-- ==================== СЕКЦИЯ 4: О приложении ==================== -->
+    <!-- ==================== СЕКЦИЯ 5: О приложении ==================== -->
     <section class="mx-4 mt-6 mb-[120px]">
       <h2 class="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-3 px-1">
         ℹ️ О приложении

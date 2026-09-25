@@ -61,6 +61,8 @@ export enum LocalStorageNames {
   TASKS_VIEW = 'tasks_view',
   /** Резервное хранилище фотографий заданий (основное — IndexedDB) */
   TASK_PHOTOS = 'task_photos',
+  /** Настройки сохранения снимков камеры в память устройства */
+  PHOTO_SAVE = 'photo_save',
   ADMIN_DEVICE = 'admin_device',
   SORT_TYPE = 'sort_type',
 }

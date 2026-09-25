@@ -29,6 +29,14 @@ export interface GrabFrameOptions {
    * «переворачивался» бы на глазах у пользователя.
    */
   mirror?: boolean
+  /**
+   * Не уменьшать кадр: снимок забирается в родном разрешении потока камеры.
+   * Нужно, когда кадр сохраняется в память устройства как оригинал
+   * (см. `utils/photoSave.ts`): без уменьшения снимок в галерее остаётся
+   * полноразмерным, а фотография задания всё равно ужимается общим конвейером
+   * фотографий (`compressImage`).
+   */
+  preserveSize?: boolean
 }
 
 /**
@@ -79,10 +87,11 @@ export function describeCameraError(error: unknown): string {
 /**
  * Кадр с `<video>` в JPEG-Blob.
  *
- * Кадр уменьшается до `maxSize` по большей стороне: полноразмерный снимок
- * (12 Мп) занимал бы десятки мегабайт памяти на слабых Android-устройствах,
+ * По умолчанию кадр уменьшается до `maxSize` по большей стороне: полноразмерный
+ * снимок (12 Мп) занимал бы десятки мегабайт памяти на слабых Android-устройствах,
  * а дальнейшее сжатие до 1280 px делает общий конвейер фотографий
- * (`compressImage`).
+ * (`compressImage`). Опция `preserveSize` уменьшение отключает — так снимается
+ * оригинал снимка для памяти устройства.
  */
 export function grabVideoFrame(
   video: HTMLVideoElement,
@@ -91,13 +100,15 @@ export function grabVideoFrame(
   const maxSize = options.maxSize ?? DEFAULT_FRAME_MAX_SIZE
   const quality = options.quality ?? DEFAULT_FRAME_QUALITY
   const mirror = options.mirror ?? false
+  const preserveSize = options.preserveSize ?? false
 
   const width = video.videoWidth
   const height = video.videoHeight
   if (!width || !height) return Promise.resolve(null)
   if (typeof document === 'undefined') return Promise.resolve(null)
 
-  const scale = Math.min(1, maxSize / Math.max(width, height))
+  // Оригинал для памяти устройства: кадр переносится без уменьшения
+  const scale = preserveSize ? 1 : Math.min(1, maxSize / Math.max(width, height))
 
   const canvas = document.createElement('canvas')
   canvas.width = Math.max(1, Math.round(width * scale))

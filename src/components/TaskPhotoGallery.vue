@@ -1,10 +1,12 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { CameraIcon, PhotoIcon, XMarkIcon } from '@heroicons/vue/24/outline'
 import type { TaskPhotoView } from '@/model/TaskPhoto.ts'
 import CameraCapture from '@/components/CameraCapture.vue'
 import { supportsLiveCamera } from '@/utils/camera.ts'
 import { compressImage, isDecodableImage } from '@/utils/image.ts'
+import { buildPhotoFileName, savePhotoToDevice } from '@/utils/photoSave.ts'
+import { usePhotoSaveSettings } from '@/composables/usePhotoSaveSettings.ts'
 
 /** Максимальное количество фотографий на одно задание */
 const DEFAULT_MAX_PHOTOS = 10
@@ -29,6 +31,8 @@ const emit = defineEmits<{
   /** Пользователь открыл просмотрщик фотографий */
   open: [index: number]
 }>()
+
+const { ensureSettings: ensurePhotoSaveSettings, shouldSaveToDevice } = usePhotoSaveSettings()
 
 const galleryInputRef = ref<HTMLInputElement | null>(null)
 const cameraInputRef = ref<HTMLInputElement | null>(null)
@@ -86,10 +90,29 @@ function openCamera() {
   cameraInputRef.value?.click()
 }
 
-/** Снимок живой камеры проходит тот же путь, что и выбранные из галереи файлы */
+/**
+ * Снимок живой камеры проходит тот же путь, что и выбранные из галереи файлы.
+ * Дополнительно оригинал снимка сохраняется в память устройства: системная
+ * камера делает это сама, а съёмка внутри приложения — только по нашей просьбе
+ * (и только если сохранение включено в настройках приложения).
+ * Сохранение идёт параллельно обработке снимка — окна «Поделиться» и скачивания
+ * требуют свежего касания пользователя, — а его ошибка съёмку не отменяет:
+ * фотография всё равно попадёт в задание.
+ */
 async function onCameraCapture(blob: Blob) {
   isCameraOpen.value = false
+
+  // Флаг читается синхронно: ждать хранилище после касания нельзя — окна
+  // «Поделиться» и скачивания работают только в пределах жеста пользователя
+  const deviceSave = shouldSaveToDevice() ? savePhotoToDevice(blob, buildPhotoFileName()) : null
+
   await processFiles([new File([blob], `camera-${Date.now()}.jpg`, { type: 'image/jpeg' })])
+
+  // Сохранение в память устройства выключено в настройках — сообщать нечего
+  if (!deviceSave) return
+
+  const saved = await deviceSave
+  if (saved.message) showMessage(saved.message, saved.ok ? 'success' : 'error', 4000)
 }
 
 /** Живая камера недоступна — переходим на системное окно съёмки */
@@ -193,6 +216,12 @@ function removePhoto(id: string) {
 function openViewer(index: number) {
   emit('open', index)
 }
+
+// Настройку «сохранять снимки в память устройства» читаем заранее: в момент
+// снимка решение принимается сразу, без ожидания хранилища
+onMounted(() => {
+  void ensurePhotoSaveSettings()
+})
 
 onBeforeUnmount(() => {
   if (messageTimer) clearTimeout(messageTimer)

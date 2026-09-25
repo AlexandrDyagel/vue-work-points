@@ -160,8 +160,13 @@ const takePhoto = async () => {
     return
   }
 
-  // Кадр фронтальной камеры отражаем: её превью зеркальное
-  const blob = await grabVideoFrame(video, { mirror: facing.value === 'user' })
+  // Кадр фронтальной камеры отражаем: её превью зеркальное. Кадр берём в родном
+  // разрешении камеры (`preserveSize`) — этот же снимок уходит в память устройства
+  // как оригинал, а для карточки задания его ужимает конвейер фотографий.
+  const blob = await grabVideoFrame(video, {
+    mirror: facing.value === 'user',
+    preserveSize: true,
+  })
   if (!blob) {
     haptics.error()
     errorMessage.value = 'Не удалось сохранить снимок. Попробуйте ещё раз.'
