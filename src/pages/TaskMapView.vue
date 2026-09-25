@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { BackButton } from 'vue-tg'
 import { useRouter } from 'vue-router'
-import { nextTick, onMounted, onUnmounted, ref } from 'vue'
+import { computed, nextTick, onMounted, onUnmounted, ref } from 'vue'
 import { PointResponse } from '@/model/PointResponse.ts'
 import { useTasksLocalStorage } from '@/composables/useTasksLocalStorage.ts'
 import { useMiniApp } from 'vue-tg/8.0'
@@ -12,6 +12,7 @@ import { useTaskPointsStore } from '@/store/TaskPoints.ts'
 import { useOptimalRoute } from '@/composables/useOptimalRoute.ts'
 import { usePointsStore } from '@/store/Points.ts'
 import { ROUTE_START_POINT_UID } from '@/model/Route.ts'
+import { createBackHandler, useBackDismiss } from '@/composables/useBackButton.ts'
 import * as L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import { Capacitor } from '@capacitor/core'
@@ -392,6 +393,13 @@ const cancelDeleteTask = () => {
   deleteTaskConfirm.value = null
 }
 
+// Системная кнопка «Назад» (Android) закрывает подтверждение удаления,
+// а не уводит со страницы маршрута
+useBackDismiss(computed(() => deleteTaskConfirm.value !== null), cancelDeleteTask)
+
+/** Кнопка «Назад» в шапке (Telegram): закрывает открытый оверлей, затем уводит со страницы */
+const handleBack = createBackHandler(() => router.back())
+
 const addMarkersToMap = () => {
   const leafletMap = map.value
   if (!leafletMap) return
@@ -553,30 +561,35 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <BackButton @click="router.back" />
+  <BackButton @click="handleBack" />
   <LoadingScreen :is-loading="isLoadingData" />
 
   <!-- Подтверждение удаления задания -->
   <Teleport to="body">
     <Transition name="modal">
       <div v-if="deleteTaskConfirm" class="fixed inset-0 z-[9999]">
-        <div class="absolute inset-0 bg-black/60" @click="cancelDeleteTask"></div>
+        <div class="absolute inset-0 bg-black/60" aria-hidden="true" @click="cancelDeleteTask"></div>
 
         <div
           class="modal-content absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-[360px] bg-[#1e1e21] rounded-2xl p-6 shadow-2xl border border-[#333]"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Удаление задания"
         >
           <h2 class="text-lg font-bold text-white mb-2 text-center">Удалить задание?</h2>
           <p class="text-gray-400 text-sm text-center mb-5 break-words">{{ deleteTaskConfirm?.name }}</p>
 
           <button
+            type="button"
             @click="confirmDeleteTask"
-            class="w-full bg-red-500 hover:bg-red-600 text-white px-4 py-2.5 rounded-xl font-medium transition-colors mb-2"
+            class="w-full min-h-11 bg-red-500 hover:bg-red-600 text-white px-4 py-2.5 rounded-xl font-medium transition-colors mb-2"
           >
             Удалить
           </button>
           <button
+            type="button"
             @click="cancelDeleteTask"
-            class="w-full bg-transparent text-gray-400 hover:text-white px-4 py-2 rounded-xl text-sm transition-colors"
+            class="w-full min-h-11 bg-transparent text-gray-400 hover:text-white px-4 py-2 rounded-xl text-sm transition-colors"
           >
             Отмена
           </button>

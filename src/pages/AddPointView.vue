@@ -223,9 +223,14 @@ watch(direction, () => {
         class="w-full bg-black shadow-xl start-4 end-4 bottom-4 border-color-custom rounded-lg bg-[#18695A] border text-sm p-2.5 focus:outline-none"
         placeholder="Название нового направления"
       />
-      <div @click="addDirection" class="py-2 px-4 border-[#5fb336] rounded-lg bg-[#5fb336] border active:opacity-50">
+      <button
+        type="button"
+        class="shrink-0 min-h-11 min-w-11 flex items-center justify-center py-2 px-4 rounded-lg bg-[#5fb336] border border-[#5fb336] text-white active:opacity-50 cursor-pointer"
+        aria-label="Добавить направление"
+        @click="addDirection"
+      >
         +
-      </div>
+      </button>
     </div>
   </div>
 </template>

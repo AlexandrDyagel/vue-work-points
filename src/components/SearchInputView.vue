@@ -79,7 +79,7 @@ defineExpose({
     <button
       v-if="isFocused"
       type="button"
-      class="shrink-0 px-3 py-2.5 rounded-xl bg-[#393E46] text-sm text-[#ccc] transition-colors active:opacity-70 cursor-pointer"
+      class="shrink-0 min-h-11 px-3 py-2.5 rounded-xl bg-[#393E46] text-sm text-[#ccc] transition-colors active:opacity-70 cursor-pointer"
       aria-label="Завершить поиск"
       @mousedown.prevent
       @click="finishEditing"

@@ -8,6 +8,7 @@ import {
   XMarkIcon,
 } from '@heroicons/vue/24/outline'
 import type { TaskPhotoView } from '@/model/TaskPhoto.ts'
+import { useBackDismiss } from '@/composables/useBackButton.ts'
 
 const props = defineProps<{
   /** Список фотографий задания */
@@ -71,6 +72,10 @@ function cancelRemove() {
   showDeleteConfirm.value = false
 }
 
+// Системная кнопка «Назад»: сначала закрывает подтверждение, затем просмотрщик
+useBackDismiss(isOpen, close)
+useBackDismiss(showDeleteConfirm, cancelRemove)
+
 function confirmRemove() {
   const photo = current.value
   showDeleteConfirm.value = false
@@ -108,15 +113,11 @@ function onTouchEnd(event: TouchEvent) {
   else showPrev()
 }
 
-/** Управление с клавиатуры (десктоп) */
+/** Управление с клавиатуры (десктоп): Escape обрабатывает useBackButton */
 function onKeydown(event: KeyboardEvent) {
   if (!isOpen.value) return
 
   switch (event.key) {
-    case 'Escape':
-      if (showDeleteConfirm.value) cancelRemove()
-      else close()
-      break
     case 'ArrowRight':
       showNext()
       break
@@ -149,7 +150,7 @@ onBeforeUnmount(() => document.removeEventListener('keydown', onKeydown))
         <div class="flex shrink-0 items-center justify-between gap-3 px-4 pt-4 pb-2">
           <button
             type="button"
-            class="h-9 w-9 rounded-full bg-[#1e1e21] border border-[#333] text-[#ccc] flex items-center justify-center transition-colors active:opacity-60 cursor-pointer"
+            class="h-11 w-11 rounded-full bg-[#1e1e21] border border-[#333] text-[#ccc] flex items-center justify-center transition-colors active:opacity-60 cursor-pointer"
             aria-label="Закрыть просмотр"
             @click="close"
           >
@@ -160,7 +161,7 @@ onBeforeUnmount(() => document.removeEventListener('keydown', onKeydown))
 
           <button
             type="button"
-            class="h-9 w-9 rounded-full bg-[#1e1e21] border border-[#333] text-[#ccc] flex items-center justify-center transition-colors active:opacity-60 cursor-pointer"
+            class="h-11 w-11 rounded-full bg-[#1e1e21] border border-[#333] text-[#ccc] flex items-center justify-center transition-colors active:opacity-60 cursor-pointer"
             aria-label="Повернуть фотографию"
             @click="rotate"
           >
@@ -183,7 +184,7 @@ onBeforeUnmount(() => document.removeEventListener('keydown', onKeydown))
           <button
             type="button"
             :disabled="!hasPrev"
-            class="h-10 w-10 rounded-full bg-[#1e1e21] border border-[#333] text-[#ccc] flex items-center justify-center transition-colors active:opacity-60 disabled:opacity-30 cursor-pointer disabled:cursor-default"
+            class="h-11 w-11 rounded-full bg-[#1e1e21] border border-[#333] text-[#ccc] flex items-center justify-center transition-colors active:opacity-60 disabled:opacity-30 cursor-pointer disabled:cursor-default"
             aria-label="Предыдущая фотография"
             @click="showPrev"
           >
@@ -192,7 +193,7 @@ onBeforeUnmount(() => document.removeEventListener('keydown', onKeydown))
 
           <button
             type="button"
-            class="flex items-center gap-2 rounded-xl border border-red-500/40 px-4 py-2 text-sm font-medium text-red-400 transition-colors active:opacity-60 cursor-pointer"
+            class="flex min-h-11 items-center gap-2 rounded-xl border border-red-500/40 px-4 py-2 text-sm font-medium text-red-400 transition-colors active:opacity-60 cursor-pointer"
             @click="requestRemove"
           >
             <TrashIcon class="h-4 w-4" />
@@ -202,7 +203,7 @@ onBeforeUnmount(() => document.removeEventListener('keydown', onKeydown))
           <button
             type="button"
             :disabled="!hasNext"
-            class="h-10 w-10 rounded-full bg-[#1e1e21] border border-[#333] text-[#ccc] flex items-center justify-center transition-colors active:opacity-60 disabled:opacity-30 cursor-pointer disabled:cursor-default"
+            class="h-11 w-11 rounded-full bg-[#1e1e21] border border-[#333] text-[#ccc] flex items-center justify-center transition-colors active:opacity-60 disabled:opacity-30 cursor-pointer disabled:cursor-default"
             aria-label="Следующая фотография"
             @click="showNext"
           >
@@ -224,24 +225,27 @@ onBeforeUnmount(() => document.removeEventListener('keydown', onKeydown))
       leave-to-class="opacity-0"
     >
       <div v-if="showDeleteConfirm" class="fixed inset-0 z-[10000]">
-        <div class="absolute inset-0 bg-black/60" @click="cancelRemove"></div>
+        <div class="absolute inset-0 bg-black/60" aria-hidden="true" @click="cancelRemove"></div>
 
         <div
           class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-[360px] bg-[#1e1e21] rounded-2xl p-6 shadow-2xl border border-[#333]"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Удаление фотографии"
         >
           <h2 class="text-lg font-bold text-white mb-2 text-center">Удалить фотографию?</h2>
           <p class="text-gray-400 text-sm text-center mb-5">Это действие нельзя отменить.</p>
 
           <button
             type="button"
-            class="w-full bg-red-500 hover:bg-red-600 text-white px-4 py-2.5 rounded-xl font-medium transition-colors mb-2 cursor-pointer"
+            class="w-full min-h-11 bg-red-500 hover:bg-red-600 text-white px-4 py-2.5 rounded-xl font-medium transition-colors mb-2 cursor-pointer"
             @click="confirmRemove"
           >
             Удалить
           </button>
           <button
             type="button"
-            class="w-full bg-transparent text-gray-400 hover:text-white px-4 py-2 rounded-xl text-sm transition-colors cursor-pointer"
+            class="w-full min-h-11 bg-transparent text-gray-400 hover:text-white px-4 py-2 rounded-xl text-sm transition-colors cursor-pointer"
             @click="cancelRemove"
           >
             Отмена

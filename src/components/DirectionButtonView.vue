@@ -12,12 +12,14 @@ const isActive = computed(() =>
 </script>
 
 <template>
-  <div
+  <!-- Кнопка переключения направления: настоящий button + тап-таргет 44px по высоте -->
+  <button
+    type="button"
     :class="isActive"
-    class="text-[14px] font-medium px-2 py-0.5 relative rounded-lg text-center content-center cursor-pointer"
+    class="relative min-h-9 px-3 py-1.5 text-[14px] font-medium rounded-lg text-center content-center cursor-pointer after:absolute after:inset-x-0 after:-inset-y-1 after:content-['']"
   >
     {{ name }}
-  </div>
+  </button>
 </template>
 
 <style scoped></style>

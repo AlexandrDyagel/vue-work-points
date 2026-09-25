@@ -247,12 +247,12 @@ defineExpose({
 
         <button
           type="button"
-          class="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-[#1e1e21] border border-[#444] text-[#ccc] flex items-center justify-center transition-colors active:opacity-60 cursor-pointer"
+          class="absolute -top-2 -right-2 h-8 w-8 rounded-full bg-[#1e1e21] border border-[#444] text-[#ccc] flex items-center justify-center transition-colors active:opacity-60 cursor-pointer after:absolute after:-inset-1.5 after:content-['']"
           aria-label="Удалить фотографию"
           @mousedown.prevent
           @click.stop="removePhoto(photo.id)"
         >
-          <XMarkIcon class="h-3 w-3" />
+          <XMarkIcon class="h-3.5 w-3.5" />
         </button>
       </div>
     </div>

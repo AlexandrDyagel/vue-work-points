@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, onUnmounted } from 'vue'
+import { useBackDismiss } from '@/composables/useBackButton.ts'
 
 const isOpen = ref(false)
 const startY = ref(0)
@@ -17,6 +18,9 @@ const closeSheet = () => {
   isOpen.value = false
   document.body.style.overflow = ''
 }
+
+// Системная кнопка «Назад» (Android) закрывает панель, а не уводит со страницы
+useBackDismiss(isOpen, closeSheet)
 
 // Извлечение координаты Y из события мыши или касания
 const getClientY = (e: MouseEvent | TouchEvent): number => {
@@ -74,21 +78,11 @@ const endDrag = () => {
   }
 }
 
-// Обработчик клавиши ESC
-const onKeydown = (e: KeyboardEvent) => {
-  if (e.key === 'Escape' && isOpen.value) {
-    closeSheet()
-  }
-}
-
-// Устанавливаем обработчики
-onMounted(() => {
-  document.addEventListener('keydown', onKeydown)
-})
+// Обработчик клавиши ESC живёт в useBackButton: там он знает про стек оверлеев
+// и закрывает только верхний, поэтому отдельный слушатель здесь не нужен.
 
 // Убираем обработчики при размонтировании
 onUnmounted(() => {
-  document.removeEventListener('keydown', onKeydown)
   document.body.style.overflow = ''
 })
 
@@ -105,13 +99,14 @@ defineExpose({
     <div
       class="bottom-sheet-overlay"
       :class="{ 'overlay-visible': isOpen }"
+      aria-hidden="true"
       @click="closeSheet"
     ></div>
 
     <!-- Bottom Sheet -->
-    <div class="bottom-sheet" :class="{ 'sheet-open': isOpen }">
+    <div class="bottom-sheet" :class="{ 'sheet-open': isOpen }" role="dialog" aria-modal="true">
       <!-- Handle -->
-      <div class="sheet-handle" @mousedown="startDrag" @touchstart="startDrag">
+      <div class="sheet-handle" aria-hidden="true" @mousedown="startDrag" @touchstart="startDrag">
         <div class="handle-icon"></div>
       </div>
 

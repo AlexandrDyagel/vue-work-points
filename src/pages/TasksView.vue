@@ -7,6 +7,7 @@ import { PointResponse } from '@/model/PointResponse.ts'
 import { useCache } from '@/composables/useCache.ts'
 import { useSearchFilter } from '@/composables/useSearchFilter.ts'
 import { useTasksViewSettings } from '@/composables/useTasksViewSettings.ts'
+import { createBackHandler, useBackDismiss } from '@/composables/useBackButton.ts'
 import { useOptimalRoute } from '@/composables/useOptimalRoute.ts'
 import SearchInputView from '@/components/SearchInputView.vue'
 import { useInputFocus } from '@/store/TopAppBar.ts'
@@ -451,6 +452,17 @@ const onDeleteAllConfirm = async (confirmed: boolean) => {
   taskPointsStore.savePoints([])
 }
 
+// Системная кнопка «Назад» на Android закрывает подтверждения удаления,
+// а не уводит со страницы заданий
+useBackDismiss(showDeleteAllConfirm, () => onDeleteAllConfirm(false))
+useBackDismiss(
+  computed(() => deleteTaskConfirm.value !== null),
+  cancelDeleteTaskItem,
+)
+
+/** Кнопка «Назад» в шапке (Telegram): закрывает открытый оверлей, затем уводит со страницы */
+const handleBack = createBackHandler(() => router.back())
+
 /** Зазор между карточкой и панелью поиска */
 const PANEL_GAP = 12
 
@@ -732,29 +744,34 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <BackButton @click="router.back" />
+  <BackButton @click="handleBack" />
 
   <!-- Подтверждение удаления всех заданий (работает на всех платформах) -->
   <Teleport to="body">
     <Transition name="modal">
       <div v-if="showDeleteAllConfirm" class="fixed inset-0 z-[9999]">
-        <div class="absolute inset-0 bg-black/60" @click="onDeleteAllConfirm(false)"></div>
+        <div class="absolute inset-0 bg-black/60" aria-hidden="true" @click="onDeleteAllConfirm(false)"></div>
 
         <div
           class="modal-content absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-[360px] bg-[#1e1e21] rounded-2xl p-6 shadow-2xl border border-[#333]"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Удаление всех заданий"
         >
           <h2 class="text-lg font-bold text-white mb-2 text-center">Удалить все задания?</h2>
           <p class="text-gray-400 text-sm text-center mb-5">Это действие нельзя отменить.</p>
 
           <button
+            type="button"
             @click="onDeleteAllConfirm(true)"
-            class="w-full bg-red-500 hover:bg-red-600 text-white px-4 py-2.5 rounded-xl font-medium transition-colors mb-2"
+            class="w-full min-h-11 bg-red-500 hover:bg-red-600 text-white px-4 py-2.5 rounded-xl font-medium transition-colors mb-2"
           >
             Удалить
           </button>
           <button
+            type="button"
             @click="onDeleteAllConfirm(false)"
-            class="w-full bg-transparent text-gray-400 hover:text-white px-4 py-2 rounded-xl text-sm transition-colors"
+            class="w-full min-h-11 bg-transparent text-gray-400 hover:text-white px-4 py-2 rounded-xl text-sm transition-colors"
           >
             Отмена
           </button>
@@ -767,23 +784,28 @@ onBeforeUnmount(() => {
   <Teleport to="body">
     <Transition name="modal">
       <div v-if="deleteTaskConfirm" class="fixed inset-0 z-[9999]">
-        <div class="absolute inset-0 bg-black/60" @click="cancelDeleteTaskItem"></div>
+        <div class="absolute inset-0 bg-black/60" aria-hidden="true" @click="cancelDeleteTaskItem"></div>
 
         <div
           class="modal-content absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-[360px] bg-[#1e1e21] rounded-2xl p-6 shadow-2xl border border-[#333]"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Удаление задания"
         >
           <h2 class="text-lg font-bold text-white mb-2 text-center">Удалить задание?</h2>
           <p class="text-gray-400 text-sm text-center mb-5 break-words">{{ deleteTaskConfirm?.name }}</p>
 
           <button
+            type="button"
             @click="confirmDeleteTaskItem"
-            class="w-full bg-red-500 hover:bg-red-600 text-white px-4 py-2.5 rounded-xl font-medium transition-colors mb-2"
+            class="w-full min-h-11 bg-red-500 hover:bg-red-600 text-white px-4 py-2.5 rounded-xl font-medium transition-colors mb-2"
           >
             Удалить
           </button>
           <button
+            type="button"
             @click="cancelDeleteTaskItem"
-            class="w-full bg-transparent text-gray-400 hover:text-white px-4 py-2 rounded-xl text-sm transition-colors"
+            class="w-full min-h-11 bg-transparent text-gray-400 hover:text-white px-4 py-2 rounded-xl text-sm transition-colors"
           >
             Отмена
           </button>
@@ -799,11 +821,16 @@ onBeforeUnmount(() => {
         v-if="undoDelete"
         role="status"
         aria-live="polite"
-        class="fixed start-4 end-4 bottom-[var(--snackbar-offset)] z-[120] flex items-center gap-3 justify-between bg-[#1e1e21] border border-[#333] text-sm rounded-xl px-4 py-3 shadow-2xl cursor-pointer active:opacity-80"
-        @click="undoDeleteItem"
+        class="fixed start-4 end-4 bottom-[var(--snackbar-offset)] z-[120] flex items-center gap-2 justify-between bg-[#1e1e21] border border-[#333] text-sm rounded-xl ps-4 pe-1 py-1 shadow-2xl"
       >
         <span class="text-gray-300 truncate">Задание «{{ undoDelete.point.name }}» удалено</span>
-        <span class="text-[#3d7eff] font-medium shrink-0">Отменить</span>
+        <button
+          type="button"
+          class="shrink-0 min-h-11 rounded-lg px-3 text-[#3d7eff] font-medium cursor-pointer active:opacity-70"
+          @click="undoDeleteItem"
+        >
+          Отменить
+        </button>
       </div>
     </Transition>
   </Teleport>
@@ -851,7 +878,7 @@ onBeforeUnmount(() => {
         <button
           v-if="taskItems.length !== 0"
           type="button"
-          class="absolute top-1/2 -translate-y-1/2 start-4 text-[#999] active:text-[#ccc] cursor-pointer"
+          class="absolute top-1/2 -translate-y-1/2 start-1 h-11 w-11 rounded-lg flex items-center justify-center text-[#999] active:text-[#ccc] active:bg-white/5 cursor-pointer"
           aria-label="Вид списка"
           @click="openViewSheet"
         >
@@ -861,7 +888,7 @@ onBeforeUnmount(() => {
         <button
           v-if="taskItems.length !== 0"
           type="button"
-          class="absolute top-1/2 -translate-y-1/2 end-4 text-red-400 active:text-red-500 cursor-pointer"
+          class="absolute top-1/2 -translate-y-1/2 end-1 h-11 w-11 rounded-lg flex items-center justify-center text-red-400 active:text-red-500 active:bg-white/5 cursor-pointer"
           aria-label="Удалить все задания"
           @click="deleteAllTasks"
         >
@@ -893,7 +920,7 @@ onBeforeUnmount(() => {
             v-for="option in searchFilterOptions"
             :key="option.value"
             type="button"
-            class="px-2.5 py-1 rounded-full border text-[10px] font-medium transition-colors cursor-pointer"
+            class="relative min-h-9 px-3 py-1.5 rounded-full border text-[10px] font-medium transition-colors cursor-pointer after:absolute after:inset-x-0 after:-inset-y-1 after:content-['']"
             :class="
               searchFilter === option.value
                 ? 'bg-[#3d7eff] border-[#3d7eff] text-white'

@@ -46,26 +46,35 @@ const getIcon = (typePoint: TypePoint) => {
 </script>
 
 <template>
-  <div class="flex flex-row justify-between p-2" @mousedown.prevent="onClick">
-    <div
-      class="flex gap-2 items-center cursor-pointer transition-colors hover:bg-white/5 last:border-0"
-    >
+  <!--
+    Строка подсказки — настоящая кнопка: работает с клавиатуры (Enter/Space),
+    доступна скринридеру и имеет тап-таргет не меньше 44px.
+    mousedown.prevent сохраняет фокус в поле поиска, а click выбирает точку.
+  -->
+  <button
+    type="button"
+    class="w-full min-h-14 flex flex-row justify-between p-2 text-left transition-colors hover:bg-white/5 active:bg-white/10 focus-visible:bg-white/10 focus-visible:outline-none cursor-pointer"
+    :aria-label="`${dataPoint.name}, ${dataPoint.direction}, ${dataPoint.address}`"
+    @mousedown.prevent
+    @click="onClick"
+  >
+    <span class="flex gap-2 items-center">
       <Svg :class="isAddedTaskList ? 'text-[#5fb336]' : 'text-[#3B82F6]'">
         <component ref="comp" :is="isAddedTaskList ? checkCircleIcon : addIcon"></component>
       </Svg>
-      <div class="text-sm">
-        <div class="font-medium text-gray-200 text-sm">
+      <span class="text-sm">
+        <span class="block font-medium text-gray-200 text-sm">
           {{ dataPoint.name }}
           <span v-if="isAddedTaskList" class="ms-1 text-[10px] font-normal text-[#5fb336]">в списке</span>
-        </div>
-        <div class="text-xs text-gray-400">{{ dataPoint.direction }}</div>
-        <div class="text-[11px] text-gray-500">{{ dataPoint.address }}</div>
-      </div>
-    </div>
-    <div class="w-8 h-8">
+        </span>
+        <span class="block text-xs text-gray-400">{{ dataPoint.direction }}</span>
+        <span class="block text-[11px] text-gray-500">{{ dataPoint.address }}</span>
+      </span>
+    </span>
+    <span class="w-8 h-8 shrink-0">
       <img :src="getIcon(dataPoint.type)" class="rounded-sm" alt="" />
-    </div>
-  </div>
+    </span>
+  </button>
 </template>
 
 <style scoped></style>

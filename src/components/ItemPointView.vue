@@ -148,9 +148,15 @@ const getIcon = (typePoint: TypePoint) => {
 <template>
   <div :key="dataPoint.uid" class="flex flex-row justify-between px-4 pt-4 pb-5">
     <div>
-      <div @click="editPoint(dataPoint)" class="pb-1 text-base font-medium text-[#F0F0F0] max-w-xs">
+      <!-- Название точки: кнопка для администратора (переход в редактирование) -->
+      <button
+        type="button"
+        class="block max-w-xs pb-1 text-left text-base font-medium text-[#F0F0F0] cursor-pointer disabled:cursor-default"
+        :disabled="userRole !== UserRole.ADMIN"
+        @click="editPoint(dataPoint)"
+      >
         <slot name="name"></slot>
-      </div>
+      </button>
       <div class="text-sm text-[#ff5b4d] font-medium max-w-xs">
         <slot name="direction"></slot>
       </div>

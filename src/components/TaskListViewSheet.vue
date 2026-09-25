@@ -37,7 +37,7 @@ const sortChips = [
           v-for="chip in sortChips"
           :key="chip.value"
           type="button"
-          class="px-4 py-2 rounded-full text-sm font-medium border transition-all cursor-pointer"
+          class="min-h-11 px-4 py-2 rounded-full text-sm font-medium border transition-all cursor-pointer"
           :class="
             sort === chip.value
               ? 'bg-[#5fb336] border-[#5fb336] text-white shadow-sm shadow-[#5fb336]/30'
@@ -101,7 +101,7 @@ const sortChips = [
       <button
         type="button"
         :disabled="!canReorderByRoute || isReordering"
-        class="w-full rounded-xl border border-[#5fb336] text-[#5fb336] px-4 py-2.5 text-sm font-medium transition-colors active:opacity-70 disabled:opacity-40 cursor-pointer disabled:cursor-default"
+        class="w-full min-h-11 rounded-xl border border-[#5fb336] text-[#5fb336] px-4 py-2.5 text-sm font-medium transition-colors active:opacity-70 disabled:opacity-40 cursor-pointer disabled:cursor-default"
         @click="emit('apply-route-order')"
       >
         {{ isReordering ? 'Пересчитываем порядок...' : 'Упорядочить по маршруту' }}

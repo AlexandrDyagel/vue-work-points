@@ -7,8 +7,9 @@ import { autoAnimatePlugin } from '@formkit/auto-animate/vue'
 import { createRouter, createWebHistory } from 'vue-router'
 import { createPinia } from 'pinia'
 import { Environment, Routes as Route } from '@/model/Enums.ts'
+import { initBackButtonSupport } from '@/composables/useBackButton.ts'
 
-export const DEV_VERSION = '2.92'
+export const DEV_VERSION = '2.93'
 export const ENVIRONMENT: Environment = Environment.PRODUCTION
 // export const ENVIRONMENT: Environment = Environment.DEVELOPMENT
 
@@ -46,3 +47,7 @@ app.use(router)
 app.use(pinia)
 app.use(autoAnimatePlugin)
 app.mount('#app')
+
+// Мост Capacitor к этому моменту уже загружен: подключаем системную кнопку «Назад»
+// (Android) и Esc, чтобы они закрывали оверлеи, а не уводили страницу/приложение
+initBackButtonSupport()

@@ -8,6 +8,7 @@ import { useNoteEditor } from '@/store/NoteEditor.ts'
 import type { TaskPhotoView } from '@/model/TaskPhoto.ts'
 import TaskPhotoGallery from '@/components/TaskPhotoGallery.vue'
 import PhotoViewer from '@/components/PhotoViewer.vue'
+import { useBackDismiss } from '@/composables/useBackButton.ts'
 
 interface TagOption {
   value: TaskTag
@@ -135,6 +136,11 @@ const confirmDiscardNote = () => {
   cancelNoteEditor()
 }
 
+// Системная кнопка «Назад» (Android) закрывает редактор заметки и подтверждение,
+// а не уводит со страницы
+useBackDismiss(isEditingNote, attemptCloseEditor)
+useBackDismiss(showNoteExitConfirm, confirmDiscardNote)
+
 const onDocumentClick = (event: MouseEvent) => {
   if (suppressNextDocumentClick) {
     suppressNextDocumentClick = false
@@ -261,11 +267,16 @@ const path = (index: number): string => {
             </div>
           </div>
 
-          <!-- Кнопки действий над заданием -->
+          <!--
+            Кнопки действий над заданием: настоящие button (доступны с клавиатуры
+            и скринридеру), тап-таргет 44px, отрицательные отступы сохраняют
+            компактность карточки
+          -->
           <div class="relative z-[70] flex flex-row items-center gap-2 shrink-0">
             <!-- Фотографии задания -->
-            <div
-              class="relative cursor-pointer"
+            <button
+              type="button"
+              class="relative -mx-1 -my-3 h-11 w-11 flex items-center justify-center cursor-pointer rounded-lg active:opacity-70 focus-visible:outline-2 focus-visible:outline-[#3d7eff]"
               :class="photoCount ? 'text-[#3d7eff]' : 'text-[#61646b]'"
               :aria-label="`Фотографии задания: ${photoCount}`"
               @mousedown.prevent
@@ -274,35 +285,47 @@ const path = (index: number): string => {
               <PhotoIcon class="h-5 w-5" />
               <span
                 v-if="photoCount"
-                class="absolute -top-1.5 -right-2 min-w-[14px] px-1 rounded-full bg-[#3d7eff] text-white text-[9px] font-bold leading-[14px] text-center"
+                class="absolute top-1 right-1 min-w-[14px] px-1 rounded-full bg-[#3d7eff] text-white text-[9px] font-bold leading-[14px] text-center"
               >
                 {{ photoCount }}
               </span>
-            </div>
+            </button>
 
-            <div
+            <button
+              type="button"
               ref="noteButtonRef"
-              class="cursor-pointer"
+              class="-mx-1 -my-3 h-11 w-11 flex items-center justify-center cursor-pointer rounded-lg active:opacity-70 focus-visible:outline-2 focus-visible:outline-[#3d7eff]"
               :class="note ? 'text-[#3d7eff]' : 'text-[#61646b]'"
+              :aria-label="note ? 'Редактировать заметку' : 'Добавить заметку'"
               @mousedown.prevent
               @click="openNoteEditor"
             >
               <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 -960 960 960" fill="currentColor">
                 <path d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h400l240 240v400q0 33-23.5 56.5T760-120H200Zm360-520v-200H200v560h560v-360H560Zm-280 400h400v-80H280v80Zm0-160h400v-80H280v80Zm-80-320v560-560Z"/>
               </svg>
-            </div>
-            <div
-              class="cursor-pointer"
+            </button>
+            <button
+              type="button"
+              class="-mx-1 -my-3 h-11 w-11 flex items-center justify-center cursor-pointer rounded-lg active:opacity-70 focus-visible:outline-2 focus-visible:outline-[#5fb336]"
               :class="isCompleted ? 'text-[#5fb336]' : 'text-[#61646b]'"
+              :aria-label="isCompleted ? 'Снять отметку «выполнено»' : 'Отметить задание выполненным'"
               @mousedown.prevent
               @click="toggleCompleted"
             >
               <component :is="checkCircleIcon"></component>
-            </div>
+            </button>
 
-            <svg @mousedown.prevent @click="deleteItem" xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-400 active:text-red-500 cursor-pointer" viewBox="0 -960 960 960" fill="currentColor">
-              <path d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520ZM360-280h80v-360h-80v360Zm160 0h80v-360h-80v360ZM280-720v520-520Z"/>
-            </svg>
+            <button
+              type="button"
+              class="-mx-1 -my-3 h-11 w-11 flex items-center justify-center cursor-pointer rounded-lg text-red-400 active:opacity-70 focus-visible:outline-2 focus-visible:outline-[#ff5b4d]"
+              aria-label="Удалить задание"
+              @mousedown.prevent
+              @click="deleteItem"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 -960 960 960" fill="currentColor">
+                <path d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520ZM360-280h80v-360h-80v360Zm160 0h80v-360h-80v360ZM280-720v520-520Z"/>
+              </svg>
+            </button>
           </div>
         </div>
 
@@ -311,7 +334,8 @@ const path = (index: number): string => {
           <button
             v-for="tagOption in tagOptions"
             :key="tagOption.value"
-            class="rounded-full border px-2.5 py-0.5 text-xs font-medium transition-colors cursor-pointer"
+            type="button"
+            class="relative min-h-9 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors cursor-pointer after:absolute after:inset-x-0 after:-inset-y-1 after:content-[''] focus-visible:outline-2 focus-visible:outline-[#3d7eff]"
             :class="tag === tagOption.value ? tagOption.activeClass : 'border-[#3d3e43] text-gray-400'"
             @mousedown.prevent
             @click="onSelectTag(tagOption.value)"
@@ -352,9 +376,10 @@ const path = (index: number): string => {
             placeholder="Введите заметку..."
             class="w-full bg-[#2a2a2e] text-white border border-[#444] rounded-lg px-3 py-2 text-sm outline-none focus:border-[#3d7eff] transition-colors resize-none"
           ></textarea>
-          <div class="flex items-center gap-3 mt-1.5">
+          <div class="flex items-center gap-1 mt-0.5">
             <button
-              class="text-xs font-medium text-[#3d7eff] cursor-pointer"
+              type="button"
+              class="min-h-11 rounded-lg px-3 text-xs font-medium text-[#3d7eff] cursor-pointer active:opacity-70"
               @mousedown.prevent
               @click="saveNote"
             >
@@ -362,14 +387,16 @@ const path = (index: number): string => {
             </button>
             <button
               v-if="note"
-              class="text-xs font-medium text-red-400 cursor-pointer"
+              type="button"
+              class="min-h-11 rounded-lg px-3 text-xs font-medium text-red-400 cursor-pointer active:opacity-70"
               @mousedown.prevent
               @click="deleteNote"
             >
               Удалить
             </button>
             <button
-              class="text-xs font-medium text-gray-400 cursor-pointer"
+              type="button"
+              class="min-h-11 rounded-lg px-3 text-xs font-medium text-gray-400 cursor-pointer active:opacity-70"
               @mousedown.prevent
               @click="cancelNoteEditor"
             >
@@ -393,23 +420,28 @@ const path = (index: number): string => {
   <Teleport to="body">
     <Transition name="note-modal">
       <div v-if="showNoteExitConfirm" class="fixed inset-0 z-[9999]">
-        <div class="absolute inset-0 bg-black/60" @click="confirmDiscardNote"></div>
+        <div class="absolute inset-0 bg-black/60" aria-hidden="true" @click="confirmDiscardNote"></div>
 
         <div
           class="note-modal-content absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-[360px] bg-[#1e1e21] rounded-2xl p-6 shadow-2xl border border-[#333]"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Несохранённые изменения заметки"
         >
           <h2 class="text-lg font-bold text-white mb-2 text-center">Сохранить изменения?</h2>
           <p class="text-gray-400 text-sm text-center mb-5">В заметке есть несохранённые изменения.</p>
 
           <button
+            type="button"
             @click="confirmSaveNote"
-            class="w-full bg-[#3d7eff] hover:bg-blue-600 text-white px-4 py-2.5 rounded-xl font-medium transition-colors mb-2"
+            class="w-full min-h-11 bg-[#3d7eff] hover:bg-blue-600 text-white px-4 py-2.5 rounded-xl font-medium transition-colors mb-2"
           >
             Сохранить
           </button>
           <button
+            type="button"
             @click="confirmDiscardNote"
-            class="w-full bg-transparent text-gray-400 hover:text-white px-4 py-2 rounded-xl text-sm transition-colors"
+            class="w-full min-h-11 bg-transparent text-gray-400 hover:text-white px-4 py-2 rounded-xl text-sm transition-colors"
           >
             Отмена
           </button>
