@@ -8,6 +8,7 @@ import { useNoteEditor } from '@/store/NoteEditor.ts'
 import type { TaskPhotoView } from '@/model/TaskPhoto.ts'
 import TaskPhotoGallery from '@/components/TaskPhotoGallery.vue'
 import PhotoViewer from '@/components/PhotoViewer.vue'
+import ConfirmDialog from '@/components/ConfirmDialog.vue'
 import { useBackDismiss } from '@/composables/useBackButton.ts'
 
 interface TagOption {
@@ -136,10 +137,9 @@ const confirmDiscardNote = () => {
   cancelNoteEditor()
 }
 
-// Системная кнопка «Назад» (Android) закрывает редактор заметки и подтверждение,
-// а не уводит со страницы
+// Системная кнопка «Назад» (Android) закрывает редактор заметки,
+// а не уводит со страницы (подтверждение закрывает себя само — см. ConfirmDialog)
 useBackDismiss(isEditingNote, attemptCloseEditor)
-useBackDismiss(showNoteExitConfirm, confirmDiscardNote)
 
 const onDocumentClick = (event: MouseEvent) => {
   if (suppressNextDocumentClick) {
@@ -417,38 +417,15 @@ const path = (index: number): string => {
   </div>
 
   <!-- Подтверждение закрытия редактора заметки с несохранёнными изменениями -->
-  <Teleport to="body">
-    <Transition name="note-modal">
-      <div v-if="showNoteExitConfirm" class="fixed inset-0 z-[9999]">
-        <div class="absolute inset-0 bg-black/60" aria-hidden="true" @click="confirmDiscardNote"></div>
-
-        <div
-          class="note-modal-content absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-[360px] bg-[#1e1e21] rounded-2xl p-6 shadow-2xl border border-[#333]"
-          role="dialog"
-          aria-modal="true"
-          aria-label="Несохранённые изменения заметки"
-        >
-          <h2 class="text-lg font-bold text-white mb-2 text-center">Сохранить изменения?</h2>
-          <p class="text-gray-400 text-sm text-center mb-5">В заметке есть несохранённые изменения.</p>
-
-          <button
-            type="button"
-            @click="confirmSaveNote"
-            class="w-full min-h-11 bg-[#3d7eff] hover:bg-blue-600 text-white px-4 py-2.5 rounded-xl font-medium transition-colors mb-2"
-          >
-            Сохранить
-          </button>
-          <button
-            type="button"
-            @click="confirmDiscardNote"
-            class="w-full min-h-11 bg-transparent text-gray-400 hover:text-white px-4 py-2 rounded-xl text-sm transition-colors"
-          >
-            Отмена
-          </button>
-        </div>
-      </div>
-    </Transition>
-  </Teleport>
+  <ConfirmDialog
+    :open="showNoteExitConfirm"
+    title="Сохранить изменения?"
+    message="В заметке есть несохранённые изменения."
+    confirm-label="Сохранить"
+    tone="primary"
+    @confirm="confirmSaveNote"
+    @cancel="confirmDiscardNote"
+  />
 
   <!-- Полноэкранный просмотр фотографий задания -->
   <PhotoViewer
@@ -475,22 +452,5 @@ const path = (index: number): string => {
 
 .animate-pulse-custom {
   animation: pulse 2s infinite;
-}
-
-.note-modal-enter-active,
-.note-modal-leave-active {
-  transition: opacity 0.2s ease;
-}
-.note-modal-enter-active .note-modal-content,
-.note-modal-leave-active .note-modal-content {
-  transition: scale 0.2s ease;
-}
-.note-modal-enter-from,
-.note-modal-leave-to {
-  opacity: 0;
-}
-.note-modal-enter-from .note-modal-content,
-.note-modal-leave-to .note-modal-content {
-  scale: 0.95;
 }
 </style>

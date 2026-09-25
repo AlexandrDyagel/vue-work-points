@@ -9,6 +9,7 @@ import {
 } from '@heroicons/vue/24/outline'
 import type { TaskPhotoView } from '@/model/TaskPhoto.ts'
 import { useBackDismiss } from '@/composables/useBackButton.ts'
+import ConfirmDialog from '@/components/ConfirmDialog.vue'
 
 const props = defineProps<{
   /** Список фотографий задания */
@@ -72,9 +73,9 @@ function cancelRemove() {
   showDeleteConfirm.value = false
 }
 
-// Системная кнопка «Назад»: сначала закрывает подтверждение, затем просмотрщик
+// Системная кнопка «Назад»: закрывает просмотрщик
+// (подтверждение удаления закрывает себя само — см. ConfirmDialog)
 useBackDismiss(isOpen, close)
-useBackDismiss(showDeleteConfirm, cancelRemove)
 
 function confirmRemove() {
   const photo = current.value
@@ -218,40 +219,12 @@ onBeforeUnmount(() => document.removeEventListener('keydown', onKeydown))
     </Transition>
 
     <!-- Подтверждение удаления фотографии -->
-    <Transition
-      enter-active-class="transition-opacity duration-200 ease-out"
-      enter-from-class="opacity-0"
-      leave-active-class="transition-opacity duration-150 ease-in"
-      leave-to-class="opacity-0"
-    >
-      <div v-if="showDeleteConfirm" class="fixed inset-0 z-[10000]">
-        <div class="absolute inset-0 bg-black/60" aria-hidden="true" @click="cancelRemove"></div>
-
-        <div
-          class="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-[360px] bg-[#1e1e21] rounded-2xl p-6 shadow-2xl border border-[#333]"
-          role="dialog"
-          aria-modal="true"
-          aria-label="Удаление фотографии"
-        >
-          <h2 class="text-lg font-bold text-white mb-2 text-center">Удалить фотографию?</h2>
-          <p class="text-gray-400 text-sm text-center mb-5">Это действие нельзя отменить.</p>
-
-          <button
-            type="button"
-            class="w-full min-h-11 bg-red-500 hover:bg-red-600 text-white px-4 py-2.5 rounded-xl font-medium transition-colors mb-2 cursor-pointer"
-            @click="confirmRemove"
-          >
-            Удалить
-          </button>
-          <button
-            type="button"
-            class="w-full min-h-11 bg-transparent text-gray-400 hover:text-white px-4 py-2 rounded-xl text-sm transition-colors cursor-pointer"
-            @click="cancelRemove"
-          >
-            Отмена
-          </button>
-        </div>
-      </div>
-    </Transition>
+    <ConfirmDialog
+      :open="showDeleteConfirm"
+      title="Удалить фотографию?"
+      message="Фотографию можно вернуть кнопкой «Отменить»."
+      @confirm="confirmRemove"
+      @cancel="cancelRemove"
+    />
   </Teleport>
 </template>

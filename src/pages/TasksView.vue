@@ -7,7 +7,7 @@ import { PointResponse } from '@/model/PointResponse.ts'
 import { useCache } from '@/composables/useCache.ts'
 import { useSearchFilter } from '@/composables/useSearchFilter.ts'
 import { useTasksViewSettings } from '@/composables/useTasksViewSettings.ts'
-import { createBackHandler, useBackDismiss } from '@/composables/useBackButton.ts'
+import { createBackHandler } from '@/composables/useBackButton.ts'
 import { useOptimalRoute } from '@/composables/useOptimalRoute.ts'
 import SearchInputView from '@/components/SearchInputView.vue'
 import { useInputFocus } from '@/store/TopAppBar.ts'
@@ -19,11 +19,19 @@ import TaskListViewSheet from '@/components/TaskListViewSheet.vue'
 import { useTasksLocalStorage } from '@/composables/useTasksLocalStorage.ts'
 import LoadingScreen from '@/components/LoadingScreen.vue'
 import ItemDropDown from '@/components/ItemDropDown.vue'
+import ConfirmDialog from '@/components/ConfirmDialog.vue'
 import { useTaskPointsStore } from '@/store/TaskPoints.ts'
 import { useNoteEditor } from '@/store/NoteEditor.ts'
 import type { TaskPhoto, TaskPhotoView } from '@/model/TaskPhoto.ts'
 import { ROUTE_START_POINT_UID } from '@/model/Route.ts'
-import { addPhoto, deletePhoto, deletePhotosByUid, getAllPhotos } from '@/utils/photoStorage.ts'
+import {
+  addPhoto,
+  deletePhoto,
+  deletePhotosByUid,
+  getAllPhotos,
+  getPhotos,
+  restorePhoto,
+} from '@/utils/photoStorage.ts'
 
 /** Группа заданий для отображения (при группировке по направлению) */
 interface TaskGroup {
@@ -159,13 +167,29 @@ const showDeleteAllConfirm = ref(false)
 const deleteTaskConfirm = ref<{ index: number; name: string } | null>(null)
 
 // Снимок удалённого задания для возможности отмены
-const undoDelete = ref<{
+interface RemovedTask {
   point: PointResponse
   index: number
   completed: boolean
   tag?: TaskTag
   note?: string
-} | null>(null)
+}
+
+/** Действие, которое можно отменить кнопкой в снакбаре */
+interface UndoAction {
+  /** Текст снакбара */
+  message: string
+  /** Возврат удалённого на прежнее место */
+  restore: () => void | Promise<void>
+  /** Что делать, если отмена не понадобилась (например, освободить фотографии задания) */
+  finalize?: () => void | Promise<void>
+}
+
+/** Сколько держится возможность отмены удаления */
+const UNDO_TIMEOUT = 4000
+
+/** Последнее удаление, которое ещё можно отменить */
+const undoAction = ref<UndoAction | null>(null)
 let undoTimer: ReturnType<typeof setTimeout> | null = null
 
 // --- Поиск точек для добавления в задания ---
@@ -271,16 +295,51 @@ const addTaskPhotos = async (uid: string, blobs: Blob[]) => {
   }
 }
 
-// Удаление одной фотографии задания
+// Удаление одной фотографии задания (с возможностью отмены)
 const removeTaskPhoto = async (uid: string, photoId: string) => {
   const photos = taskPhotos.value[uid] ?? []
-  revokePhotoUrls(photos.filter((photo) => photo.id === photoId))
+  const index = photos.findIndex((photo) => photo.id === photoId)
+  const removed = photos[index]
+  if (!removed) return
+
+  // Скрываем фотографию сразу, чтобы просмотрщик не мигнул удалённым кадром
+  revokePhotoUrls([removed])
   taskPhotos.value = { ...taskPhotos.value, [uid]: photos.filter((photo) => photo.id !== photoId) }
+
+  // Предыдущее удаление стало окончательным
+  await finishUndo()
+
+  // Бинарник нужен для возврата: берём его из хранилища до удаления
+  const stored = (await getPhotos(uid)).find((photo) => photo.id === photoId)
 
   try {
     await deletePhoto(photoId)
   } catch (e) {
     console.error(`Ошибка удаления фотографии задания в TasksView.vue: ${e}`)
+  }
+
+  // Данных для возврата нет — считаем удаление окончательным
+  if (!stored) return
+
+  showUndo({
+    message: 'Фотография удалена',
+    restore: () => restoreTaskPhoto(stored, index),
+  })
+}
+
+/** Возврат удалённой фотографии задания на прежнее место (кнопка «Отменить») */
+const restoreTaskPhoto = async (photo: TaskPhoto, index: number) => {
+  try {
+    const restored = toPhotoView(await restorePhoto(photo))
+    const current = taskPhotos.value[photo.uid] ?? []
+    const insertAt = Math.min(index, current.length)
+
+    taskPhotos.value = {
+      ...taskPhotos.value,
+      [photo.uid]: [...current.slice(0, insertAt), restored, ...current.slice(insertAt)],
+    }
+  } catch (e) {
+    console.error(`Ошибка восстановления фотографии задания в TasksView.vue: ${e}`)
   }
 }
 
@@ -305,7 +364,7 @@ const deleteTaskItem = async (index: number) => {
   if (!removed) return
 
   // Предыдущее удаление стало окончательным — освобождаем его фотографии
-  if (undoDelete.value) await purgeTaskPhotos(undoDelete.value.point.uid)
+  await finishUndo()
 
   // Фиксируем снимок для возможной отмены удаления
   const completed = completedTaskIds.value.includes(removed.uid)
@@ -327,30 +386,52 @@ const deleteTaskItem = async (index: number) => {
   await tasksLocalStorage.setItems(taskItems.value)
   taskPointsStore.savePoints(taskItems.value)
 
-  // Показываем снакбар с возможностью отмены
-  const removedUid = removed.uid
-  undoDelete.value = { point: removed, index, completed, tag, note }
-  if (undoTimer) clearTimeout(undoTimer)
-  undoTimer = setTimeout(() => {
-    undoDelete.value = null
-    undoTimer = null
-    // Отмены не произошло — фотографии задания удаляем окончательно
-    void purgeTaskPhotos(removedUid)
-  }, 4000)
+  // Снакбар с возможностью отмены: фотографии задания пока не освобождаем
+  showUndo({
+    message: `Задание «${removed.name}» удалено`,
+    restore: () => restoreTaskItem({ point: removed, index, completed, tag, note }),
+    finalize: () => purgeTaskPhotos(removed.uid),
+  })
 }
 
+/** Скрывает снакбар отмены, не выполняя восстановления */
 const clearUndo = () => {
   if (undoTimer) {
     clearTimeout(undoTimer)
     undoTimer = null
   }
-  undoDelete.value = null
+  undoAction.value = null
 }
 
-const undoDeleteItem = async () => {
-  if (!undoDelete.value) return
-  const { point, index, completed, tag, note } = undoDelete.value
+/** Возможность отмены истекла: доводим удаление до конца (например, освобождаем фотографии) */
+const finishUndo = async () => {
+  const action = undoAction.value
   clearUndo()
+  await action?.finalize?.()
+}
+
+/** Показывает снакбар отмены на время UNDO_TIMEOUT */
+const showUndo = (action: UndoAction) => {
+  clearUndo()
+  undoAction.value = action
+
+  undoTimer = setTimeout(() => {
+    undoAction.value = null
+    undoTimer = null
+    void action.finalize?.()
+  }, UNDO_TIMEOUT)
+}
+
+/** Отмена последнего удаления по кнопке в снакбаре */
+const undoLastAction = async () => {
+  const restore = undoAction.value?.restore
+  clearUndo()
+  await restore?.()
+}
+
+/** Возврат удалённого задания на прежнее место (кнопка «Отменить») */
+const restoreTaskItem = async (snapshot: RemovedTask) => {
+  const { point, index, completed, tag, note } = snapshot
 
   const insertAt = Math.min(index, taskItems.value.length)
   taskItems.value.splice(insertAt, 0, point)
@@ -452,13 +533,8 @@ const onDeleteAllConfirm = async (confirmed: boolean) => {
   taskPointsStore.savePoints([])
 }
 
-// Системная кнопка «Назад» на Android закрывает подтверждения удаления,
-// а не уводит со страницы заданий
-useBackDismiss(showDeleteAllConfirm, () => onDeleteAllConfirm(false))
-useBackDismiss(
-  computed(() => deleteTaskConfirm.value !== null),
-  cancelDeleteTaskItem,
-)
+// Подтверждения удаления (задание, все задания) регистрируются сами:
+// окно ConfirmDialog закрывается системной кнопкой «Назад» и Esc через useBackButton
 
 /** Кнопка «Назад» в шапке (Telegram): закрывает открытый оверлей, затем уводит со страницы */
 const handleBack = createBackHandler(() => router.back())
@@ -747,87 +823,37 @@ onBeforeUnmount(() => {
   <BackButton @click="handleBack" />
 
   <!-- Подтверждение удаления всех заданий (работает на всех платформах) -->
-  <Teleport to="body">
-    <Transition name="modal">
-      <div v-if="showDeleteAllConfirm" class="fixed inset-0 z-[9999]">
-        <div class="absolute inset-0 bg-black/60" aria-hidden="true" @click="onDeleteAllConfirm(false)"></div>
-
-        <div
-          class="modal-content absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-[360px] bg-[#1e1e21] rounded-2xl p-6 shadow-2xl border border-[#333]"
-          role="dialog"
-          aria-modal="true"
-          aria-label="Удаление всех заданий"
-        >
-          <h2 class="text-lg font-bold text-white mb-2 text-center">Удалить все задания?</h2>
-          <p class="text-gray-400 text-sm text-center mb-5">Это действие нельзя отменить.</p>
-
-          <button
-            type="button"
-            @click="onDeleteAllConfirm(true)"
-            class="w-full min-h-11 bg-red-500 hover:bg-red-600 text-white px-4 py-2.5 rounded-xl font-medium transition-colors mb-2"
-          >
-            Удалить
-          </button>
-          <button
-            type="button"
-            @click="onDeleteAllConfirm(false)"
-            class="w-full min-h-11 bg-transparent text-gray-400 hover:text-white px-4 py-2 rounded-xl text-sm transition-colors"
-          >
-            Отмена
-          </button>
-        </div>
-      </div>
-    </Transition>
-  </Teleport>
+  <ConfirmDialog
+    :open="showDeleteAllConfirm"
+    title="Удалить все задания?"
+    message="Это действие нельзя отменить."
+    @confirm="onDeleteAllConfirm(true)"
+    @cancel="onDeleteAllConfirm(false)"
+  />
 
   <!-- Подтверждение удаления одного задания -->
-  <Teleport to="body">
-    <Transition name="modal">
-      <div v-if="deleteTaskConfirm" class="fixed inset-0 z-[9999]">
-        <div class="absolute inset-0 bg-black/60" aria-hidden="true" @click="cancelDeleteTaskItem"></div>
-
-        <div
-          class="modal-content absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-[360px] bg-[#1e1e21] rounded-2xl p-6 shadow-2xl border border-[#333]"
-          role="dialog"
-          aria-modal="true"
-          aria-label="Удаление задания"
-        >
-          <h2 class="text-lg font-bold text-white mb-2 text-center">Удалить задание?</h2>
-          <p class="text-gray-400 text-sm text-center mb-5 break-words">{{ deleteTaskConfirm?.name }}</p>
-
-          <button
-            type="button"
-            @click="confirmDeleteTaskItem"
-            class="w-full min-h-11 bg-red-500 hover:bg-red-600 text-white px-4 py-2.5 rounded-xl font-medium transition-colors mb-2"
-          >
-            Удалить
-          </button>
-          <button
-            type="button"
-            @click="cancelDeleteTaskItem"
-            class="w-full min-h-11 bg-transparent text-gray-400 hover:text-white px-4 py-2 rounded-xl text-sm transition-colors"
-          >
-            Отмена
-          </button>
-        </div>
-      </div>
-    </Transition>
-  </Teleport>
+  <ConfirmDialog
+    :open="deleteTaskConfirm !== null"
+    title="Удалить задание?"
+    :message="deleteTaskConfirm?.name"
+    @confirm="confirmDeleteTaskItem"
+    @cancel="cancelDeleteTaskItem"
+  />
 
   <!-- Снакбар отмены удаления (над кнопкой «На карте») -->
   <Teleport to="body">
     <Transition name="snackbar">
       <div
-        v-if="undoDelete"
+        v-if="undoAction"
         role="status"
         aria-live="polite"
-        class="fixed start-4 end-4 bottom-[var(--snackbar-offset)] z-[120] flex items-center gap-2 justify-between bg-[#1e1e21] border border-[#333] text-sm rounded-xl ps-4 pe-1 py-1 shadow-2xl"
+        class="fixed start-4 end-4 bottom-[var(--snackbar-offset)] z-[10002] flex items-center gap-2 justify-between bg-[#1e1e21] border border-[#333] text-sm rounded-xl ps-4 pe-1 py-1 shadow-2xl"
       >
-        <span class="text-gray-300 truncate">Задание «{{ undoDelete.point.name }}» удалено</span>
+        <span class="text-gray-300 truncate">{{ undoAction.message }}</span>
         <button
           type="button"
           class="shrink-0 min-h-11 rounded-lg px-3 text-[#3d7eff] font-medium cursor-pointer active:opacity-70"
-          @click="undoDeleteItem"
+          @click="undoLastAction"
         >
           Отменить
         </button>
@@ -1075,23 +1101,6 @@ onBeforeUnmount(() => {
 </template>
 
 <style scoped>
-.modal-enter-active,
-.modal-leave-active {
-  transition: opacity 0.2s ease;
-}
-.modal-enter-active .modal-content,
-.modal-leave-active .modal-content {
-  transition: scale 0.2s ease;
-}
-.modal-enter-from,
-.modal-leave-to {
-  opacity: 0;
-}
-.modal-enter-from .modal-content,
-.modal-leave-to .modal-content {
-  scale: 0.95;
-}
-
 .snackbar-enter-active,
 .snackbar-leave-active {
   transition: opacity 0.2s ease;

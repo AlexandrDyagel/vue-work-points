@@ -1,18 +1,19 @@
 <script setup lang="ts">
 import { BackButton } from 'vue-tg'
 import { useRouter } from 'vue-router'
-import { computed, nextTick, onMounted, onUnmounted, ref } from 'vue'
+import { nextTick, onMounted, onUnmounted, ref } from 'vue'
 import { PointResponse } from '@/model/PointResponse.ts'
 import { useTasksLocalStorage } from '@/composables/useTasksLocalStorage.ts'
 import { useMiniApp } from 'vue-tg/8.0'
 import LoadingScreen from '@/components/LoadingScreen.vue'
+import ConfirmDialog from '@/components/ConfirmDialog.vue'
 import { TaskTag, TypePoint } from '@/model/Enums.ts'
 import { useCache } from '@/composables/useCache.ts'
 import { useTaskPointsStore } from '@/store/TaskPoints.ts'
 import { useOptimalRoute } from '@/composables/useOptimalRoute.ts'
 import { usePointsStore } from '@/store/Points.ts'
 import { ROUTE_START_POINT_UID } from '@/model/Route.ts'
-import { createBackHandler, useBackDismiss } from '@/composables/useBackButton.ts'
+import { createBackHandler } from '@/composables/useBackButton.ts'
 import * as L from 'leaflet'
 import 'leaflet/dist/leaflet.css'
 import { Capacitor } from '@capacitor/core'
@@ -393,9 +394,8 @@ const cancelDeleteTask = () => {
   deleteTaskConfirm.value = null
 }
 
-// Системная кнопка «Назад» (Android) закрывает подтверждение удаления,
-// а не уводит со страницы маршрута
-useBackDismiss(computed(() => deleteTaskConfirm.value !== null), cancelDeleteTask)
+// Подтверждение удаления регистрируется само: окно ConfirmDialog закрывается
+// системной кнопкой «Назад» и Esc через useBackButton
 
 /** Кнопка «Назад» в шапке (Telegram): закрывает открытый оверлей, затем уводит со страницы */
 const handleBack = createBackHandler(() => router.back())
@@ -565,38 +565,13 @@ onUnmounted(() => {
   <LoadingScreen :is-loading="isLoadingData" />
 
   <!-- Подтверждение удаления задания -->
-  <Teleport to="body">
-    <Transition name="modal">
-      <div v-if="deleteTaskConfirm" class="fixed inset-0 z-[9999]">
-        <div class="absolute inset-0 bg-black/60" aria-hidden="true" @click="cancelDeleteTask"></div>
-
-        <div
-          class="modal-content absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 w-[90%] max-w-[360px] bg-[#1e1e21] rounded-2xl p-6 shadow-2xl border border-[#333]"
-          role="dialog"
-          aria-modal="true"
-          aria-label="Удаление задания"
-        >
-          <h2 class="text-lg font-bold text-white mb-2 text-center">Удалить задание?</h2>
-          <p class="text-gray-400 text-sm text-center mb-5 break-words">{{ deleteTaskConfirm?.name }}</p>
-
-          <button
-            type="button"
-            @click="confirmDeleteTask"
-            class="w-full min-h-11 bg-red-500 hover:bg-red-600 text-white px-4 py-2.5 rounded-xl font-medium transition-colors mb-2"
-          >
-            Удалить
-          </button>
-          <button
-            type="button"
-            @click="cancelDeleteTask"
-            class="w-full min-h-11 bg-transparent text-gray-400 hover:text-white px-4 py-2 rounded-xl text-sm transition-colors"
-          >
-            Отмена
-          </button>
-        </div>
-      </div>
-    </Transition>
-  </Teleport>
+  <ConfirmDialog
+    :open="deleteTaskConfirm !== null"
+    title="Удалить задание?"
+    :message="deleteTaskConfirm?.name"
+    @confirm="confirmDeleteTask"
+    @cancel="cancelDeleteTask"
+  />
 
   <div>
     <div class="fixed overflow-auto start-0 top-0 end-0 bottom-0 w-full bg-[#242528]">
@@ -619,23 +594,6 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
-.modal-enter-active,
-.modal-leave-active {
-  transition: opacity 0.2s ease;
-}
-.modal-enter-active .modal-content,
-.modal-leave-active .modal-content {
-  transition: scale 0.2s ease;
-}
-.modal-enter-from,
-.modal-leave-to {
-  opacity: 0;
-}
-.modal-enter-from .modal-content,
-.modal-leave-to .modal-content {
-  scale: 0.95;
-}
-
 /* Анимация для кнопки переключения маршрутов */
 .route-toggle-btn {
   transition: all 0.2s ease;

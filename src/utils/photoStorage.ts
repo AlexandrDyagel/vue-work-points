@@ -136,9 +136,18 @@ async function fallbackToTaskPhoto(record: FallbackPhoto): Promise<TaskPhoto> {
 
 // --- Публичное API ---
 
-/** Добавление фотографии к заданию */
-export async function addPhoto(uid: string, blob: Blob): Promise<TaskPhoto> {
-  const photo: TaskPhoto = { id: createPhotoId(), uid, createdAt: Date.now(), blob }
+/** Добавление фотографии к заданию (id и время можно задать — нужно при восстановлении) */
+export async function addPhoto(
+  uid: string,
+  blob: Blob,
+  overrides: { id?: string; createdAt?: number } = {},
+): Promise<TaskPhoto> {
+  const photo: TaskPhoto = {
+    id: overrides.id ?? createPhotoId(),
+    uid,
+    createdAt: overrides.createdAt ?? Date.now(),
+    blob,
+  }
 
   const added = await withDatabase(async (db) => {
     const store = db.transaction(STORE_NAME, 'readwrite').objectStore(STORE_NAME)
@@ -157,6 +166,15 @@ export async function addPhoto(uid: string, blob: Blob): Promise<TaskPhoto> {
   })
   await saveFallbackPhotos(records)
   return photo
+}
+
+/**
+ * Возврат ранее удалённой фотографии (отмена удаления).
+ * Запись восстанавливается с прежними id и временем создания,
+ * поэтому фотография возвращается на своё место в галерее задания.
+ */
+export async function restorePhoto(photo: TaskPhoto): Promise<TaskPhoto> {
+  return addPhoto(photo.uid, photo.blob, { id: photo.id, createdAt: photo.createdAt })
 }
 
 /** Все фотографии одного задания */
