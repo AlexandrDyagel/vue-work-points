@@ -11,6 +11,8 @@ import { useHaptics, type HapticImpact } from '@/composables/useHaptics.ts'
  *
  * Внутри уже учтены отступ от нижнего меню и безопасных зон (safe-area),
  * тактильный отклик (useHaptics), состояния нажатия, загрузки и блокировки.
+ * И полоса, и FAB встают в один слот над нижним меню (--bottom-nav-offset):
+ * выше безопасной зоны и ниже снакбара/тостов, не перекрывая список.
  * z-index задаётся на месте вызова через class, если кнопка должна быть
  * выше конкретного слоя страницы (например, class="z-100").
  */
@@ -70,7 +72,7 @@ const sizeClass = computed(() =>
 /** Позиция: плавающая кнопка над нижним меню (с safe-area) или в потоке страницы */
 const positionClass = computed(() => {
   if (!props.floating) return props.variant === 'fab' ? '' : 'w-full'
-  if (props.variant === 'fab') return 'fixed end-4 bottom-24'
+  if (props.variant === 'fab') return 'fixed end-4 bottom-[var(--bottom-nav-offset)]'
   return 'fixed start-0 end-0 bottom-[var(--bottom-nav-offset)] mx-4'
 })
 

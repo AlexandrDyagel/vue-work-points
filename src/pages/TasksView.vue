@@ -3,6 +3,7 @@ import { BackButton } from 'vue-tg'
 import { useRouter } from 'vue-router'
 import { computed, nextTick, onBeforeUnmount, onMounted, type Ref, ref, watch } from 'vue'
 import { AdjustmentsHorizontalIcon } from '@heroicons/vue/24/outline'
+import { MapIcon } from '@heroicons/vue/24/solid'
 import { PointResponse } from '@/model/PointResponse.ts'
 import { useCache } from '@/composables/useCache.ts'
 import { useSearchFilter } from '@/composables/useSearchFilter.ts'
@@ -1091,10 +1092,11 @@ onBeforeUnmount(() => {
       </div>
     </div>
 
-    <!-- Кнопка «На карте»: платформенная главная кнопка (отступ от меню и haptics внутри) -->
+    <!-- «На карте»: FAB с иконкой карты (отступ от меню и haptics — внутри компонента) -->
     <MainActionButton
       v-if="isVisibleTaskMapButton"
-      label="На карте"
+      variant="fab"
+      :icon="MapIcon"
       aria-label="Открыть маршрут на карте"
       class="z-100"
       @click="router.push(Route.TaskMap)"

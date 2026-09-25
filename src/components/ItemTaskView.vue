@@ -210,35 +210,14 @@ const onAddPhotos = (blobs: Blob[]) => {
 const onRemovePhoto = (id: string) => {
   emit('removePhoto', id)
 }
-
-const path = (index: number): string => {
-  if (index === 0 && props.total !== 1) {
-    return 'absolute left-8 top-0 bottom-0 w-1 bg-blue-500 translate-y-1/2'
-  } else if (index === 0 && props.total === 1) {
-    return 'absolute left-8 top-0 bottom-0 w-1'
-  } else if (index === props.total - 1) {
-    return 'absolute left-8 top-0 bottom-0 w-1 bg-blue-500 -translate-y-1/2'
-  } else {
-    return 'absolute left-8 top-0 bottom-0 w-1 bg-blue-500'
-  }
-}
 </script>
 
 <template>
   <div class="relative">
     <div class="flex flex-row justify-between items-center relative py-5 px-4">
-      <!-- Дорожка -->
-      <div :class="path(index)"></div>
-
-      <!-- Точка на дорожке -->
-      <div
-        class="absolute left-6 top-1/2 transform -translate-y-1/2 w-5 h-5 rounded-full bg-blue-500 border-4 border-white z-10"
-        :class="{ 'animate-pulse-custom': index === 0 }"
-        style="box-shadow: 0 0 0 2px #3b82f6"
-      ></div>
 
       <!-- Информация о точке point -->
-      <div class="ml-10 flex-1 min-w-0">
+      <div class="flex-1 min-w-0">
         <div class="w-full flex flex-row justify-between gap-2">
           <div class="min-w-0">
             <div class="font-bold text-[#F0F0F0]">{{ point.name }}</div>

@@ -9,7 +9,7 @@ import { computed, inject, onMounted, onUnmounted, type Ref, ref, shallowRef, wa
 import Svg from '@/components/Svg.vue'
 import SearchPointIcon from '@/components/icons/SearchPointIcon.vue'
 import { useCache } from '@/composables/useCache.ts'
-import WorldGlobeIcon from '@/components/icons/WorldGlobeIcon.vue'
+import { MapIcon } from '@heroicons/vue/24/solid'
 import MainActionButton from '@/components/MainActionButton.vue'
 import { useMiniApp, useTheme } from 'vue-tg/8.0'
 import { BackButton } from 'vue-tg'
@@ -20,7 +20,6 @@ import { AppLauncher } from '@capacitor/app-launcher'
 
 const router = useRouter()
 const searchPointIcon = shallowRef(SearchPointIcon)
-const iconButton = shallowRef(WorldGlobeIcon)
 
 const { openLink } = useMiniApp()
 const { headerColor } = useTheme()
@@ -367,15 +366,17 @@ watch(nearestPoint, (point) => {
       <div class="address">{{ nearestPoint.address }}</div>
     </div>
 
-    <MainActionButton
-      label="На карте"
-      tone="success"
-      :floating="false"
-      :icon="iconButton"
-      aria-label="Открыть точку на карте"
-      class="mb-10"
-      @click="openMap"
-    />
+    <!-- «На карте»: FAB с иконкой карты по центру, в потоке экрана «Скорее всего это» -->
+    <div class="flex justify-center mb-10">
+      <MainActionButton
+        variant="fab"
+        tone="success"
+        :floating="false"
+        :icon="MapIcon"
+        aria-label="Открыть точку на карте"
+        @click="openMap"
+      />
+    </div>
     <div class="mb-10">
       <div v-if="closestPoint" class="point-name align-start">След. {{ closestPoint?.name.trim() }}</div>
       <div v-else class="point-name align-start">След. определяем...</div>
