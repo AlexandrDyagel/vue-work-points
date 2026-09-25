@@ -4,11 +4,14 @@ import Svg from '@/components/Svg.vue'
 import RouteIcon from '@/components/icons/RouteIcon.vue'
 import WorldGlobeIcon from '@/components/icons/WorldGlobeIcon.vue'
 import { TypeLocationNavButton } from '@/model/Enums.ts'
+import { useHaptics } from '@/composables/useHaptics.ts'
 
 const props = defineProps<{
   type: TypeLocationNavButton
   name?: string
 }>()
+
+const { tap } = useHaptics()
 
 const icon = shallowRef()
 
@@ -31,7 +34,8 @@ switch (props.type) {
 <template>
   <div
     :class="type === 'route' ? 'text-[#ffffff] bg-[#3d7eff]' : 'text-[#7a7acc] bg-[#4d4d4d]'"
-    class="flex flex-row items-center gap-1 px-3 relative h-[40px] rounded-xl text-center content-center cursor-pointer"
+    class="flex flex-row items-center gap-1 px-3 relative h-[40px] rounded-xl text-center content-center cursor-pointer transition-opacity active:opacity-60"
+    @click="tap()"
   >
     <span v-if="icon">
       <Svg>

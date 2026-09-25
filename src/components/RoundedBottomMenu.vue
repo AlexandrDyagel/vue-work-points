@@ -6,6 +6,7 @@ import { computed, onMounted, watch } from 'vue'
 import { NavItemName, Routes as Route } from '@/model/Enums.ts'
 import { useCache } from '@/composables/useCache.ts'
 import { usePlatform } from '@/composables/usePlatform.ts'
+import { useHaptics } from '@/composables/useHaptics.ts'
 import { usePointsStore } from '@/store/Points.ts'
 import { useTaskPointsStore } from '@/store/TaskPoints.ts'
 import { useTasksLocalStorage } from '@/composables/useTasksLocalStorage.ts'
@@ -15,6 +16,7 @@ const pointsStore = usePointsStore()
 const taskPointsStore = useTaskPointsStore()
 const taskLocalStorage = useTasksLocalStorage()
 const { isNative, isTelegram } = usePlatform()
+const { tap } = useHaptics()
 
 onMounted(async () => {
   await obtainCachedPoints().then((cachedDataPoints) => {
@@ -72,6 +74,7 @@ const styleItemsBottomMenu = (isActive: boolean): string => {
           class="w-full transition-all mx-1.5 my-1 rounded-[18px] cursor-pointer"
           :class="styleItemsBottomMenu(navItem.isActive)"
           :to="navItem.route"
+          @click="tap()"
         >
           <div class="w-full py-0.5 focus-within:z-10 flex flex-col items-center justify-center">
             <Svg>

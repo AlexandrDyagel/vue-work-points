@@ -21,6 +21,7 @@
     "@capacitor/app-launcher": "^8.0.1",
     "@capacitor/cli": "^8.3.1",
     "@capacitor/core": "^8.3.1",
+    "@capacitor/haptics": "^8.0.2",
     "@capacitor/preferences": "^8.0.1",
     "@formkit/auto-animate": "^0.8.2",
     "@heroicons/vue": "^2.2.0",

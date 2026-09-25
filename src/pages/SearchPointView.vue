@@ -10,6 +10,7 @@ import Svg from '@/components/Svg.vue'
 import SearchPointIcon from '@/components/icons/SearchPointIcon.vue'
 import { useCache } from '@/composables/useCache.ts'
 import WorldGlobeIcon from '@/components/icons/WorldGlobeIcon.vue'
+import MainActionButton from '@/components/MainActionButton.vue'
 import { useMiniApp, useTheme } from 'vue-tg/8.0'
 import { BackButton } from 'vue-tg'
 import { useRouter } from 'vue-router'
@@ -366,15 +367,15 @@ watch(nearestPoint, (point) => {
       <div class="address">{{ nearestPoint.address }}</div>
     </div>
 
-    <div
+    <MainActionButton
+      label="На карте"
+      tone="success"
+      :floating="false"
+      :icon="iconButton"
+      aria-label="Открыть точку на карте"
+      class="mb-10"
       @click="openMap"
-      class="flex flex-row mb-10 items-center justify-center gap-1 start-0 end-0 bottom-0 bg-[#5fb336] mx-4 px-3 h-[40px] rounded-xl cursor-pointer active:opacity-50"
-    >
-      <Svg>
-        <component ref="comp" :is="iconButton"></component>
-      </Svg>
-      <span class="text-sm font-medium">На карте</span>
-    </div>
+    />
     <div class="mb-10">
       <div v-if="closestPoint" class="point-name align-start">След. {{ closestPoint?.name.trim() }}</div>
       <div v-else class="point-name align-start">След. определяем...</div>

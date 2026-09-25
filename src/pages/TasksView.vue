@@ -22,6 +22,7 @@ import { useTasksLocalStorage } from '@/composables/useTasksLocalStorage.ts'
 import LoadingScreen from '@/components/LoadingScreen.vue'
 import ItemDropDown from '@/components/ItemDropDown.vue'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
+import MainActionButton from '@/components/MainActionButton.vue'
 import { useTaskPointsStore } from '@/store/TaskPoints.ts'
 import { useNoteEditor } from '@/store/NoteEditor.ts'
 import type { TaskPhoto, TaskPhotoView } from '@/model/TaskPhoto.ts'
@@ -1090,16 +1091,14 @@ onBeforeUnmount(() => {
       </div>
     </div>
 
-    <!-- Кнопка «На карте»: отступ считается от нижнего меню + safe-area -->
-    <button
+    <!-- Кнопка «На карте»: платформенная главная кнопка (отступ от меню и haptics внутри) -->
+    <MainActionButton
       v-if="isVisibleTaskMapButton"
-      type="button"
-      class="fixed start-0 end-0 bottom-[var(--bottom-nav-offset)] z-100 mx-4 h-11 rounded-xl bg-[#3d7eff] flex items-center justify-center transition-colors active:opacity-50 cursor-pointer"
+      label="На карте"
       aria-label="Открыть маршрут на карте"
+      class="z-100"
       @click="router.push(Route.TaskMap)"
-    >
-      <span class="text-sm font-medium">На карте</span>
-    </button>
+    />
   </div>
 
   <!-- Вид списка: порядок, группировка по направлению, компактный режим, порядок по маршруту -->

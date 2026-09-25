@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
+import { PlusIcon } from '@heroicons/vue/24/solid'
 import { PointResponse } from '@/model/PointResponse.ts'
 import { Routes as Route, TypeSearchFilter, TypeSort, UserRole, TypePoint } from '@/model/Enums.ts'
 import TopAppBarView from '@/components/TopAppBarView.vue'
@@ -13,6 +14,7 @@ import { useUserRole } from '@/composables/useUserRole.ts'
 import LoadingScreen from '@/components/LoadingScreen.vue'
 import ShareBottomSheet from '@/components/ShareBottomSheet.vue'
 import FilterSortSheet from '@/components/FilterSortSheet.vue'
+import MainActionButton from '@/components/MainActionButton.vue'
 import { usePointsStore } from '@/store/Points.ts'
 import { useLastUpdateTimeStore } from '@/store/LastUpdateTime.ts'
 
@@ -378,16 +380,16 @@ const handleShare = (point: PointResponse): void => {
     </div>
   </div>
 
-  <!-- FAB кнопка «+» для админа (всегда видна, когда есть данные) -->
-  <button
+  <!-- FAB кнопка «+» для админа: платформенная главная кнопка (всегда видна, когда есть данные) -->
+  <MainActionButton
     v-if="userRole === UserRole.ADMIN && cachedPoints.length > 0"
+    variant="fab"
+    tone="success"
+    :icon="PlusIcon"
+    aria-label="Добавить точку"
+    class="z-20"
     @click="addNewPoint"
-    class="fixed z-20 end-4 bottom-24 w-14 h-14 bg-[#5fb336] hover:bg-[#4d9a2a] text-white rounded-2xl shadow-xl flex items-center justify-center active:scale-95 transition-transform"
-  >
-    <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" viewBox="0 -960 960 960" fill="currentColor">
-      <path d="M440-440H200v-80h240v-240h80v240h240v80H520v240h-80v-240Z" />
-    </svg>
-  </button>
+  />
 
   <!-- Bottom Sheet — фильтры и сортировка -->
   <BottomSheetView ref="bottomSheetRef">
