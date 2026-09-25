@@ -9,6 +9,7 @@ import TaskPhotoGallery from '@/components/TaskPhotoGallery.vue'
 import PhotoViewer from '@/components/PhotoViewer.vue'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
 import TaskActionsRail from '@/components/TaskActionsRail.vue'
+import TaskShareSheet from '@/components/TaskShareSheet.vue'
 import { useBackDismiss } from '@/composables/useBackButton.ts'
 
 interface TagOption {
@@ -168,6 +169,7 @@ const isCompleted = computed(() => props.isCompleted ?? false)
 // --- Фотографии задания ---
 const galleryRef = ref<InstanceType<typeof TaskPhotoGallery> | null>(null)
 const viewerIndex = ref<number | null>(null)
+const taskShareRef = ref<InstanceType<typeof TaskShareSheet> | null>(null)
 
 const photoCount = computed(() => props.photos?.length ?? 0)
 
@@ -210,6 +212,11 @@ const onAddPhotos = (blobs: Blob[]) => {
 // Пользователь удалил фотографию — передаём id наверх
 const onRemovePhoto = (id: string) => {
   emit('removePhoto', id)
+}
+
+// Отправка всех фотографий задания в мессенджер: подписью становится имя задания
+const openTaskShare = () => {
+  taskShareRef.value?.openTaskShare()
 }
 </script>
 
@@ -333,6 +340,7 @@ const onRemovePhoto = (id: string) => {
         :compact="compact"
         @open-photos="handlePhotoButton"
         @open-note="openNoteEditor"
+        @share="openTaskShare"
         @toggle-completed="toggleCompleted"
         @delete="deleteItem"
       />
@@ -366,4 +374,7 @@ const onRemovePhoto = (id: string) => {
     @remove="onRemovePhoto"
     @update:index="viewerIndex = $event"
   />
+
+  <!-- Отправка фотографий задания в мессенджеры: подпись — имя задания -->
+  <TaskShareSheet ref="taskShareRef" :caption="point.name" :photos="photoList" />
 </template>

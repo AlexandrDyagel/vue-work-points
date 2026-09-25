@@ -9,7 +9,7 @@ import { createPinia } from 'pinia'
 import { Environment, Routes as Route } from '@/model/Enums.ts'
 import { initBackButtonSupport } from '@/composables/useBackButton.ts'
 
-export const DEV_VERSION = '2.102'
+export const DEV_VERSION = '2.103'
 export const ENVIRONMENT: Environment = Environment.PRODUCTION
 // export const ENVIRONMENT: Environment = Environment.DEVELOPMENT
 
@@ -22,23 +22,27 @@ const routes = [
   {
     path: Route.EditPoint,
     name: 'edit_point',
-    component: () => import(`@/pages/EditPointView.vue`),
+    component: () => import(`@/pages/EditPointView.vue`)
   },
   { path: Route.Tasks, name: 'tasks', component: () => import(`@/pages/TasksView.vue`) },
   { path: Route.TaskMap, name: 'tasks_map', component: () => import(`@/pages/TaskMapView.vue`) },
   {
     path: Route.Tracking,
     name: 'search_point',
-    component: () => import(`@/pages/SearchPointView.vue`),
+    component: () => import(`@/pages/SearchPointView.vue`)
   },
   //{ path: Route.Settings, name: 'settings', component: () => import(`@/pages/DigittoedView.vue`) },
   { path: Route.Map, name: 'map', component: () => import(`@/pages/MapView.vue`) },
-  { path: Route.TgSettingApp, name: 'tg_settings_app', component: () => import(`@/pages/TgSettingsAppView.vue`) },
+  {
+    path: Route.TgSettingApp,
+    name: 'tg_settings_app',
+    component: () => import(`@/pages/TgSettingsAppView.vue`)
+  }
 ]
 
 const router = createRouter({
   history: createWebHistory(),
-  routes: routes,
+  routes: routes
 })
 
 const pinia = createPinia()

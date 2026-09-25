@@ -22,7 +22,7 @@
 
 import { Capacitor } from '@capacitor/core'
 import { Directory, Filesystem } from '@capacitor/filesystem'
-import { blobToDataUrl } from '@/utils/image.ts'
+import { blobToBase64 } from '@/utils/image.ts'
 
 /**
  * Имя папки со снимками в памяти устройства.
@@ -43,16 +43,27 @@ export interface SavePhotoResult {
   ok: boolean
   /** Текст для пользователя (пустая строка — сообщать нечего) */
   message: string
+  /**
+   * Куда попал снимок: «Картинки/Perehody-Tonneli», «Загрузки» и т.п.
+   * Нужно там, где о месте сохранения сообщает вызывающий код (отправка
+   * пачки фотографий задания в мессенджер).
+   */
+  location?: string
 }
 
 const NOT_SAVED_MESSAGE = 'Не удалось сохранить снимок в память устройства'
 
-/** Имя файла снимка: понятное человеку и уникальное (дата и время съёмки) */
-export function buildPhotoFileName(date: Date = new Date()): string {
+/**
+ * Имя файла снимка: понятное человеку и уникальное (дата и время съёмки).
+ * `suffix` разводит снимки одной пачки (фотографии задания отправляются
+ * несколькими файлами, и без него они затирали бы друг друга).
+ */
+export function buildPhotoFileName(date: Date = new Date(), suffix = ''): string {
   const pad = (value: number): string => String(value).padStart(2, '0')
   const day = `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}`
   const time = `${pad(date.getHours())}-${pad(date.getMinutes())}-${pad(date.getSeconds())}`
-  return `${PHOTO_FILE_PREFIX}_${day}_${time}.jpg`
+  const tail = suffix ? `_${suffix}` : ''
+  return `${PHOTO_FILE_PREFIX}_${day}_${time}${tail}.jpg`
 }
 
 /**
@@ -133,7 +144,13 @@ async function savePhotoNative(blob: Blob, fileName: string): Promise<SavePhotoR
 
   for (const target of targets) {
     const saved = await writeNativeFile(target.path, data, target.directory, target.askPermissions)
-    if (saved) return { ok: true, message: `Снимок сохранён на устройство: ${target.location}` }
+    if (saved) {
+      return {
+        ok: true,
+        message: `Снимок сохранён на устройство: ${target.location}`,
+        location: target.location,
+      }
+    }
   }
 
   return { ok: false, message: NOT_SAVED_MESSAGE }
@@ -186,13 +203,6 @@ async function requestStoragePermission(): Promise<boolean> {
   }
 }
 
-/** Blob → base64 без префикса dataURL: такого формата требует плагин Filesystem */
-async function blobToBase64(blob: Blob): Promise<string> {
-  const dataUrl = await blobToDataUrl(blob)
-  const separatorIndex = dataUrl.indexOf(',')
-  return separatorIndex === -1 ? '' : dataUrl.slice(separatorIndex + 1)
-}
-
 // --- Браузер, Telegram Mini App и WebView: средствами веб-платформы ---
 
 /** Веб: сохранение доступными браузеру способами (от лучшего к запасному) */
@@ -210,7 +220,11 @@ async function savePhotoWeb(blob: Blob, fileName: string): Promise<SavePhotoResu
   // Обычный браузер: скачивание файла в папку «Загрузки»
   if (supportsDownloadAttribute()) {
     downloadBlob(blob, fileName)
-    return { ok: true, message: 'Снимок сохранён на устройство: папка «Загрузки»' }
+    return {
+      ok: true,
+      message: 'Снимок сохранён на устройство: папка «Загрузки»',
+      location: 'папка «Загрузки»',
+    }
   }
 
   // Мобильные WebView без скачивания: системное окно «Поделиться»

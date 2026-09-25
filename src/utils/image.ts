@@ -170,6 +170,16 @@ export function blobToDataUrl(blob: Blob): Promise<string> {
   })
 }
 
+/**
+ * Blob → base64 без префикса dataURL: такого формата требует плагин Filesystem.
+ * Возвращает пустую строку, если прочитать файл не удалось.
+ */
+export async function blobToBase64(blob: Blob): Promise<string> {
+  const dataUrl = await blobToDataUrl(blob)
+  const separatorIndex = dataUrl.indexOf(',')
+  return separatorIndex === -1 ? '' : dataUrl.slice(separatorIndex + 1)
+}
+
 /** dataURL → Blob (используется резервным хранилищем фотографий) */
 export function dataUrlToBlob(dataUrl: string): Blob {
   const separatorIndex = dataUrl.indexOf(',')

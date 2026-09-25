@@ -2,12 +2,13 @@
 import { computed, ref, watch } from 'vue'
 import { ChevronUpIcon, EllipsisVerticalIcon, PhotoIcon } from '@heroicons/vue/24/outline'
 import CheckCircleIcon from '@/components/icons/CheckCircleIcon.vue'
+import ShareIcon from '@/components/icons/ShareIcon.vue'
 import { useHaptics } from '@/composables/useHaptics.ts'
 
 /**
  * Панель действий задания: столбик кнопок в правом верхнем углу карточки.
  *
- * Развёрнута по умолчанию — фото, заметка, «выполнено» и удаление видны сразу.
+ * Развёрнута по умолчанию — фото, заметка, отправка, «выполнено» и удаление видны сразу.
  * Кнопка-триггер сворачивает столбик до одной кнопки и разворачивает обратно.
  * В компактном виде карточки панель показывается свёрнутой и раскрывается
  * обратно вместе с возвратом к обычному виду.
@@ -40,6 +41,7 @@ const props = defineProps<{
 const emit = defineEmits<{
   openPhotos: []
   openNote: []
+  share: []
   toggleCompleted: []
   delete: []
 }>()
@@ -66,7 +68,7 @@ const root = ref<HTMLElement | null>(null)
 const panelId = computed(() => `task-actions-${props.taskUid}`)
 
 /** Сколько кнопок в панели — нужно для расчёта поочерёдного появления */
-const ACTION_COUNT = 4
+const ACTION_COUNT = 5
 
 /** Шаг задержки анимации между кнопками */
 const STAGGER_STEP = 40
@@ -77,7 +79,7 @@ const stagger = (index: number): string => {
   return `${delay}ms`
 }
 
-/** Общий вид кнопки действия: у всех четырёх одинаковая анимация и состояния нажатия */
+/** Общий вид кнопки действия: у всех кнопок одинаковая анимация и состояния нажатия */
 const actionClass =
   'h-11 w-11 flex items-center justify-center rounded-xl cursor-pointer transition-all duration-300 ease-out active:bg-white/10 focus-visible:outline-2 focus-visible:outline-offset-[-2px] motion-reduce:transition-none'
 
@@ -102,6 +104,12 @@ const onOpenPhotos = () => {
 const onOpenNote = () => {
   tap()
   emit('openNote')
+}
+
+/** Отправка фотографий задания в мессенджеры: кнопка активнее, когда снимки есть */
+const onShare = () => {
+  tap()
+  emit('share')
 }
 
 const onToggleCompleted = () => {
@@ -202,6 +210,22 @@ defineExpose({ root })
           </svg>
         </button>
 
+        <!-- Отправка фотографий задания в мессенджеры -->
+        <button
+          type="button"
+          :class="[
+            actionClass,
+            actionMotionClass,
+            photoCount ? 'text-[#3d7eff]' : 'text-[#61646b]',
+          ]"
+          :style="{ transitionDelay: stagger(2) }"
+          :tabindex="actionTabIndex"
+          aria-label="Отправить фотографии задания в мессенджеры"
+          @click="onShare"
+        >
+          <ShareIcon class="h-5 w-5" />
+        </button>
+
         <!-- Отметка «выполнено» -->
         <button
           type="button"
@@ -210,7 +234,7 @@ defineExpose({ root })
             actionMotionClass,
             isCompleted ? 'text-[#5fb336]' : 'text-[#61646b]',
           ]"
-          :style="{ transitionDelay: stagger(2) }"
+          :style="{ transitionDelay: stagger(3) }"
           :tabindex="actionTabIndex"
           :aria-label="isCompleted ? 'Снять отметку «выполнено»' : 'Отметить задание выполненным'"
           @click="onToggleCompleted"
@@ -222,7 +246,7 @@ defineExpose({ root })
         <button
           type="button"
           :class="[actionClass, actionMotionClass, 'text-red-400']"
-          :style="{ transitionDelay: stagger(3) }"
+          :style="{ transitionDelay: stagger(4) }"
           :tabindex="actionTabIndex"
           aria-label="Удалить задание"
           @click="onDelete"
