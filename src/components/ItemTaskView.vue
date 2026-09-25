@@ -1,14 +1,14 @@
 <script setup lang="ts">
 import { PointResponse } from '@/model/PointResponse.ts'
 import { TaskTag } from '@/model/Enums.ts'
-import { computed, nextTick, onBeforeUnmount, onMounted, ref, shallowRef, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { PhotoIcon } from '@heroicons/vue/24/outline'
-import CheckCircleIcon from '@/components/icons/CheckCircleIcon.vue'
 import { useNoteEditor } from '@/store/NoteEditor.ts'
 import type { TaskPhotoView } from '@/model/TaskPhoto.ts'
 import TaskPhotoGallery from '@/components/TaskPhotoGallery.vue'
 import PhotoViewer from '@/components/PhotoViewer.vue'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
+import TaskActionsRail from '@/components/TaskActionsRail.vue'
 import { useBackDismiss } from '@/composables/useBackButton.ts'
 
 interface TagOption {
@@ -38,8 +38,6 @@ const props = defineProps<{
   /** Компактный вид: вместо тегов, фото и заметки — короткая сводка */
   compact?: boolean
 }>()
-
-const checkCircleIcon = shallowRef(CheckCircleIcon)
 
 const emit = defineEmits<{
   delete: []
@@ -71,7 +69,10 @@ const isEditingNote = ref(false)
 const noteDraft = ref('')
 const noteTextareaRef = ref<HTMLTextAreaElement | null>(null)
 const noteEditorRef = ref<HTMLElement | null>(null)
-const noteButtonRef = ref<HTMLElement | null>(null)
+
+// Панель действий карточки: по её корню понимаем, что клик пришёл по кнопкам действий,
+// и не закрываем из-за этого редактор заметки
+const actionsRailRef = ref<InstanceType<typeof TaskActionsRail> | null>(null)
 const showNoteExitConfirm = ref(false)
 
 const noteEditorStore = useNoteEditor()
@@ -149,7 +150,7 @@ const onDocumentClick = (event: MouseEvent) => {
   if (!isEditingNote.value || showNoteExitConfirm.value) return
   const target = event.target as Node
   if (noteEditorRef.value?.contains(target)) return
-  if (noteButtonRef.value?.contains(target)) return
+  if (actionsRailRef.value?.root?.contains(target)) return
   attemptCloseEditor()
 }
 
@@ -214,97 +215,33 @@ const onRemovePhoto = (id: string) => {
 
 <template>
   <div class="relative">
-    <div class="flex flex-row justify-between items-center relative py-5 px-4">
-
+    <div class="flex flex-row justify-between items-start gap-1 relative py-5 px-4">
       <!-- Информация о точке point -->
       <div class="flex-1 min-w-0">
-        <div class="w-full flex flex-row justify-between gap-2">
-          <div class="min-w-0">
-            <div class="font-bold text-[#F0F0F0]">{{ point.name }}</div>
-            <div class="text-sm text-[#ff5b4d]" :class="compact ? 'truncate' : ''">{{ point.direction }}</div>
-            <div v-if="!compact" class="text-xs text-[#999]">{{ point.address }}</div>
+        <div class="min-w-0">
+          <div class="font-bold text-[#F0F0F0]">{{ point.name }}</div>
+          <div class="text-sm text-[#ff5b4d]" :class="compact ? 'truncate' : ''">{{ point.direction }}</div>
+          <div v-if="!compact" class="text-xs text-[#999]">{{ point.address }}</div>
 
-            <!-- Компактный вид: адрес, тег, фото и заметка одной строкой -->
-            <div v-else class="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[11px] text-[#999]">
-              <span class="truncate max-w-[200px]">{{ point.address }}</span>
+          <!-- Компактный вид: адрес, тег, фото и заметка одной строкой -->
+          <div v-else class="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[11px] text-[#999]">
+            <span class="truncate max-w-[200px]">{{ point.address }}</span>
 
-              <span v-if="tag" class="inline-flex items-center gap-1">
-                <span class="w-2 h-2 rounded-full" :class="tagDotClass"></span>
-                {{ activeTagOption?.label }}
-              </span>
+            <span v-if="tag" class="inline-flex items-center gap-1">
+              <span class="w-2 h-2 rounded-full" :class="tagDotClass"></span>
+              {{ activeTagOption?.label }}
+            </span>
 
-              <span v-if="photoCount" class="inline-flex items-center gap-0.5">
-                <PhotoIcon class="h-3 w-3" />{{ photoCount }}
-              </span>
+            <span v-if="photoCount" class="inline-flex items-center gap-0.5">
+              <PhotoIcon class="h-3 w-3" />{{ photoCount }}
+            </span>
 
-              <span v-if="note" class="inline-flex items-center gap-1">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 -960 960 960" fill="currentColor">
-                  <path d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h400l240 240v400q0 33-23.5 56.5T760-120H200Zm360-520v-200H200v560h560v-360H560Z"/>
-                </svg>
-                Заметка
-              </span>
-            </div>
-          </div>
-
-          <!--
-            Кнопки действий над заданием: настоящие button (доступны с клавиатуры
-            и скринридеру), тап-таргет 44px, отрицательные отступы сохраняют
-            компактность карточки
-          -->
-          <div class="relative z-[70] flex flex-row items-center gap-2 shrink-0">
-            <!-- Фотографии задания -->
-            <button
-              type="button"
-              class="relative -mx-1 -my-3 h-11 w-11 flex items-center justify-center cursor-pointer rounded-lg active:opacity-70 focus-visible:outline-2 focus-visible:outline-[#3d7eff]"
-              :class="photoCount ? 'text-[#3d7eff]' : 'text-[#61646b]'"
-              :aria-label="`Фотографии задания: ${photoCount}`"
-              @mousedown.prevent
-              @click="handlePhotoButton"
-            >
-              <PhotoIcon class="h-5 w-5" />
-              <span
-                v-if="photoCount"
-                class="absolute top-1 right-1 min-w-[14px] px-1 rounded-full bg-[#3d7eff] text-white text-[9px] font-bold leading-[14px] text-center"
-              >
-                {{ photoCount }}
-              </span>
-            </button>
-
-            <button
-              type="button"
-              ref="noteButtonRef"
-              class="-mx-1 -my-3 h-11 w-11 flex items-center justify-center cursor-pointer rounded-lg active:opacity-70 focus-visible:outline-2 focus-visible:outline-[#3d7eff]"
-              :class="note ? 'text-[#3d7eff]' : 'text-[#61646b]'"
-              :aria-label="note ? 'Редактировать заметку' : 'Добавить заметку'"
-              @mousedown.prevent
-              @click="openNoteEditor"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 -960 960 960" fill="currentColor">
-                <path d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h400l240 240v400q0 33-23.5 56.5T760-120H200Zm360-520v-200H200v560h560v-360H560Zm-280 400h400v-80H280v80Zm0-160h400v-80H280v80Zm-80-320v560-560Z"/>
+            <span v-if="note" class="inline-flex items-center gap-1">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 -960 960 960" fill="currentColor">
+                <path d="M200-120q-33 0-56.5-23.5T120-200v-560q0-33 23.5-56.5T200-840h400l240 240v400q0 33-23.5 56.5T760-120H200Zm360-520v-200H200v560h560v-360H560Z"/>
               </svg>
-            </button>
-            <button
-              type="button"
-              class="-mx-1 -my-3 h-11 w-11 flex items-center justify-center cursor-pointer rounded-lg active:opacity-70 focus-visible:outline-2 focus-visible:outline-[#5fb336]"
-              :class="isCompleted ? 'text-[#5fb336]' : 'text-[#61646b]'"
-              :aria-label="isCompleted ? 'Снять отметку «выполнено»' : 'Отметить задание выполненным'"
-              @mousedown.prevent
-              @click="toggleCompleted"
-            >
-              <component :is="checkCircleIcon"></component>
-            </button>
-
-            <button
-              type="button"
-              class="-mx-1 -my-3 h-11 w-11 flex items-center justify-center cursor-pointer rounded-lg text-red-400 active:opacity-70 focus-visible:outline-2 focus-visible:outline-[#ff5b4d]"
-              aria-label="Удалить задание"
-              @mousedown.prevent
-              @click="deleteItem"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 -960 960 960" fill="currentColor">
-                <path d="M280-120q-33 0-56.5-23.5T200-200v-520h-40v-80h200v-40h240v40h200v80h-40v520q0 33-23.5 56.5T680-120H280Zm400-600H280v520h400v-520ZM360-280h80v-360h-80v360Zm160 0h80v-360h-80v360ZM280-720v520-520Z"/>
-              </svg>
-            </button>
+              Заметка
+            </span>
           </div>
         </div>
 
@@ -384,6 +321,21 @@ const onRemovePhoto = (id: string) => {
           </div>
         </div>
       </div>
+
+      <!-- Действия задания: столбик кнопок в правом верхнем углу карточки -->
+      <TaskActionsRail
+        ref="actionsRailRef"
+        class="relative z-[70] -mt-2 -me-1"
+        :task-uid="point.uid"
+        :is-completed="isCompleted"
+        :has-note="!!note"
+        :photo-count="photoCount"
+        :compact="compact"
+        @open-photos="handlePhotoButton"
+        @open-note="openNoteEditor"
+        @toggle-completed="toggleCompleted"
+        @delete="deleteItem"
+      />
     </div>
 
     <!-- Затемнение поверх выполненной задачи -->
@@ -415,21 +367,3 @@ const onRemovePhoto = (id: string) => {
     @update:index="viewerIndex = $event"
   />
 </template>
-
-<style scoped>
-@keyframes pulse {
-  0% {
-    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.7);
-  }
-  70% {
-    box-shadow: 0 0 0 20px rgba(59, 130, 246, 0);
-  }
-  100% {
-    box-shadow: 0 0 0 0 rgba(59, 130, 246, 0);
-  }
-}
-
-.animate-pulse-custom {
-  animation: pulse 2s infinite;
-}
-</style>

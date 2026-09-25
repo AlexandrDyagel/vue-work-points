@@ -2,6 +2,8 @@
 import { computed, onBeforeUnmount, ref } from 'vue'
 import { CameraIcon, PhotoIcon, XMarkIcon } from '@heroicons/vue/24/outline'
 import type { TaskPhotoView } from '@/model/TaskPhoto.ts'
+import CameraCapture from '@/components/CameraCapture.vue'
+import { supportsLiveCamera } from '@/utils/camera.ts'
 import { compressImage, isDecodableImage } from '@/utils/image.ts'
 
 /** Максимальное количество фотографий на одно задание */
@@ -30,6 +32,8 @@ const emit = defineEmits<{
 
 const galleryInputRef = ref<HTMLInputElement | null>(null)
 const cameraInputRef = ref<HTMLInputElement | null>(null)
+/** Открыта живая камера устройства (съёмка внутри приложения) */
+const isCameraOpen = ref(false)
 const isProcessing = ref(false)
 const processingCount = ref(0)
 const isDragging = ref(false)
@@ -62,12 +66,35 @@ function openGallery() {
   galleryInputRef.value?.click()
 }
 
-/** Открытие камеры устройства (одиночный снимок) */
+/**
+ * Открытие камеры устройства (одиночный снимок).
+ *
+ * Сначала пробуем живую съёмку внутри приложения (getUserMedia): в WebView
+ * (Telegram Mini App на Android) атрибут capture у input[type=file] игнорируется,
+ * и вместо камеры открывается системный выбор файлов. Если живая съёмка недоступна
+ * (нет getUserMedia или защищённого контекста) — открываем системное окно съёмки.
+ */
 function openCamera() {
   if (!canAddMore.value) {
     showMessage(`К заданию можно прикрепить не более ${props.maxPhotos} фото`)
     return
   }
+  if (supportsLiveCamera()) {
+    isCameraOpen.value = true
+    return
+  }
+  cameraInputRef.value?.click()
+}
+
+/** Снимок живой камеры проходит тот же путь, что и выбранные из галереи файлы */
+async function onCameraCapture(blob: Blob) {
+  isCameraOpen.value = false
+  await processFiles([new File([blob], `camera-${Date.now()}.jpg`, { type: 'image/jpeg' })])
+}
+
+/** Живая камера недоступна — переходим на системное окно съёмки */
+function onCameraFallback() {
+  isCameraOpen.value = false
   cameraInputRef.value?.click()
 }
 
@@ -299,6 +326,15 @@ defineExpose({
       capture="environment"
       class="hidden"
       @change="onFilesSelected"
+    />
+
+    <!-- Живая съёмка камерой устройства: работает и там, где WebView игнорирует
+         capture у input[type=file] (Telegram Mini App на Android) -->
+    <CameraCapture
+      :open="isCameraOpen"
+      @capture="onCameraCapture"
+      @cancel="isCameraOpen = false"
+      @fallback="onCameraFallback"
     />
   </div>
 </template>
