@@ -10,6 +10,7 @@ import { useTasksViewSettings } from '@/composables/useTasksViewSettings.ts'
 import { createBackHandler } from '@/composables/useBackButton.ts'
 import { useOptimalRoute } from '@/composables/useOptimalRoute.ts'
 import { isModalOpen } from '@/composables/useModalLayer.ts'
+import { usePausableTimeout } from '@/composables/usePausableTimeout.ts'
 import SearchInputView from '@/components/SearchInputView.vue'
 import { useInputFocus } from '@/store/TopAppBar.ts'
 import { Routes as Route, TaskListSort, TaskTag, TypeSearchFilter } from '@/model/Enums.ts'
@@ -186,12 +187,15 @@ interface UndoAction {
   finalize?: () => void | Promise<void>
 }
 
-/** Сколько держится возможность отмены удаления */
+/**
+ * Сколько держится возможность отмены удаления. Отсчёт идёт только то время, когда
+ * кнопка «Отменить» действительно доступна: пока снакбар скрыт окном подтверждения,
+ * отсчёт стоит (см. usePausableTimeout ниже).
+ */
 const UNDO_TIMEOUT = 4000
 
 /** Последнее удаление, которое ещё можно отменить */
 const undoAction = ref<UndoAction | null>(null)
-let undoTimer: ReturnType<typeof setTimeout> | null = null
 
 // --- Поиск точек для добавления в задания ---
 
@@ -395,12 +399,24 @@ const deleteTaskItem = async (index: number) => {
   })
 }
 
+/** Возможность отмены истекла: доводим удаление до конца (например, освобождаем фотографии) */
+const expireUndo = () => {
+  const action = undoAction.value
+
+  undoAction.value = null
+  void action?.finalize?.()
+}
+
+/**
+ * Отсчёт времени отмены. Второй аргумент usePausableTimeout — условие паузы:
+ * пока открыто окно подтверждения, снакбар скрыт и нажать его нельзя,
+ * поэтому отсчёт останавливается, а после закрытия окна продолжается с того же места.
+ */
+const undoTimer = usePausableTimeout(isModalOpen, expireUndo)
+
 /** Скрывает снакбар отмены, не выполняя восстановления */
 const clearUndo = () => {
-  if (undoTimer) {
-    clearTimeout(undoTimer)
-    undoTimer = null
-  }
+  undoTimer.cancel()
   undoAction.value = null
 }
 
@@ -411,16 +427,11 @@ const finishUndo = async () => {
   await action?.finalize?.()
 }
 
-/** Показывает снакбар отмены на время UNDO_TIMEOUT */
+/** Показывает снакбар отмены на время UNDO_TIMEOUT (отсчёт стартует, когда снакбар виден) */
 const showUndo = (action: UndoAction) => {
   clearUndo()
   undoAction.value = action
-
-  undoTimer = setTimeout(() => {
-    undoAction.value = null
-    undoTimer = null
-    void action.finalize?.()
-  }, UNDO_TIMEOUT)
+  undoTimer.start(UNDO_TIMEOUT)
 }
 
 /** Отмена последнего удаления по кнопке в снакбаре */
@@ -810,7 +821,7 @@ onMounted(async () => {
 })
 
 onBeforeUnmount(() => {
-  if (undoTimer) clearTimeout(undoTimer)
+  // Таймер отмены останавливает сам usePausableTimeout при закрытии scope
   if (skeletonTimer) clearTimeout(skeletonTimer)
   if (slowLoadingTimer) clearTimeout(slowLoadingTimer)
   if (flashTimer) clearTimeout(flashTimer)
@@ -845,6 +856,7 @@ onBeforeUnmount(() => {
     Снакбар отмены удаления (над кнопкой «На карте»).
     Пока открыто окно подтверждения, снакбар скрыт: на низких экранах он перекрывал бы
     кнопки окна, а нажать его всё равно нельзя — клики по фону перехватывает затемнение.
+    На это время отсчёт отмены останавливается, поэтому «Отменить» не сгорает за окном.
     Слой ниже затемнения окна (z-[10001]) и выше просмотрщика фото (z-[9999]).
   -->
   <Teleport to="body">
