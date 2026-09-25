@@ -9,7 +9,7 @@ import { createPinia } from 'pinia'
 import { Environment, Routes as Route } from '@/model/Enums.ts'
 import { initBackButtonSupport } from '@/composables/useBackButton.ts'
 
-export const DEV_VERSION = '2.93'
+export const DEV_VERSION = '2.94'
 export const ENVIRONMENT: Environment = Environment.PRODUCTION
 // export const ENVIRONMENT: Environment = Environment.DEVELOPMENT
 

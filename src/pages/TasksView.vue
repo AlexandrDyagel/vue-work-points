@@ -9,6 +9,7 @@ import { useSearchFilter } from '@/composables/useSearchFilter.ts'
 import { useTasksViewSettings } from '@/composables/useTasksViewSettings.ts'
 import { createBackHandler } from '@/composables/useBackButton.ts'
 import { useOptimalRoute } from '@/composables/useOptimalRoute.ts'
+import { isModalOpen } from '@/composables/useModalLayer.ts'
 import SearchInputView from '@/components/SearchInputView.vue'
 import { useInputFocus } from '@/store/TopAppBar.ts'
 import { Routes as Route, TaskListSort, TaskTag, TypeSearchFilter } from '@/model/Enums.ts'
@@ -840,14 +841,19 @@ onBeforeUnmount(() => {
     @cancel="cancelDeleteTaskItem"
   />
 
-  <!-- Снакбар отмены удаления (над кнопкой «На карте») -->
+  <!--
+    Снакбар отмены удаления (над кнопкой «На карте»).
+    Пока открыто окно подтверждения, снакбар скрыт: на низких экранах он перекрывал бы
+    кнопки окна, а нажать его всё равно нельзя — клики по фону перехватывает затемнение.
+    Слой ниже затемнения окна (z-[10001]) и выше просмотрщика фото (z-[9999]).
+  -->
   <Teleport to="body">
     <Transition name="snackbar">
       <div
-        v-if="undoAction"
+        v-if="undoAction && !isModalOpen"
         role="status"
         aria-live="polite"
-        class="fixed start-4 end-4 bottom-[var(--snackbar-offset)] z-[10002] flex items-center gap-2 justify-between bg-[#1e1e21] border border-[#333] text-sm rounded-xl ps-4 pe-1 py-1 shadow-2xl"
+        class="fixed start-4 end-4 bottom-[var(--snackbar-offset)] z-[10000] flex items-center gap-2 justify-between bg-[#1e1e21] border border-[#333] text-sm rounded-xl ps-4 pe-1 py-1 shadow-2xl"
       >
         <span class="text-gray-300 truncate">{{ undoAction.message }}</span>
         <button

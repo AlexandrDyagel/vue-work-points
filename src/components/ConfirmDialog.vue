@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { computed, getCurrentInstance, nextTick, ref, watch } from 'vue'
+import { computed, getCurrentInstance, nextTick, onBeforeUnmount, ref, watch } from 'vue'
 import { useBackDismiss } from '@/composables/useBackButton.ts'
+import { registerModalLayer } from '@/composables/useModalLayer.ts'
 
 /**
  * Единое окно подтверждения действия: удаление задания/фотографии,
@@ -12,6 +13,9 @@ import { useBackDismiss } from '@/composables/useBackButton.ts'
  * Закрытие работает на всех платформах: клик по фону, Esc на десктопе
  * и системная кнопка «Назад» на Android закрывают окно, не уводя со страницы
  * (через общий стек оверлеев в useBackButton). Фокус зациклен внутри окна.
+ *
+ * Пока окно открыто, оно сообщает об этом в useModalLayer: «мягкие» оверлеи
+ * (снакбар отмены, короткие сообщения) уступают ему место и не перекрывают кнопки.
  */
 const props = withDefaults(
   defineProps<{
@@ -51,6 +55,9 @@ const cancelButtonRef = ref<HTMLButtonElement | null>(null)
 
 /** Элемент, на который вернём фокус после закрытия окна */
 let lastFocusedElement: HTMLElement | null = null
+
+/** Отзыв регистрации модального слоя: снимается при закрытии окна и при размонтировании */
+let unregisterModalLayer: (() => void) | null = null
 
 /** Цвет кнопки подтверждения: удаление — красный, остальное — акцентный */
 const confirmButtonClass = computed(() =>
@@ -105,12 +112,18 @@ watch(
   () => props.open,
   async (open) => {
     if (!open) {
+      unregisterModalLayer?.()
+      unregisterModalLayer = null
+
       // Возвращаем фокус туда, откуда окно открыли
       const target = lastFocusedElement
       lastFocusedElement = null
       if (target?.isConnected) target.focus()
       return
     }
+
+    // Окно модальное: «мягкие» оверлеи на время его показа скрываются
+    unregisterModalLayer = registerModalLayer()
 
     lastFocusedElement =
       document.activeElement instanceof HTMLElement ? document.activeElement : null
@@ -121,11 +134,18 @@ watch(
   },
   { immediate: true },
 )
+
+// Компонент закрывается вместе со страницей (или карточкой) — снимаем регистрацию,
+// иначе счётчик модальных окон останется больше нуля и снакбары будут скрыты всегда
+onBeforeUnmount(() => {
+  unregisterModalLayer?.()
+  unregisterModalLayer = null
+})
 </script>
 
 <template>
   <Teleport to="body">
-    <!-- Затемнение -->
+    <!-- Затемнение: выше просмотрщика фото (z-[9999]) и снакбаров, но ниже самого окна -->
     <Transition
       enter-active-class="transition-opacity duration-200 ease-out"
       enter-from-class="opacity-0"
@@ -134,7 +154,7 @@ watch(
     >
       <div
         v-if="open"
-        class="fixed inset-0 z-[10000] bg-black/60"
+        class="fixed inset-0 z-[10001] bg-black/60"
         aria-hidden="true"
         @click="onCancel"
       ></div>
@@ -154,7 +174,7 @@ watch(
         aria-modal="true"
         :aria-labelledby="titleId"
         :aria-describedby="message ? messageId : undefined"
-        class="fixed left-1/2 top-1/2 z-[10001] w-[90%] max-w-[360px] -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-[#333] bg-[#1e1e21] p-6 shadow-2xl"
+        class="fixed left-1/2 top-1/2 z-[10002] w-[90%] max-w-[360px] -translate-x-1/2 -translate-y-1/2 rounded-2xl border border-[#333] bg-[#1e1e21] p-6 shadow-2xl"
         @keydown="onKeydown"
       >
         <h2 :id="titleId" class="mb-2 text-center text-lg font-bold text-white">{{ title }}</h2>
