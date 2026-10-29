@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, ref, watch } from 'vue'
+import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { ChevronUpIcon, EllipsisVerticalIcon, PhotoIcon } from '@heroicons/vue/24/outline'
 import CheckCircleIcon from '@/components/icons/CheckCircleIcon.vue'
 import ShareIcon from '@/components/icons/ShareIcon.vue'
@@ -18,6 +18,19 @@ import { useHaptics } from '@/composables/useHaptics.ts'
  * внутри появляются и уходят поочерёдно (transition-delay): при раскрытии —
  * сверху вниз, при сворачивании — в обратном порядке, как будто столбик
  * складывается в триггер. Иконки триггера меняются крест-накрест.
+ *
+ * Высоту карточки задаёт только её содержимое: панель вынесена из потока
+ * (absolute, см. ItemTaskView) и получает max-height по высоте карточки.
+ * Поэтому, когда столбик выше карточки, нижние кнопки скрываются за её краем,
+ * а прокручивается сама панель (overflow-y-auto). Кнопки столбика не сжимаются
+ * (shrink-0 в actionClass): иначе флексбокс ужимал бы их до высоты иконок,
+ * столбик всегда «влезал» бы в панель — прокрутки не было бы, а расстояние
+ * между иконками зависело бы от высоты карточки. Триггер тоже не сжимается
+ * и всегда закреплён сверху; полоса прокрутки спрятана, чтобы не сужать иконки.
+ *
+ * О том, что столбик прокручивается, сообщает растушёвка нижнего края панели: пока
+ * под видимой областью остались кнопки, низ панели растворяется в фоне карточки
+ * (mask-image, см. panelMaskClass). Прокрутили столбик до конца — растушёвка уходит.
  *
  * Свёрнутая панель убирается из обхода клавиатурой (tabindex="-1" и aria-hidden),
  * иначе Tab попадал бы в невидимые кнопки.
@@ -67,6 +80,65 @@ const root = ref<HTMLElement | null>(null)
 
 const panelId = computed(() => `task-actions-${props.taskUid}`)
 
+/** Панель со столбиком кнопок: она же контейнер прокрутки */
+const panel = ref<HTMLElement | null>(null)
+
+/** Под видимым краем панели остались кнопки — растушёвываем низ */
+const hasMoreBelow = ref(false)
+
+/**
+ * Запас при сравнении прокрутки: clientHeight и scrollHeight браузер округляет
+ * до целых, а scrollTop может быть дробным (высоты кнопок и иконок кратны 4 px,
+ * но DPR у телефонов нецелый).
+ */
+const SCROLL_EDGE_EPSILON = 1.5
+
+/** Пересчёт растушёвки: она нужна только у раскрытой панели, прокрученной не до конца */
+const updateOverflowHint = () => {
+  const el = panel.value
+  if (!el || !isOpen.value) {
+    hasMoreBelow.value = false
+    return
+  }
+  hasMoreBelow.value = el.scrollHeight - el.scrollTop - el.clientHeight > SCROLL_EDGE_EPSILON
+}
+
+/**
+ * Маска панели: когда внизу есть ещё кнопки — нижние 20 px растворяются в фоне карточки.
+ *
+ * Это mask-image, а не градиент-накладка поверх панели: маска не зависит от цвета фона
+ * (карточка бывает подсвечена после перехода к заданию или затемнена поверх «Выполнено»)
+ * и остаётся приклеенной к нижнему краю панели, а не к её содержимому. В обоих состояниях
+ * градиент одной структуры, поэтому растушёвка появляется и уходит через transition.
+ */
+const panelMaskClass = computed(() =>
+  hasMoreBelow.value
+    ? 'mask-[linear-gradient(to_bottom,black_calc(100%_-_20px),transparent)]'
+    : 'mask-[linear-gradient(to_bottom,black_100%,transparent)]',
+)
+
+/** Панель растягивается по высоте карточки, поэтому следим за изменением её размеров */
+let panelSizeObserver: ResizeObserver | undefined
+
+onMounted(() => {
+  updateOverflowHint()
+  if (panel.value && typeof ResizeObserver !== 'undefined') {
+    panelSizeObserver = new ResizeObserver(updateOverflowHint)
+    panelSizeObserver.observe(panel.value)
+  }
+})
+
+onBeforeUnmount(() => {
+  panelSizeObserver?.disconnect()
+  panelSizeObserver = undefined
+})
+
+/** Раскрытие и сворачивание меняют высоту панели: пересчитываем растушёвку после отрисовки */
+watch(isOpen, async () => {
+  await nextTick()
+  updateOverflowHint()
+})
+
 /** Сколько кнопок в панели — нужно для расчёта поочерёдного появления */
 const ACTION_COUNT = 5
 
@@ -79,9 +151,11 @@ const stagger = (index: number): string => {
   return `${delay}ms`
 }
 
-/** Общий вид кнопки действия: у всех кнопок одинаковая анимация и состояния нажатия */
+/** Общий вид кнопки действия: у всех кнопок одинаковая анимация и состояния нажатия.
+ *  shrink-0 обязателен: в столбике-флексе кнопка иначе сжимается по высоте до иконки,
+ *  и тогда вместо прокрутки столбик просто ужимается (см. комментарий компонента). */
 const actionClass =
-  'h-11 w-11 flex items-center justify-center rounded-xl cursor-pointer transition-all duration-300 ease-out active:bg-white/10 focus-visible:outline-2 focus-visible:outline-offset-[-2px] motion-reduce:transition-none'
+  'h-11 w-11 shrink-0 flex items-center justify-center rounded-xl cursor-pointer transition-all duration-300 ease-out active:bg-white/10 focus-visible:outline-2 focus-visible:outline-offset-[-2px] motion-reduce:transition-none'
 
 /** Появление и уход кнопок столбика */
 const actionMotionClass = computed(() =>
@@ -133,7 +207,7 @@ defineExpose({ root })
       :aria-expanded="isOpen"
       :aria-controls="panelId"
       :aria-label="isOpen ? 'Свернуть действия задания' : 'Действия с заданием'"
-      class="relative h-11 w-11 flex items-center justify-center rounded-xl border border-white/5 text-[#c9c9d1] cursor-pointer transition-all duration-300 ease-out active:scale-95 active:bg-white/10 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[#3d7eff] motion-reduce:transition-none"
+      class="relative h-11 w-11 shrink-0 flex items-center justify-center rounded-xl border border-white/5 text-[#c9c9d1] cursor-pointer transition-all duration-300 ease-out active:scale-95 active:bg-white/10 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-[#3d7eff] motion-reduce:transition-none"
       :class="isOpen ? 'bg-white/5' : 'bg-white/10'"
       @click="toggle"
     >
@@ -158,14 +232,28 @@ defineExpose({ root })
       </span>
     </button>
 
-    <!-- Столбик действий: высота панели анимируется, кнопки появляются поочерёдно -->
+    <!--
+      Столбик действий: высота панели анимируется, кнопки появляются поочерёдно.
+      Прокручивается сама панель: кнопки не сжимаются по высоте, поэтому столбик
+      выше панели на короткой карточке — лишние кнопки обрезаются, а прокрутка
+      открывает их; полоса прокрутки скрыта, чтобы не отнимать ширину у иконок (44 px).
+      Пока под нижним краем остались кнопки, край растушёвывается (panelMaskClass):
+      видно, что столбик продолжается и его можно прокрутить.
+    -->
     <div
       :id="panelId"
-      class="grid w-full transition-[grid-template-rows] duration-300 ease-out motion-reduce:transition-none"
-      :class="isOpen ? 'grid-rows-[1fr]' : 'grid-rows-[0fr]'"
+      ref="panel"
+      class="grid w-full min-h-0 transition-[grid-template-rows,mask-image] duration-300 ease-out motion-reduce:transition-none"
+      :class="[
+        isOpen
+          ? 'grid-rows-[1fr] overflow-y-auto overscroll-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden'
+          : 'grid-rows-[0fr] overflow-hidden',
+        panelMaskClass,
+      ]"
       :aria-hidden="!isOpen"
+      @scroll.passive="updateOverflowHint"
     >
-      <div class="min-h-0 overflow-hidden flex flex-col items-center gap-0.5">
+      <div class="min-h-0 flex flex-col items-center gap-0.5">
         <!-- Фотографии задания -->
         <button
           type="button"
